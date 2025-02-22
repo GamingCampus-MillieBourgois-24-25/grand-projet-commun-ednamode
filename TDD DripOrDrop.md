@@ -1,50 +1,48 @@
 # Technical Design Document (TDD) \- **Drip or Drop (DoD)**
 
-# 
-
-# **Sommaire :**
+## **Sommaire :**
 
 [**1\. Présentation Générale**](#1.-présentation-générale)
 
-[1.1 Objectif du Document](#1.1-objectif-du-document)
+&nbsp;&nbsp;&nbsp;&nbsp;[1.1 Objectif du Document](#1.1-objectif-du-document)
 
-[1.2 Plateformes Ciblées](#1.2-plateformes-ciblées)
+&nbsp;&nbsp;&nbsp;&nbsp;[1.2 Plateformes Ciblées](#1.2-plateformes-ciblées)
 
-[1.3 Architecture Générale](#1.3-architecture-générale)
+&nbsp;&nbsp;&nbsp;&nbsp;[1.3 Architecture Générale](#1.3-architecture-générale)
 
 [**2\. Architecture Logicielle**](#2.-architecture-logicielle)
 
-[2.1 Structure du Projet](#2.1-structure-du-projet)
+&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Structure du Projet](#2.1-structure-du-projet)
 
 [**3\. Interface Utilisateur et Système d’Inputs (GUI, HUD, Responsive Design)**](#3.-interface-utilisateur-et-système-d’inputs-\(gui,-hud,-responsive-design\))
 
-[3.1 Inputs](#3.1-inputs)
+&nbsp;&nbsp;&nbsp;&nbsp;[3.1 Inputs](#3.1-inputs)
 
-[3.2 GUI et HUD](#3.2-gui-et-hud)
+&nbsp;&nbsp;&nbsp;&nbsp;[3.2 GUI et HUD](#3.2-gui-et-hud)
 
-[3.3 Responsive Design et Adaptation mobile/tablette](#3.3-responsive-design-et-adaptation-mobile/tablette)
+&nbsp;&nbsp;&nbsp;&nbsp;[3.3 Responsive Design et Adaptation mobile/tablette](#3.3-responsive-design-et-adaptation-mobile/tablette)
 
 [**4\. Gestion des Sessions et Matchmaking**](#4.-gestion-des-sessions-et-matchmaking)
 
-[4.1 Fonctionnement du Matchmaking](#4.1-fonctionnement-du-matchmaking)
+&nbsp;&nbsp;&nbsp;&nbsp;[4.1 Fonctionnement du Matchmaking](#4.1-fonctionnement-du-matchmaking)
 
-[4.2 Gestion des Sessions de Jeu](#4.2-gestion-des-sessions-de-jeu)
+&nbsp;&nbsp;&nbsp;&nbsp;[4.2 Gestion des Sessions de Jeu](#4.2-gestion-des-sessions-de-jeu)
 
 [**5\. Optimisation et Performances**](#5.-optimisation-et-performances)
 
-[5.1 Gestion du CPU/GPU sur Mobile](#5.1-gestion-du-cpu/gpu-sur-mobile)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.1 Gestion du CPU/GPU sur Mobile](#5.1-gestion-du-cpu/gpu-sur-mobile)
 
-[5.2 Optimisation Réseau](#5.2-optimisation-réseau)
+&nbsp;&nbsp;&nbsp;&nbsp;[5.2 Optimisation Réseau](#5.2-optimisation-réseau)
 
-[5.3 Gestion des Fonctionnalités Modulables (Scope Reduction)](#5.3-gestion-des-fonctionnalités-modulables-\(scope-reduction\))
+&nbsp;&nbsp;&nbsp;&nbsp;[5.3 Gestion des Fonctionnalités Modulables (Scope Reduction)](#5.3-gestion-des-fonctionnalités-modulables-\(scope-reduction\))
 
 [**6\. Monétisation et Gestion des Achats**](#6.-monétisation-et-gestion-des-achats)
 
-[6.1 Système de Monétisation](#6.1-système-de-monétisation)
+&nbsp;&nbsp;&nbsp;&nbsp;[6.1 Système de Monétisation](#6.1-système-de-monétisation)
 
-[6.2 Sécurité des Transactions](#6.2-sécurité-des-transactions)
+&nbsp;&nbsp;&nbsp;&nbsp;[6.2 Sécurité des Transactions](#6.2-sécurité-des-transactions)
 
-[6.3 Pourquoi Unity IAP pour les Achats In-App ?](#6.3-pourquoi-unity-iap-pour-les-achats-in-app-?)
+&nbsp;&nbsp;&nbsp;&nbsp;[6.3 Pourquoi Unity IAP pour les Achats In-App ?](#6.3-pourquoi-unity-iap-pour-les-achats-in-app-?)
 
 [**7\. Gestion des Bugs et Support**](#7.-gestion-des-bugs-et-support)
 
@@ -54,30 +52,33 @@
 
 [**10\. Conclusion**](#10.-conclusion)
 
-# **1\. Présentation Générale** {#1.-présentation-générale}
+---
 
-## **1.1 Objectif du Document** {#1.1-objectif-du-document}
+# **1\. Présentation Générale**
+
+## **1.1 Objectif du Document**
 
 Ce document détaille l’architecture technique et les spécifications du développement du jeu **Drip or Drop**, un party game multijoueur sur **mobile (iOS et Android)** développé sous **Unity 6**. Il vise à garantir une **expérience fluide, optimisée et immersive**, en intégrant des mécaniques de gameplay avancées et une gestion efficace des ressources mobiles.
 
-## **1.2 Plateformes Ciblées** {#1.2-plateformes-ciblées}
+## **1.2 Plateformes Ciblées**
 
 - **Mobile** : iOS (iPhone, iPad) & Android (Smartphones et Tablettes)  
 - **Moteur** : Unity 6  
 - **Multijoueur** : Netcode for GameObjects  
 - **Langages** : C\# pour le développement, JSON pour la gestion des données
 
-## **1.3 Architecture Générale** {#1.3-architecture-générale}
+## **1.3 Architecture Générale**
 
 Le jeu repose sur une architecture **client-serveur** avec une **synchronisation en temps réel** des éléments de gameplay (tenues, votes, interactions). Il intègre une **gestion optimisée des ressources** pour garantir une consommation minimale de mémoire et de batterie. La communication réseau est assurée par **Netcode for GameObjects**, qui offre une latence optimisée et une scalabilité adaptée aux jeux mobiles multijoueurs.
 
 ---
 
-# **2\. Architecture Logicielle** {#2.-architecture-logicielle}
+# **2\. Architecture Logicielle**
 
-### **2.1 Structure du Projet** {#2.1-structure-du-projet}
+### **2.1 Structure du Projet**
 
 Le projet est structuré pour séparer les **composants principaux** et assurer une maintenance aisée.
+![Diagramme de Classe](https://i.imgur.com/G47ed32.png)
 
 - **Core** : Contient la logique principale du jeu, notamment la gestion des scènes et l'interface utilisateur.  
   - `GameManager`  
@@ -118,9 +119,9 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 # 
 
-# **3\. Interface Utilisateur et Système d’Inputs (GUI, HUD, Responsive Design)** {#3.-interface-utilisateur-et-système-d’inputs-(gui,-hud,-responsive-design)}
+# **3\. Interface Utilisateur et Système d’Inputs (GUI, HUD, Responsive Design)**
 
-## **3.1 Inputs** {#3.1-inputs}
+## **3.1 Inputs**
 
 **Touch Controls** : Tap, swipe, drag & drop pour navigation et interaction.
 
@@ -128,13 +129,13 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 **Retour haptique** pour améliorer le ressenti des actions.
 
-## **3.2 GUI et HUD** {#3.2-gui-et-hud}
+## **3.2 GUI et HUD**
 
 * **Affichage dynamique du HUD** en fonction des modes de jeu.  
 * **Animations de feedback visuel** pour informer le joueur (Tweening, Shader effects).  
 * **Barres d’état et icônes interactives** pour actions principales (temps de vote, score, tenue en cours).
 
-## **3.3 Responsive Design et Adaptation mobile/tablette** {#3.3-responsive-design-et-adaptation-mobile/tablette}
+## **3.3 Responsive Design et Adaptation mobile/tablette**
 
 * **Interface dynamique** qui s’adapte à la résolution et à l’orientation de l’écran.  
 * **Gestion des UI Scalers** pour éviter les éléments trop petits ou mal placés.  
@@ -142,9 +143,9 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 ---
 
-# **4\. Gestion des Sessions et Matchmaking** {#4.-gestion-des-sessions-et-matchmaking}
+# **4\. Gestion des Sessions et Matchmaking**
 
-## **4.1 Fonctionnement du Matchmaking** {#4.1-fonctionnement-du-matchmaking}
+## **4.1 Fonctionnement du Matchmaking**
 
 - **Mode de connexion** : *Netcode for GameObjects* en mode Host/Client, où un joueur agit comme hôte et les autres rejoignent en tant que clients.  
 - **Regroupement des joueurs** :  
@@ -155,7 +156,7 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
   - Expulsion après un certain temps d’inactivité.  
   - Remplacement automatique du joueur AFK par un bot ou attente d’un remplaçant.
 
-## **4.2 Gestion des Sessions de Jeu** {#4.2-gestion-des-sessions-de-jeu}
+## **4.2 Gestion des Sessions de Jeu**
 
 **L'hôte est responsable de la synchronisation et de la persistance des données de session** tant que la partie est active.
 
@@ -168,15 +169,15 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 ---
 
-# **5\. Optimisation et Performances** {#5.-optimisation-et-performances}
+# **5\. Optimisation et Performances**
 
-## **5.1 Gestion du CPU/GPU sur Mobile** {#5.1-gestion-du-cpu/gpu-sur-mobile}
+## **5.1 Gestion du CPU/GPU sur Mobile**
 
 - **Object pooling** pour limiter l’instanciation de nouveaux objets et réduire la charge CPU.  
 - **Optimisation des draw calls** avec **GPU instancing et Dynamic Batching**.  
 - **LOD (Level of Detail)** sur les avatars et accessoires pour améliorer le framerate.
 
-## **5.2 Optimisation Réseau** {#5.2-optimisation-réseau}
+## **5.2 Optimisation Réseau**
 
 - **Compression des paquets Netcode** pour réduire la bande passante utilisée.  
 - **Compensation de lag** via interpolation/extrapolation pour maintenir une fluidité de jeu.  
@@ -186,7 +187,7 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 **Risques de désynchronisation en cas de perte du host**, et éventuellement, une **solution de migration d’hôte** (Host Migration) pour éviter que la partie ne s’arrête si le host quitte.
 
-## **5.3 Gestion des Fonctionnalités Modulables (Scope Reduction)** {#5.3-gestion-des-fonctionnalités-modulables-(scope-reduction)}
+## **5.3 Gestion des Fonctionnalités Modulables (Scope Reduction)**
 
 * **Définition des fonctionnalités essentielles** :  
   * Déterminer quelles mécaniques sont indispensables au fonctionnement de base (multijoueur, gestion des tenues, votes).  
@@ -201,22 +202,21 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 ---
 
-# **6\. Monétisation et Gestion des Achats** {#6.-monétisation-et-gestion-des-achats}
+# **6\. Monétisation et Gestion des Achats**
 
-## **6.1 Système de Monétisation** {#6.1-système-de-monétisation}
+## **6.1 Système de Monétisation**
 
 - **Achats in-app** : Skins, accessoires et items cosmétiques.  
 - **Battle Pass et contenu saisonnier** avec progression débloquant des récompenses exclusives.
 
-## **6.2 Sécurité des Transactions** {#6.2-sécurité-des-transactions}
+## **6.2 Sécurité des Transactions**
 
 - **Validation des achats via Unity IAP Server Validation,** qui s’intègre directement avec les stores ***Apple*** et ***Google***.  
 - **Chiffrement des données sensibles** avec les protocoles natifs d’Apple et Google.  
 - **Les transactions sont validées côté serveur par Unity**, ce qui empêche la falsification des reçus d’achat.  
 - **Google Play et l’App Store encryptent déjà les données de paiement** avant transmission.
 
-## **6.3 Pourquoi Unity IAP pour les Achats In-App ?** {#6.3-pourquoi-unity-iap-pour-les-achats-in-app-?}
-
+## **6.3 Pourquoi Unity IAP pour les Achats In-App ?**
 * **Gestion simplifiée des transactions** sans serveur customisé.  
 * **Validation automatique des paiements** et réduction du risque de fraude.  
 * **Prise en charge des abonnements et promotions** (ex : Battle Pass).  
@@ -224,7 +224,7 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 ---
 
-# **7\. Gestion des Bugs et Support** {#7.-gestion-des-bugs-et-support}
+# **7\. Gestion des Bugs et Support**
 
 - **Système de reporting des bugs en jeu** : Interface pour signaler un bug instantanément.  
 - **Envoi automatique des logs de crash à Firebase** pour analyse des erreurs.  
@@ -233,7 +233,7 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 ---
 
-# **8\. Documentation et Évolutivité** {#8.-documentation-et-évolutivité}
+# **8\. Documentation et Évolutivité**
 
 - **Création d’un Wiki de Documentation** via Notion pour centraliser toutes les infos techniques.  
 - **Checklist de Debugging** pour les développeurs et testeurs.  
@@ -243,7 +243,7 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 ---
 
-# **9\. Préparation pour une Extension Future du Jeu** {#9.-préparation-pour-une-extension-future-du-jeu}
+# **9\. Préparation pour une Extension Future du Jeu**
 
 - **Support des contrôleurs mobiles** : Xbox, PlayStation, et manettes Bluetooth.  
 - **Exploration d’un mode en Réalité Augmentée (AR)** pour personnaliser les tenues en 3D.  
@@ -251,6 +251,6 @@ Le projet est structuré pour séparer les **composants principaux** et assurer 
 
 ---
 
-# **10\. Conclusion** {#10.-conclusion}
+# **10\. Conclusion**
 
 *Drip or Drop* repose sur une **architecture optimisée et évolutive**, avec un accent mis sur **le multijoueur performant, l’optimisation mobile et la sécurité des données**. Grâce à **Unity 6, Netcode for GameObjects, les API Unity et Firebase**, nous assurons une **expérience fluide et compétitive**. L’évolutivité du backend garantit que le jeu pourra s’adapter à une base de joueurs grandissante. 
