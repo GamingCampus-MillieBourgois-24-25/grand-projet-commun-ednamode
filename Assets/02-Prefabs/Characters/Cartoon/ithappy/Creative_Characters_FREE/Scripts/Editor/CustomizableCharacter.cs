@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace CharacterCustomizationTool.Editor.Character
 {
-    public class CustomizableCharacter
+    public class CustomizableCharacter 
     {
         private static readonly SlotType[] AlwaysEnabledParts = { SlotType.Body, SlotType.Faces };
 
@@ -15,7 +15,8 @@ namespace CharacterCustomizationTool.Editor.Character
         private readonly GameObject _characterGameObject;
         private readonly SlotValidator _slotValidator = new();
 
-        public SlotBase[] Slots { get; }
+        public SlotBase[] Slots { get; private set; }
+
         public int SavedCombinationsCount => _savedCombinations.Count;
 
         public CustomizableCharacter(SlotLibrary slotLibrary)

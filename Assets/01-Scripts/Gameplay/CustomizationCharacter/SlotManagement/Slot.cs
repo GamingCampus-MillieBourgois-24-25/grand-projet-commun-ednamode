@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace CharacterCustomizationTool.Editor.Character
+namespace CharacterCustomization
 {
     public class Slot : SlotBase
     {
@@ -101,11 +101,11 @@ namespace CharacterCustomizationTool.Editor.Character
             var existingVariant = _variants.FirstOrDefault(v => v.Mesh == newMesh);
             if (existingVariant != null)
             {
-                _selected = existingVariant; // On sélectionne la variante existante
+                _selected = existingVariant;
             }
             else
             {
-                _selected = new SlotVariant(newMesh); // Sinon, on crée une nouvelle variante
+                _selected = new SlotVariant(newMesh); 
                 _variants.Add(_selected);
             }
         }

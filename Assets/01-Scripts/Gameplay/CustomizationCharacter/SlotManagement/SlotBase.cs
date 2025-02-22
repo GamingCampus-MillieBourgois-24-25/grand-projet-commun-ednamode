@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CharacterCustomizationTool.Editor.Character
+namespace CharacterCustomization
 {
     public abstract class SlotBase
     {

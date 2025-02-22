@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace CharacterCustomizationTool.Editor.Character
+namespace CharacterCustomization
 {
     public class FullBodySlot : SlotBase
     {
@@ -76,7 +76,7 @@ namespace CharacterCustomizationTool.Editor.Character
             return _variants
                 .SelectMany(v => v.Elements.Select(e => e.Mesh))
                 .Distinct()
-                .ToList(); // Convertit IEnumerable en List
+                .ToList(); 
         }
 
         public override void SetMesh(Mesh mesh)
