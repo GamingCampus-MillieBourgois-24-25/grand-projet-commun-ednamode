@@ -4,55 +4,55 @@
 
 # **Sommaire :**
 
-[**1\. Présentation Générale	2**](#1.-présentation-générale)
+[**1\. Présentation Générale**](#1.-présentation-générale)
 
-[1.1 Objectif du Document	2](#1.1-objectif-du-document)
+[1.1 Objectif du Document](#1.1-objectif-du-document)
 
-[1.2 Plateformes Ciblées	2](#1.2-plateformes-ciblées)
+[1.2 Plateformes Ciblées](#1.2-plateformes-ciblées)
 
-[1.3 Architecture Générale	2](#1.3-architecture-générale)
+[1.3 Architecture Générale](#1.3-architecture-générale)
 
-[**2\. Architecture Logicielle	3**](#2.-architecture-logicielle)
+[**2\. Architecture Logicielle**](#2.-architecture-logicielle)
 
-[2.1 Structure du Projet	3](#2.1-structure-du-projet)
+[2.1 Structure du Projet](#2.1-structure-du-projet)
 
-[**3\. Interface Utilisateur et Système d’Inputs (GUI, HUD, Responsive Design)	5**](#3.-interface-utilisateur-et-système-d’inputs-\(gui,-hud,-responsive-design\))
+[**3\. Interface Utilisateur et Système d’Inputs (GUI, HUD, Responsive Design)**](#3.-interface-utilisateur-et-système-d’inputs-\(gui,-hud,-responsive-design\))
 
-[3.1 Inputs	5](#3.1-inputs)
+[3.1 Inputs](#3.1-inputs)
 
-[3.2 GUI et HUD	5](#3.2-gui-et-hud)
+[3.2 GUI et HUD](#3.2-gui-et-hud)
 
-[3.3 Responsive Design et Adaptation mobile/tablette	5](#3.3-responsive-design-et-adaptation-mobile/tablette)
+[3.3 Responsive Design et Adaptation mobile/tablette](#3.3-responsive-design-et-adaptation-mobile/tablette)
 
-[**4\. Gestion des Sessions et Matchmaking	6**](#4.-gestion-des-sessions-et-matchmaking)
+[**4\. Gestion des Sessions et Matchmaking**](#4.-gestion-des-sessions-et-matchmaking)
 
-[4.1 Fonctionnement du Matchmaking	6](#4.1-fonctionnement-du-matchmaking)
+[4.1 Fonctionnement du Matchmaking](#4.1-fonctionnement-du-matchmaking)
 
-[4.2 Gestion des Sessions de Jeu	6](#4.2-gestion-des-sessions-de-jeu)
+[4.2 Gestion des Sessions de Jeu](#4.2-gestion-des-sessions-de-jeu)
 
-[**5\. Optimisation et Performances	7**](#5.-optimisation-et-performances)
+[**5\. Optimisation et Performances**](#5.-optimisation-et-performances)
 
-[5.1 Gestion du CPU/GPU sur Mobile	7](#5.1-gestion-du-cpu/gpu-sur-mobile)
+[5.1 Gestion du CPU/GPU sur Mobile](#5.1-gestion-du-cpu/gpu-sur-mobile)
 
-[5.2 Optimisation Réseau	7](#5.2-optimisation-réseau)
+[5.2 Optimisation Réseau](#5.2-optimisation-réseau)
 
-[5.3 Gestion des Fonctionnalités Modulables (Scope Reduction)	8](#5.3-gestion-des-fonctionnalités-modulables-\(scope-reduction\))
+[5.3 Gestion des Fonctionnalités Modulables (Scope Reduction)](#5.3-gestion-des-fonctionnalités-modulables-\(scope-reduction\))
 
-[**6\. Monétisation et Gestion des Achats	8**](#6.-monétisation-et-gestion-des-achats)
+[**6\. Monétisation et Gestion des Achats**](#6.-monétisation-et-gestion-des-achats)
 
-[6.1 Système de Monétisation	8](#6.1-système-de-monétisation)
+[6.1 Système de Monétisation](#6.1-système-de-monétisation)
 
-[6.2 Sécurité des Transactions	9](#6.2-sécurité-des-transactions)
+[6.2 Sécurité des Transactions](#6.2-sécurité-des-transactions)
 
-[6.3 Pourquoi Unity IAP pour les Achats In-App ?	9](#6.3-pourquoi-unity-iap-pour-les-achats-in-app-?)
+[6.3 Pourquoi Unity IAP pour les Achats In-App ?](#6.3-pourquoi-unity-iap-pour-les-achats-in-app-?)
 
-[**7\. Gestion des Bugs et Support	9**](#7.-gestion-des-bugs-et-support)
+[**7\. Gestion des Bugs et Support**](#7.-gestion-des-bugs-et-support)
 
-[**8\. Documentation et Évolutivité	10**](#8.-documentation-et-évolutivité)
+[**8\. Documentation et Évolutivité**](#8.-documentation-et-évolutivité)
 
-[**9\. Préparation pour une Extension Future du Jeu	10**](#9.-préparation-pour-une-extension-future-du-jeu)
+[**9\. Préparation pour une Extension Future du Jeu**](#9.-préparation-pour-une-extension-future-du-jeu)
 
-[**10\. Conclusion	10**](#10.-conclusion)
+[**10\. Conclusion**](#10.-conclusion)
 
 # **1\. Présentation Générale** {#1.-présentation-générale}
 
