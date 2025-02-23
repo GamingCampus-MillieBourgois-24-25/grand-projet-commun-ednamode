@@ -50,22 +50,22 @@ namespace CharacterCustomization
                     Destroy(child.gameObject);
                 }
 
-                var meshes = slot.GetAvailableMeshes();
-                Debug.Log($"Il y a {meshes.Count()} meshes disponibles pour le slot {slotUI.slotType}");
+                var prefabs = slot.GetAvailablePrefabs();
+                Debug.Log($"Il y a {prefabs.Count()} prefabs disponibles pour le slot {slotUI.slotType}");
 
-                foreach (var meshOption in meshes)
+                foreach (var prefab in prefabs)
                 {
                     GameObject buttonObj = Instantiate(buttonPrefab, slotUI.content);
-                    buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = meshOption.name;
+                    buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = prefab.name;
                     Button button = buttonObj.GetComponent<Button>();
 
-                    button.onClick.AddListener(() => EquipMesh(slotUI.slotType, meshOption));
+                    button.onClick.AddListener(() => EquipPrefab(slotUI.slotType, prefab));
                 }
             }
         }
 
 
-        private void EquipMesh(SlotType slotType, Mesh mesh)
+        private void EquipPrefab(SlotType slotType, GameObject prefab)
         {
             var slot = _characterGameObject.Slots.FirstOrDefault(s => s.Type == slotType);
             if (slot != null)
@@ -76,48 +76,43 @@ namespace CharacterCustomization
                     GameObject previousObject = _equippedObjects[slotType];
                     if (previousObject != null)
                     {
-                        // Vérifier si le mesh sélectionné est le même que celui déjà équipé
-                        var meshFilter = previousObject.GetComponentInChildren<MeshFilter>();
-                        if (meshFilter != null && meshFilter.sharedMesh == mesh)
-                        {
-                            // Réactiver l'objet précédent
-                            previousObject.SetActive(true);
-                            Debug.Log($"Réactivation de l'objet précédent pour {slotType}.");
-                            return; // Ne pas créer un nouvel objet
-                        }
-                        else
-                        {
-                            // Désactiver l'objet précédent
-                            previousObject.SetActive(false);
-                            Debug.Log($"Ancien objet pour {slotType} désactivé.");
-                        }
+                        // Désactiver l'objet précédent
+                        previousObject.SetActive(false);
+                        Debug.Log($"Ancien objet pour {slotType} désactivé.");
                     }
                 }
 
-                // Appliquer le nouveau mesh
-                slot.SetMesh(mesh);
+                // Appliquer le nouveau prefab
+                slot.SetPrefab(prefab);
                 slot.Toggle(true); // S'assurer que le slot est activé et visible
 
                 // Utiliser slot.Preview pour obtenir l'objet cible
                 GameObject targetObject = slot.Preview;
                 if (targetObject != null)
                 {
-                    targetObject.transform.SetParent(_characterGameObject.CharacterInstance.transform);
-                    targetObject.transform.localPosition = Vector3.zero; // Réinitialiser la position relative
-                    targetObject.SetActive(true); // Activer le nouvel objet
-                    Debug.Log($"Position des lunettes : {targetObject.transform.position}");
-                    Debug.Log($"Parent des lunettes : {targetObject.transform.parent?.name ?? "NULL"}");
+                    // Instancier une copie du Prefab pour éviter de modifier l'original
+                    GameObject instance = Instantiate(targetObject);
+
+                    // Définir le parent de l'instance
+                    instance.transform.SetParent(_characterGameObject.CharacterInstance.transform);
+                    instance.transform.localPosition = Vector3.zero; // Réinitialiser la position relative
+                    instance.transform.localRotation = Quaternion.identity; // Réinitialiser la rotation
+                    instance.transform.localScale = Vector3.one; // Réinitialiser l'échelle
+                    instance.SetActive(true); // Activer le nouvel objet
+
+                    Debug.Log($"Position des lunettes : {instance.transform.position}");
+                    Debug.Log($"Parent des lunettes : {instance.transform.parent?.name ?? "NULL"}");
 
                     // Stocker la référence du nouvel objet équipé
-                    _equippedObjects[slotType] = targetObject;
+                    _equippedObjects[slotType] = instance;
                 }
 
-                Debug.Log($"Mesh changé pour {slotType} : {mesh.name}");
+                Debug.Log($"Prefab changé pour {slotType} : {prefab.name}");
                 _characterGameObject.RefreshCustomization(); // Force la mise à jour visuelle
             }
             else
             {
-                Debug.LogWarning($"Slot {slotType} non trouvé lors du changement de mesh !");
+                Debug.LogWarning($"Slot {slotType} non trouvé lors du changement de prefab !");
             }
         }
     }

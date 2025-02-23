@@ -8,19 +8,17 @@ namespace CharacterCustomization
     {
         private static readonly SlotType[] AlwaysEnabledParts = { SlotType.Body, SlotType.Faces };
         private readonly List<List<SavedSlot>> _savedCombinations = new();
-        private readonly SlotLibrary _slotLibrary; // Déclarez _slotLibrary ici
+        private readonly SlotLibrary _slotLibrary;
 
-        public GameObject CharacterInstance { get; private set; } // Référence au GameObject du personnage
+        public GameObject CharacterInstance { get; private set; }
         public SlotBase[] Slots { get; private set; }
         public int SavedCombinationsCount => _savedCombinations.Count;
 
         public CharacterCustomization(GameObject characterPrefab, SlotLibrary slotLibrary)
         {
-            // Instancier le personnage à partir du prefab
             CharacterInstance = Object.Instantiate(characterPrefab, Vector3.zero, Quaternion.identity);
             CharacterInstance.name = "BaseCharacter";
 
-            // Initialiser les slots et autres composants
             _slotLibrary = slotLibrary;
             Slots = CreateSlots(slotLibrary);
         }
@@ -98,8 +96,17 @@ namespace CharacterCustomization
         private static SlotBase[] CreateSlots(SlotLibrary slotLibrary)
         {
             var list = new List<SlotBase>();
+
+            // Ajouter les FullBodyCostumes
             list.Add(new FullBodySlot(slotLibrary.FullBodyCostumes));
-            list.AddRange(slotLibrary.Slots.Select(s => new Slot(s.Type, s.Groups)));
+
+            // Ajouter les Slots
+            foreach (var slotEntry in slotLibrary.Slots)
+            {
+                // Utiliser la propriété Prefabs pour obtenir tous les prefabs
+                list.Add(new Slot(slotEntry.Type, slotEntry.Prefabs));
+            }
+
             return list.ToArray();
         }
 
@@ -107,7 +114,7 @@ namespace CharacterCustomization
         {
             foreach (var slot in Slots)
             {
-                slot.Toggle(slot.HasMesh()); // Active ou désactive en fonction de la présence d'un mesh
+                slot.Toggle(slot.HasPrefab());
             }
             Debug.Log("Personnalisation rafraîchie !");
         }

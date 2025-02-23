@@ -6,10 +6,10 @@ namespace CharacterCustomization
     public abstract class SlotBase
     {
         public abstract string Name { get; }
-        public abstract GameObject Preview { get; }
+        public abstract GameObject Preview { get; } // Prévisualisation du prefab
         public abstract int SelectedIndex { get; }
         public abstract int VariantsCount { get; }
-        public abstract (SlotType, Mesh)[] Meshes { get; }
+        public abstract (SlotType, GameObject)[] Prefabs { get; } // Utilisez des prefabs au lieu de meshes
 
         public SlotType Type { get; }
         public bool IsEnabled { get; private set; } = true;
@@ -25,9 +25,8 @@ namespace CharacterCustomization
         public abstract bool TryGetVariantsCountInGroup(GroupType groupType, out int count);
         public abstract bool TryPickInGroup(GroupType groupType, int index, bool isEnabled);
 
-        public abstract List<Mesh> GetAvailableMeshes();
-
-        public abstract void SetMesh(Mesh newMesh);
+        public abstract List<GameObject> GetAvailablePrefabs(); // Retourne une liste de prefabs
+        public abstract void SetPrefab(GameObject newPrefab); // Applique un prefab
 
         public void Draw(Material material, int previewLayer, Camera camera, int submeshIndex)
         {
@@ -70,18 +69,34 @@ namespace CharacterCustomization
             return targetIndex;
         }
 
-        protected static void DrawMesh(Mesh mesh, Material material, int previewLayer, Camera camera, int submeshIndex)
+        protected static void DrawPrefab(GameObject prefab, Material material, int previewLayer, Camera camera, int submeshIndex)
         {
-            Graphics.DrawMesh(mesh, new Vector3(0, -.01f, 0), Quaternion.identity, material, previewLayer, camera, submeshIndex);
+            // Instancier le prefab pour la prévisualisation
+            GameObject previewObject = Object.Instantiate(prefab);
+            previewObject.transform.position = new Vector3(0, -.01f, 0);
+            previewObject.transform.rotation = Quaternion.identity;
+
+            // Appliquer le matériau au prefab
+            var renderers = previewObject.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
+            {
+                renderer.material = material;
+            }
+
+            // Configurer le layer et la caméra pour la prévisualisation
+            previewObject.layer = previewLayer;
+            foreach (var renderer in renderers)
+            {
+                renderer.gameObject.layer = previewLayer;
+            }
+
+            // Détruire l'objet après la prévisualisation (si nécessaire)
+            Object.Destroy(previewObject, 0.1f); // Ajustez le délai selon vos besoins
         }
 
-
-        public virtual bool HasMesh()
+        public virtual bool HasPrefab()
         {
-            return false; 
+            return false; // À implémenter dans les classes dérivées
         }
-
-
-
     }
 }

@@ -6,16 +6,22 @@ namespace CharacterCustomization
     {
         private static readonly MaterialProvider MaterialProvider = new();
 
-        public static GameObject CreateVariantPreview(Mesh mesh)
+        public static GameObject CreateVariantPreview(GameObject prefab)
         {
-            var variant = new GameObject(mesh.name);
+            // Instancier le prefab
+            GameObject variant = Object.Instantiate(prefab);
 
-            variant.AddComponent<MeshFilter>().sharedMesh = mesh;
-            variant.transform.position = Vector3.one * int.MaxValue;
-            variant.hideFlags = HideFlags.HideAndDontSave;
+            // Configurer la prévisualisation
+            variant.name = prefab.name; // Utiliser le nom du prefab
+            variant.transform.position = Vector3.one * int.MaxValue; // Placer l'objet hors de la vue
+            variant.hideFlags = HideFlags.HideAndDontSave; // Masquer l'objet dans la hiérarchie
 
-            var renderer = variant.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = MaterialProvider.MainColor;
+            // Appliquer le matériau principal à tous les renderers du prefab
+            var renderers = variant.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
+            {
+                renderer.sharedMaterial = MaterialProvider.MainColor;
+            }
 
             return variant;
         }

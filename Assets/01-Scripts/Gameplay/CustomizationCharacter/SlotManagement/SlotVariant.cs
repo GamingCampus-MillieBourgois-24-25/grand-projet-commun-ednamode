@@ -4,14 +4,14 @@ namespace CharacterCustomization
 {
     public class SlotVariant
     {
-        public Mesh Mesh { get; }
-        public GameObject PreviewObject { get; }
-        public string Name => Mesh.name;
+        public GameObject Prefab { get; } // Prefab de l'objet
+        public GameObject PreviewObject { get; } // Objet de prévisualisation
+        public string Name => Prefab.name; // Nom du prefab
 
-        public SlotVariant(Mesh mesh)
+        public SlotVariant(GameObject prefab)
         {
-            Mesh = mesh;
-            PreviewObject = PreviewCreator.CreateVariantPreview(mesh);
+            Prefab = prefab;
+            PreviewObject = PreviewCreator.CreateVariantPreview(prefab); // Crée une prévisualisation du prefab
         }
     }
 }

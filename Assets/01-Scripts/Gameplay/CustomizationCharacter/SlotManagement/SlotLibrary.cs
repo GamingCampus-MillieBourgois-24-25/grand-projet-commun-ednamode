@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace CharacterCustomization
@@ -28,6 +29,8 @@ namespace CharacterCustomization
     {
         public SlotType Type;
         public SlotGroupEntry[] Groups;
+
+        public GameObject[] Prefabs => Groups.SelectMany(group => group.Variants).ToArray();
     }
 
     [Serializable]
@@ -36,4 +39,6 @@ namespace CharacterCustomization
         public GroupType Type;
         public GameObject[] Variants;
     }
+
+
 }

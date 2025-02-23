@@ -11,85 +11,76 @@ namespace CharacterCustomization
         private readonly List<SlotVariant> _variants;
 
         private SlotVariant _selected;
+        private readonly GameObject[] _prefabs; // Tableau de prefabs
+        private int _selectedIndex;
 
         public override string Name => Type.ToString();
-        public override GameObject Preview => _selected.PreviewObject;
-        public override int SelectedIndex => _variants.FindIndex(v => v.Name == _selected.Name);
-        public override int VariantsCount => _variants.Count;
+        public override GameObject Preview => _prefabs[_selectedIndex]; // Utilisez le prefab comme preview
+        public override int SelectedIndex => _selectedIndex;
+        public override int VariantsCount => _prefabs.Length;
 
-        public override (SlotType, Mesh)[] Meshes => new[]
+
+        public override (SlotType, GameObject)[] Prefabs => new[]
         {
-            (Type, _selected.Mesh),
+        (Type, _prefabs[_selectedIndex]), // Retourne le prefab actuel
         };
 
-        public Slot(SlotType type, SlotGroupEntry[] slotGroupEntries) : base(type)
+
+        public Slot(SlotType type, GameObject[] prefabs) : base(type)
         {
-            _groups = slotGroupEntries.Select(TranslateGroup).ToArray();
-            _variants = FlattenVariants(_groups);
-            if (_variants.Count == 0)
+            _prefabs = prefabs;
+            if (_prefabs.Length == 0)
             {
                 throw new Exception($"Slot {type} n'a pas de variantes disponibles !");
             }
 
-            _selected = _variants.First();
+            _selectedIndex = 0;
         }
 
         public override void SelectNext()
         {
-            _selected = _variants[GetNextIndex()];
+            _selectedIndex = GetNextIndex();
         }
 
         public override void SelectPrevious()
         {
-            _selected = _variants[GetPreviousIndex()];
+            _selectedIndex = GetPreviousIndex();
         }
-
         public override void Select(int index)
         {
-            _selected = _variants[index];
+            if (index >= 0 && index < _prefabs.Length)
+            {
+                _selectedIndex = index;
+            }
         }
 
         public override bool TryGetVariantsCountInGroup(GroupType stepGroupType, out int count)
         {
-            var group = _groups.FirstOrDefault(g => g.Type == stepGroupType);
-            if (group != null)
-            {
-                count = group.Variants.Length;
-                return true;
-            }
-
+            // Cette méthode n'est plus nécessaire si vous ne gérez pas de groupes
             count = 0;
             return false;
         }
 
         public override bool TryPickInGroup(GroupType groupType, int index, bool isEnabled)
         {
-            if (!isEnabled || _groups.All(g => g.Type != groupType))
-            {
-                return false;
-            }
-
-            var mesh = _groups.First(g => g.Type == groupType).Variants[index].Mesh;
-            _selected = new SlotVariant(mesh);
-            Toggle(true);
-
-            return true;
+            // Cette méthode n'est plus nécessaire si vous ne gérez pas de groupes
+            return false;
         }
 
         protected override void DrawSlot(Material material, int previewLayer, Camera camera, int submeshIndex)
         {
-            DrawMesh(_selected.Mesh, material, previewLayer, camera, submeshIndex);
+            // Cette méthode n'est plus nécessaire si vous utilisez des prefabs
+            Debug.LogWarning("DrawSlot n'est pas implémenté pour les prefabs.");
         }
 
         private static SlotGroup TranslateGroup(SlotGroupEntry entry)
         {
             var variants = entry.Variants
-                .Select(v => new SlotVariant(v.gameObject.GetComponentInChildren<SkinnedMeshRenderer>().sharedMesh))
+                .Select(v => new SlotVariant(v)) // Utilisez le GameObject directement
                 .ToArray();
 
             return new SlotGroup(entry.Type, variants);
         }
-
         private static List<SlotVariant> FlattenVariants(SlotGroup[] groups)
         {
             var variants = new List<SlotVariant>();
@@ -101,76 +92,56 @@ namespace CharacterCustomization
             return variants;
         }
 
-
-        public override void SetMesh(Mesh newMesh)
+        public override void SetPrefab(GameObject newPrefab)
         {
-            var existingVariant = _variants.FirstOrDefault(v => v.Mesh == newMesh);
-            if (existingVariant != null)
+            var index = Array.IndexOf(_prefabs, newPrefab);
+            if (index >= 0)
             {
-                _selected = existingVariant;
+                _selectedIndex = index;
             }
             else
             {
-                _selected = new SlotVariant(newMesh);
-                _variants.Add(_selected);
-            }
-
-            GameObject targetObject = _selected.PreviewObject;
-            if (targetObject == null)
-            {
-                Debug.LogWarning("targetObject est null !");
-                return;
-            }
-
-            // Réinitialiser la position, rotation et échelle
-            targetObject.transform.localPosition = Vector3.zero;
-            targetObject.transform.localRotation = Quaternion.identity;
-            targetObject.transform.localScale = Vector3.one;
-
-            // Appliquer le mesh
-            var skinnedRenderer = targetObject.GetComponentInChildren<SkinnedMeshRenderer>(true);
-            var meshRenderer = targetObject.GetComponentInChildren<MeshRenderer>(true);
-
-            if (skinnedRenderer != null)
-            {
-                skinnedRenderer.sharedMesh = newMesh;
-                Debug.Log($"SkinnedMeshRenderer trouvé et mesh mis à jour pour {targetObject.name}");
-            }
-            else if (meshRenderer != null)
-            {
-                var meshFilter = meshRenderer.GetComponent<MeshFilter>();
-                if (meshFilter != null)
-                {
-                    meshFilter.sharedMesh = newMesh;
-                    Debug.Log($"MeshRenderer trouvé sur {meshRenderer.gameObject.name}, mise à jour du mesh.");
-                }
-                else
-                {
-                    Debug.LogWarning($"MeshFilter non trouvé sur {meshRenderer.gameObject.name}.");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Aucun SkinnedMeshRenderer ni MeshRenderer trouvé sur {targetObject.name} ou ses enfants.");
+                Debug.LogWarning($"Le prefab {newPrefab.name} n'existe pas dans ce slot.");
             }
         }
 
-
-
-
-
-        public override bool HasMesh()
+        public override bool HasPrefab()
         {
-            return _selected.Mesh != null;
+            return _prefabs.Length > 0 && _prefabs[_selectedIndex] != null;
         }
-
-
-        public override List<Mesh> GetAvailableMeshes()
+        public override List<GameObject> GetAvailablePrefabs()
         {
-            return _variants.Select(v => v.Mesh).ToList();
+            return _prefabs.ToList();
+        }
+        private int GetNextIndex()
+        {
+            return (_selectedIndex + 1) % _prefabs.Length;
         }
 
+        private int GetPreviousIndex()
+        {
+            return (_selectedIndex - 1 + _prefabs.Length) % _prefabs.Length;
+        }
+        public class SlotVariant
+        {
+            public GameObject Prefab { get; }
 
+            public SlotVariant(GameObject prefab)
+            {
+                Prefab = prefab;
+            }
+        }
+
+        public class SlotGroup
+        {
+            public GroupType Type { get; }
+            public SlotVariant[] Variants { get; }
+
+            public SlotGroup(GroupType type, SlotVariant[] variants)
+            {
+                Type = type;
+                Variants = variants;
+            }
+        }
     }
-
 }
