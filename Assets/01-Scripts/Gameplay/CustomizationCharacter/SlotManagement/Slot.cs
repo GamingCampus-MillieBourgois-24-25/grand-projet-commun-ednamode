@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -25,6 +26,11 @@ namespace CharacterCustomization
         {
             _groups = slotGroupEntries.Select(TranslateGroup).ToArray();
             _variants = FlattenVariants(_groups);
+            if (_variants.Count == 0)
+            {
+                throw new Exception($"Slot {type} n'a pas de variantes disponibles !");
+            }
+
             _selected = _variants.First();
         }
 
@@ -105,11 +111,58 @@ namespace CharacterCustomization
             }
             else
             {
-                _selected = new SlotVariant(newMesh); 
+                _selected = new SlotVariant(newMesh);
                 _variants.Add(_selected);
+            }
+
+            GameObject targetObject = _selected.PreviewObject;
+            if (targetObject == null)
+            {
+                Debug.LogWarning("targetObject est null !");
+                return;
+            }
+
+            // Réinitialiser la position, rotation et échelle
+            targetObject.transform.localPosition = Vector3.zero;
+            targetObject.transform.localRotation = Quaternion.identity;
+            targetObject.transform.localScale = Vector3.one;
+
+            // Appliquer le mesh
+            var skinnedRenderer = targetObject.GetComponentInChildren<SkinnedMeshRenderer>(true);
+            var meshRenderer = targetObject.GetComponentInChildren<MeshRenderer>(true);
+
+            if (skinnedRenderer != null)
+            {
+                skinnedRenderer.sharedMesh = newMesh;
+                Debug.Log($"SkinnedMeshRenderer trouvé et mesh mis à jour pour {targetObject.name}");
+            }
+            else if (meshRenderer != null)
+            {
+                var meshFilter = meshRenderer.GetComponent<MeshFilter>();
+                if (meshFilter != null)
+                {
+                    meshFilter.sharedMesh = newMesh;
+                    Debug.Log($"MeshRenderer trouvé sur {meshRenderer.gameObject.name}, mise à jour du mesh.");
+                }
+                else
+                {
+                    Debug.LogWarning($"MeshFilter non trouvé sur {meshRenderer.gameObject.name}.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Aucun SkinnedMeshRenderer ni MeshRenderer trouvé sur {targetObject.name} ou ses enfants.");
             }
         }
 
+
+
+
+
+        public override bool HasMesh()
+        {
+            return _selected.Mesh != null;
+        }
 
 
         public override List<Mesh> GetAvailableMeshes()

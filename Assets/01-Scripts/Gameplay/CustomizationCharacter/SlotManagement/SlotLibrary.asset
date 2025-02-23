@@ -23,3 +23,10 @@ MonoBehaviour:
       Variants:
       - {fileID: 5160338263037534183, guid: 254f193832ea7e548a928137e81ecf2d, type: 3}
       - {fileID: 919132149155446097, guid: 37ecfcaf8ce0c064d92bcec65eba3e31, type: 3}
+  - Type: 2
+    Groups:
+    - Type: 4
+      Variants:
+      - {fileID: 8112774624926477602, guid: f9821e37959e9bc4da8d0ee20ea33461, type: 3}
+      - {fileID: 1195756561241719265, guid: f6318ad0b79a7484f93a73ad9fcd37d3, type: 3}
+      - {fileID: 2106138052219469381, guid: 22c437e6b43db6d4dbe33a290654a86c, type: 3}

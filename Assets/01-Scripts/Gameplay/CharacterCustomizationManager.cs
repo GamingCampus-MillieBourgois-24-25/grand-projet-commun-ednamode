@@ -4,9 +4,10 @@ namespace CharacterCustomization
 {
     public class CharacterCustomizationManager : MonoBehaviour
     {
-        public SlotLibrary slotLibrary; 
+        public SlotLibrary slotLibrary; // Bibliothèque de slots
+        public GameObject characterPrefab; // Prefab du personnage
 
-        private CharacterCustomization _characterCustomization; 
+        private CharacterCustomization _characterCustomization;
 
         public CustomizableCharacterUI customizableCharacterUI;
 
@@ -18,7 +19,14 @@ namespace CharacterCustomization
                 return;
             }
 
-            _characterCustomization = new CharacterCustomization(slotLibrary);
+            if (characterPrefab == null)
+            {
+                Debug.LogError("Le prefab du personnage n'est pas assigné.");
+                return;
+            }
+
+            // Créer une instance de CharacterCustomization avec le prefab du personnage et la bibliothèque de slots
+            _characterCustomization = new CharacterCustomization(characterPrefab, slotLibrary);
 
             if (customizableCharacterUI != null)
             {

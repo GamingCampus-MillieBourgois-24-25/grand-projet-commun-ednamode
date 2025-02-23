@@ -4,24 +4,30 @@ using UnityEngine;
 
 namespace CharacterCustomization
 {
-    public class CharacterCustomization 
+    public class CharacterCustomization
     {
         private static readonly SlotType[] AlwaysEnabledParts = { SlotType.Body, SlotType.Faces };
         private readonly List<List<SavedSlot>> _savedCombinations = new();
-        private readonly GameObject _characterGameObject;
+        private readonly SlotLibrary _slotLibrary; // Déclarez _slotLibrary ici
 
+        public GameObject CharacterInstance { get; private set; } // Référence au GameObject du personnage
         public SlotBase[] Slots { get; private set; }
         public int SavedCombinationsCount => _savedCombinations.Count;
 
-        public CharacterCustomization(SlotLibrary slotLibrary)
+        public CharacterCustomization(GameObject characterPrefab, SlotLibrary slotLibrary)
         {
-            _characterGameObject = LoadBaseMesh();
+            // Instancier le personnage à partir du prefab
+            CharacterInstance = Object.Instantiate(characterPrefab, Vector3.zero, Quaternion.identity);
+            CharacterInstance.name = "BaseCharacter";
+
+            // Initialiser les slots et autres composants
+            _slotLibrary = slotLibrary;
             Slots = CreateSlots(slotLibrary);
         }
 
         public GameObject InstantiateCharacter()
         {
-            return Object.Instantiate(_characterGameObject, Vector3.zero, Quaternion.identity);
+            return Object.Instantiate(CharacterInstance, Vector3.zero, Quaternion.identity);
         }
 
         public void SelectPrevious(SlotType slotType)
@@ -64,12 +70,11 @@ namespace CharacterCustomization
             foreach (var slot in Slots)
             {
                 SavedSlot? savedCombination = lastSavedCombination.FirstOrDefault(c => c.SlotType == slot.Type);
-                if (savedCombination.HasValue) 
+                if (savedCombination.HasValue)
                 {
                     slot.Toggle(savedCombination.Value.IsEnabled);
                     slot.Select(savedCombination.Value.VariantIndex);
                 }
-
             }
             _savedCombinations.Remove(lastSavedCombination);
         }
@@ -90,17 +95,21 @@ namespace CharacterCustomization
             return Slots.FirstOrDefault(s => s.Type == slotType);
         }
 
-        private static GameObject LoadBaseMesh()
-        {
-            return new GameObject("BaseCharacter");
-        }
-
         private static SlotBase[] CreateSlots(SlotLibrary slotLibrary)
         {
             var list = new List<SlotBase>();
             list.Add(new FullBodySlot(slotLibrary.FullBodyCostumes));
             list.AddRange(slotLibrary.Slots.Select(s => new Slot(s.Type, s.Groups)));
             return list.ToArray();
+        }
+
+        public void RefreshCustomization()
+        {
+            foreach (var slot in Slots)
+            {
+                slot.Toggle(slot.HasMesh()); // Active ou désactive en fonction de la présence d'un mesh
+            }
+            Debug.Log("Personnalisation rafraîchie !");
         }
     }
 }

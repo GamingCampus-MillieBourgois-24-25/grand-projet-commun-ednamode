@@ -25,8 +25,10 @@ namespace CharacterCustomization
 
                 if (loadedMaterial != null)
                 {
-                    return loadedMaterial;
+                    throw new Exception("MaterialOnDemand: aucun matériau défini !");
+
                 }
+                return loadedMaterial;
             }
 
             throw new Exception();

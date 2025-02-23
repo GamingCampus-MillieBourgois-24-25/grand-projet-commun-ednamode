@@ -5,16 +5,27 @@ using UnityEngine.EventSystems;
 
 public class Rotatable : MonoBehaviour
 {
-    [SerializeField] private Button rotateLeftButton;
-    [SerializeField] private Button rotateRightButton;
     [SerializeField] private float speed = 1;
     [SerializeField] private bool inverted;
 
+    private Button rotateLeftButton;
+    private Button rotateRightButton;
     private float rotationDirection = 0f;
     private bool rotateAllowed = false;
 
     private void Start()
     {
+        // Trouver les boutons dans la scène
+        rotateLeftButton = GameObject.Find("RotateLeftButton").GetComponent<Button>();
+        rotateRightButton = GameObject.Find("RotateRightButton").GetComponent<Button>();
+
+        if (rotateLeftButton == null || rotateRightButton == null)
+        {
+            Debug.LogError("Les boutons de rotation n'ont pas été trouvés dans la scène !");
+            return;
+        }
+
+        // Ajouter les événements aux boutons
         AddEventTrigger(rotateLeftButton.gameObject, EventTriggerType.PointerDown, _ => StartRotation(-1));
         AddEventTrigger(rotateLeftButton.gameObject, EventTriggerType.PointerUp, _ => StopRotation());
 

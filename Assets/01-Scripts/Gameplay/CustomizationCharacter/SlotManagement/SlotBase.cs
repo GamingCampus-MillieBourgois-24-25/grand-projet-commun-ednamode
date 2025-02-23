@@ -74,5 +74,14 @@ namespace CharacterCustomization
         {
             Graphics.DrawMesh(mesh, new Vector3(0, -.01f, 0), Quaternion.identity, material, previewLayer, camera, submeshIndex);
         }
+
+
+        public virtual bool HasMesh()
+        {
+            return false; 
+        }
+
+
+
     }
 }
