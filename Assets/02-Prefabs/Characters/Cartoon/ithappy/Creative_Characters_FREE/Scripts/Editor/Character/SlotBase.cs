@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CharacterCustomizationTool.Editor.Character
@@ -23,6 +24,10 @@ namespace CharacterCustomizationTool.Editor.Character
         public abstract void Select(int index);
         public abstract bool TryGetVariantsCountInGroup(GroupType groupType, out int count);
         public abstract bool TryPickInGroup(GroupType groupType, int index, bool isEnabled);
+
+        public abstract List<Mesh> GetAvailableMeshes();
+
+        public abstract void SetMesh(Mesh newMesh);
 
         public void Draw(Material material, int previewLayer, Camera camera, int submeshIndex)
         {

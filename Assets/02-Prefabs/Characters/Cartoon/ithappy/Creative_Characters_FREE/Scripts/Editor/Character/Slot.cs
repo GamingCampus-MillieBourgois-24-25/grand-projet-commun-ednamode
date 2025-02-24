@@ -94,5 +94,30 @@ namespace CharacterCustomizationTool.Editor.Character
 
             return variants;
         }
+
+
+        public override void SetMesh(Mesh newMesh)
+        {
+            var existingVariant = _variants.FirstOrDefault(v => v.Mesh == newMesh);
+            if (existingVariant != null)
+            {
+                _selected = existingVariant; // On sélectionne la variante existante
+            }
+            else
+            {
+                _selected = new SlotVariant(newMesh); // Sinon, on crée une nouvelle variante
+                _variants.Add(_selected);
+            }
+        }
+
+
+
+        public override List<Mesh> GetAvailableMeshes()
+        {
+            return _variants.Select(v => v.Mesh).ToList();
+        }
+
+
     }
+
 }

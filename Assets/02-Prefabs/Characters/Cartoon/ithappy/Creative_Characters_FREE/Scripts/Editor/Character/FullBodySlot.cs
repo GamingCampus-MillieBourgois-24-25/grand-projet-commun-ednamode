@@ -69,5 +69,28 @@ namespace CharacterCustomizationTool.Editor.Character
                 DrawMesh(element.Mesh, material, previewLayer, camera, submeshIndex);
             }
         }
+
+
+        public override List<Mesh> GetAvailableMeshes()
+        {
+            return _variants
+                .SelectMany(v => v.Elements.Select(e => e.Mesh))
+                .Distinct()
+                .ToList(); // Convertit IEnumerable en List
+        }
+
+        public override void SetMesh(Mesh mesh)
+        {
+            var foundVariant = _variants.FirstOrDefault(v => v.Elements.Any(e => e.Mesh == mesh));
+            if (foundVariant != null)
+            {
+                _selected = foundVariant;
+            }
+            else
+            {
+                Debug.LogWarning($"Mesh {mesh.name} non trouvé dans FullBodySlot.");
+            }
+        }
+
     }
 }
