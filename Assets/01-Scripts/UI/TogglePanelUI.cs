@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using Unity.Netcode; // Ajout du Netcode
 
-public class TogglePanelUI : MonoBehaviour
+public class TogglePanelUI : NetworkBehaviour
 {
     [Header("Panel Settings")]
     [SerializeField] private CanvasGroup panelCanvasGroup;
@@ -20,9 +21,9 @@ public class TogglePanelUI : MonoBehaviour
     [SerializeField] private Ease animationEase = Ease.OutBack;
 
     [Header("Border Blink Settings")]
-    [SerializeField] private Image borderImage; // L'image du border
-    [SerializeField] private float blinkDuration = 0.5f; // Durée du clignotement
-    [SerializeField] private float blinkAlpha = 0f; // Intensité du clignotement
+    [SerializeField] private Image borderImage;
+    [SerializeField] private float blinkDuration = 0.5f;
+    [SerializeField] private float blinkAlpha = 0f;
 
     private bool isVisible = false;
     private Vector2 originalPosition;
@@ -41,13 +42,41 @@ public class TogglePanelUI : MonoBehaviour
 
         originalPosition = panelRect.anchoredPosition;
 
-        // Cache le panel au début
-        SetPanelState(false, true);
+        // Désactive complètement le panel au démarrage
+        panelCanvasGroup.gameObject.SetActive(false);
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        if (IsClient)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsClient)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+        }
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            Debug.Log("[TogglePanelUI] Connexion détectée. Fermeture du panel.");
+            OnSessionJoined();
+        }
     }
 
     public void TogglePanel()
     {
         isVisible = !isVisible;
+        Debug.Log($"[TogglePanelUI] TogglePanel() appelé. Nouvel état : {isVisible}");
         SetPanelState(isVisible, false);
     }
 
@@ -57,6 +86,13 @@ public class TogglePanelUI : MonoBehaviour
         Vector3 targetScale = show ? visibleScale : hiddenScale;
         Vector2 targetPosition = show ? originalPosition : originalPosition + hiddenPositionOffset;
 
+        Debug.Log($"[TogglePanelUI] Changement d’état du panel : {show}");
+
+        if (show)
+        {
+            panelCanvasGroup.gameObject.SetActive(true);
+        }
+
         if (instant)
         {
             panelCanvasGroup.alpha = targetAlpha;
@@ -65,7 +101,14 @@ public class TogglePanelUI : MonoBehaviour
         }
         else
         {
-            panelCanvasGroup.DOFade(targetAlpha, fadeDuration);
+            panelCanvasGroup.DOFade(targetAlpha, fadeDuration).OnComplete(() =>
+            {
+                if (!show)
+                {
+                    HidePanel();
+                }
+            });
+
             panelRect.DOScale(targetScale, scaleDuration).SetEase(animationEase);
             panelRect.DOAnchorPos(targetPosition, scaleDuration).SetEase(animationEase);
         }
@@ -76,11 +119,26 @@ public class TogglePanelUI : MonoBehaviour
         if (buttonText != null)
             buttonText.text = show ? "HIDE" : "SHOW";
 
-        // Active ou désactive le clignotement du border
         if (!show)
             StartBlinkingBorder();
         else
             StopBlinkingBorder();
+    }
+
+    private void HidePanel()
+    {
+        Debug.Log("[TogglePanelUI] Désactivation complète du panel.");
+        panelCanvasGroup.gameObject.SetActive(false);
+    }
+
+    public void OnSessionJoined()
+    {
+        Debug.Log("[TogglePanelUI] OnSessionJoined() appelé. Masquage du panel.");
+
+        if (isVisible)
+        {
+            SetPanelState(false, false);
+        }
     }
 
     private void StartBlinkingBorder()
@@ -101,7 +159,7 @@ public class TogglePanelUI : MonoBehaviour
             return;
 
         borderTween?.Kill();
-        borderImage.DOFade(1, 0.2f); // Rétablit l'alpha
+        borderImage.DOFade(1, 0.2f);
         borderImage.gameObject.SetActive(false);
     }
 }
