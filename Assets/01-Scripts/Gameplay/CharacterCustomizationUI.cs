@@ -15,7 +15,19 @@ namespace CharacterCustomization
             public ScrollRect scrollView; 
             public Transform content; 
         }
-        public GameObject CharacterInstance { get; private set; }
+        [Header("Equipped Items UI")]
+        public ScrollRect equippedItemsScrollView; // Référence au ScrollView des objets équipés
+        public Transform equippedItemsContent;
+
+        [Header("Action Buttons")]
+        public Button buttonSupprimer; // Référence au bouton "Supprimer"
+        public Button buttonChangeColor;
+        private SlotType _selectedSlotType; // Stocker le slot sélectionné
+
+        [Header("Color Picker")]
+        public ColorPicker colorPicker; // Référence au ColorPicker                   
+
+ 
         public List<SlotUI> slotUIs; 
         public GameObject buttonPrefab; 
         private CharacterCustomization _characterGameObject;
@@ -32,7 +44,9 @@ namespace CharacterCustomization
             Debug.Log($"Personnage instancié : {characterInstance.name}");
 
             PopulateUI();
+            UpdateEquippedItemsUI(); // Mettre à jour l'UI des objets équipés
         }
+
 
         private void PopulateUI()
         {
@@ -100,20 +114,187 @@ namespace CharacterCustomization
                     instance.transform.localScale = Vector3.one; // Réinitialiser l'échelle
                     instance.SetActive(true); // Activer le nouvel objet
 
-                    Debug.Log($"Position des lunettes : {instance.transform.position}");
-                    Debug.Log($"Parent des lunettes : {instance.transform.parent?.name ?? "NULL"}");
-
                     // Stocker la référence du nouvel objet équipé
                     _equippedObjects[slotType] = instance;
+                    Debug.Log($"Objet équipé pour {slotType} : {instance.name}"); // <-- Ajoutez ce log
                 }
 
                 Debug.Log($"Prefab changé pour {slotType} : {prefab.name}");
                 _characterGameObject.RefreshCustomization(); // Force la mise à jour visuelle
+
+                // Mettre à jour l'UI des objets équipés
+                UpdateEquippedItemsUI(); // <-- Assurez-vous que cette ligne est appelée
             }
             else
             {
                 Debug.LogWarning($"Slot {slotType} non trouvé lors du changement de prefab !");
             }
+        }
+
+
+        private void UnequipPrefab(SlotType slotType)
+        {
+            if (_equippedObjects.ContainsKey(slotType))
+            {
+                GameObject equippedObject = _equippedObjects[slotType];
+                if (equippedObject != null)
+                {
+                    Destroy(equippedObject); // Détruire l'objet équipé
+                }
+
+                _equippedObjects.Remove(slotType); // Retirer l'objet du dictionnaire
+
+                // Désactiver le slot dans le personnage
+                var slot = _characterGameObject.Slots.FirstOrDefault(s => s.Type == slotType);
+                if (slot != null)
+                {
+                    slot.Toggle(false);
+                }
+
+                // Mettre à jour l'UI des objets équipés
+                UpdateEquippedItemsUI();
+
+                // Désactiver les boutons d'action
+                buttonSupprimer.gameObject.SetActive(false);
+                buttonChangeColor.gameObject.SetActive(false);
+            }
+        }
+
+        private void OnChangeColor(SlotType slotType)
+        {
+            Debug.Log($"Changer la couleur pour le slot : {slotType}");
+
+            // Vérifier si un objet est équipé pour ce slot
+            if (_equippedObjects.ContainsKey(slotType))
+            {
+                GameObject equippedObject = _equippedObjects[slotType];
+
+                // Récupérer le Renderer ou SkinnedMeshRenderer dans les enfants
+                Renderer renderer = equippedObject.GetComponentInChildren<Renderer>();
+                if (renderer != null)
+                {
+                    // Ouvrir le ColorPicker avec la couleur actuelle du matériau
+                    Color currentColor = renderer.material.color;
+                    ColorPicker.Create(currentColor, "Choisissez une couleur", OnColorChanged, OnColorSelected);
+                }
+                else
+                {
+                    Debug.LogWarning($"Aucun Renderer ou SkinnedMeshRenderer trouvé pour l'objet équipé dans le slot : {slotType}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Aucun objet équipé trouvé pour le slot : {slotType}");
+            }
+        }
+
+        // Méthode appelée lorsque la couleur est modifiée dans le ColorPicker
+        private void OnColorChanged(Color color)
+        {
+            if (_equippedObjects.ContainsKey(_selectedSlotType))
+            {
+                GameObject equippedObject = _equippedObjects[_selectedSlotType];
+                Renderer renderer = equippedObject.GetComponentInChildren<Renderer>();
+                if (renderer != null)
+                {
+                    // Modifier la couleur directement
+                    renderer.material.color = color;
+                }
+            }
+        }
+
+
+        // Méthode appelée lorsque l'utilisateur confirme la sélection de couleur
+        private void OnColorSelected(Color color)
+        {
+            Debug.Log($"Couleur sélectionnée : {color}");
+
+            if (_equippedObjects.ContainsKey(_selectedSlotType))
+            {
+                GameObject equippedObject = _equippedObjects[_selectedSlotType];
+                Renderer renderer = equippedObject.GetComponentInChildren<Renderer>();
+                if (renderer != null)
+                {
+                    // Dupliquer le matériau pour éviter de modifier le matériau partagé
+                    renderer.material = new Material(renderer.material);
+                    renderer.material.color = color; // Appliquer la nouvelle couleur
+                }
+            }
+
+            // Désactiver les boutons d'action après utilisation
+            buttonSupprimer.gameObject.SetActive(false);
+            buttonChangeColor.gameObject.SetActive(false);
+        }
+
+
+        private void UpdateEquippedItemsUI()
+        {
+            // Supprimer tous les enfants existants dans le content
+            foreach (Transform child in equippedItemsContent)
+            {
+                Destroy(child.gameObject);
+            }
+
+            Debug.Log($"Nombre d'objets équipés : {_equippedObjects.Count}");
+
+            // Parcourir tous les objets équipés et les afficher dans le ScrollView
+            foreach (var equippedItem in _equippedObjects)
+            {
+                GameObject buttonObj = Instantiate(buttonPrefab, equippedItemsContent);
+                if (buttonObj != null)
+                {
+                    var textMeshPro = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                    if (textMeshPro != null)
+                    {
+                        textMeshPro.text = equippedItem.Value.name;
+                        Debug.Log($"Bouton créé pour : {equippedItem.Value.name}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("TextMeshProUGUI non trouvé dans le bouton !");
+                    }
+
+                    Button button = buttonObj.GetComponent<Button>();
+                    if (button != null)
+                    {
+                        // Stocker le slotType dans une variable locale pour le capturer dans le listener
+                        SlotType slotType = equippedItem.Key;
+
+                        // Ajouter un listener pour activer les boutons d'action
+                        button.onClick.AddListener(() => OnEquippedItemClicked(slotType));
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Bouton non trouvé dans le prefab !");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Échec de l'instanciation du bouton !");
+                }
+            }
+
+            // Désactiver les boutons d'action par défaut
+            buttonSupprimer.gameObject.SetActive(false);
+            buttonChangeColor.gameObject.SetActive(false);
+        }
+        private void OnEquippedItemClicked(SlotType slotType)
+        {
+            // Stocker le slotType sélectionné
+            _selectedSlotType = slotType;
+
+            // Activer les boutons d'action
+            buttonSupprimer.gameObject.SetActive(true);
+            buttonChangeColor.gameObject.SetActive(true); // <-- Renommez buttonAutreAction en buttonChangeColor
+
+            // Configurer les actions des boutons
+            buttonSupprimer.onClick.RemoveAllListeners();
+            buttonSupprimer.onClick.AddListener(() => UnequipPrefab(_selectedSlotType));
+
+            buttonChangeColor.onClick.RemoveAllListeners(); // <-- Renommez buttonAutreAction en buttonChangeColor
+            buttonChangeColor.onClick.AddListener(() => OnChangeColor(_selectedSlotType)); // <-- Appeler OnChangeColor
+
+            Debug.Log($"Boutons d'action activés pour le slot : {slotType}");
         }
     }
 }
