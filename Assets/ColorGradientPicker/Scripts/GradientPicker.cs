@@ -337,8 +337,8 @@ public class GradientPicker : MonoBehaviour
     //choose color button call
     public void ChooseColor()
     {
-        ColorPicker.Create(colorKeys[selectedColorKey].color, "Gradient Color Key", (c) => UpdateColor(selectedColorKey, c), null);
-    }
+/*        ColorPicker.Create(colorKeys[selectedColorKey].color, "Gradient Color Key", (c) => UpdateColor(selectedColorKey, c), null);
+*/    }
 
     private void UpdateColor(int index, Color c)
     {

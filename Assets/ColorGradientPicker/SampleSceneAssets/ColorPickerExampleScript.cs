@@ -12,8 +12,8 @@ public class ColorPickerExampleScript : MonoBehaviour
     }
     public void ChooseColorButtonClick()
     {
-        ColorPicker.Create(r.sharedMaterial.color, "Choose the cube's color!", SetColor, ColorFinished, true);
-    }
+/*        ColorPicker.Create(r.sharedMaterial.color, "Choose the cube's color!", SetColor, ColorFinished, true);
+*/    }
     private void SetColor(Color currentColor)
     {
         r.sharedMaterial.color = currentColor;

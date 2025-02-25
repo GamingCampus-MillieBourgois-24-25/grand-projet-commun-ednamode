@@ -15,6 +15,9 @@ public class ColorPicker : MonoBehaviour
     /// </returns>
     public static bool done = true;
 
+    private static Texture originalBaseMap;  // Stocker la texture initiale
+    private static Renderer currentRenderer; // Stocker le renderer actuel
+
     //onColorChanged event
     private static ColorEvent onCC;
     //onColorSelected event
@@ -31,6 +34,7 @@ public class ColorPicker : MonoBehaviour
 
     private bool interact;
 
+
     // these can only work with the prefab and its children
     public RectTransform positionIndicator;
     public Slider mainComponent;
@@ -45,7 +49,10 @@ public class ColorPicker : MonoBehaviour
     {
         instance = this;
         gameObject.SetActive(false);
+        originalColor = Color.white; // Initialiser en blanc
+        modifiedColor = Color.white;
     }
+
 
 
     /// <summary>
@@ -59,24 +66,36 @@ public class ColorPicker : MonoBehaviour
     /// <returns>
     /// False if the instance is already running
     /// </returns>
-    public static bool Create(Color original, string message, ColorEvent onColorChanged, ColorEvent onColorSelected, bool useAlpha = false)
-    {   
-        if(instance is null)
+    public static bool Create(Color? original = null, string message = "", Renderer renderer = null, ColorEvent onColorChanged = null, ColorEvent onColorSelected = null, bool useAlpha = false)
+    {
+        if (instance is null)
         {
             Debug.LogError("No Colorpicker prefab active on 'Start' in scene");
             return false;
         }
-        if(done)
+        if (done)
         {
             done = false;
-            originalColor = original;
-            modifiedColor = original;
+
+            originalColor = original ?? Color.white; // Défaut à blanc
+            modifiedColor = originalColor;
             onCC = onColorChanged;
             onCS = onColorSelected;
+
+            Debug.Log($"onColorSelected assigned? {onCS != null}");
+
             useA = useAlpha;
             instance.gameObject.SetActive(true);
             instance.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = message;
             instance.aComponent.gameObject.SetActive(useAlpha);
+
+            currentRenderer = renderer;
+            if (renderer != null)
+            {
+                originalBaseMap = currentRenderer.material.GetTexture("_BaseMap");
+                currentRenderer.material.SetTexture("_BaseMap", null); // Retirer la texture actuelle
+            }
+
             instance.RecalculateMenu(true);
             instance.hexaComponent.placeholder.GetComponent<Text>().text = "RRGGBB" + (useAlpha ? "AA" : "");
             return true;
@@ -87,6 +106,8 @@ public class ColorPicker : MonoBehaviour
             return false;
         }
     }
+
+
 
     //called when color is modified, to update other UI components
     private void RecalculateMenu(bool recalculateHSV)
@@ -100,6 +121,7 @@ public class ColorPicker : MonoBehaviour
         {
             modifiedColor = modifiedHsv.ToColor();
         }
+
         rComponent.value = modifiedColor.r;
         rComponent.transform.GetChild(3).GetComponent<InputField>().text = modifiedColor.r.ToString();
         gComponent.value = modifiedColor.g;
@@ -111,6 +133,7 @@ public class ColorPicker : MonoBehaviour
             aComponent.value = modifiedColor.a;
             aComponent.transform.GetChild(3).GetComponent<InputField>().text = modifiedColor.a.ToString();
         }
+
         mainComponent.value = (float)modifiedHsv.H;
         rComponent.transform.GetChild(0).GetComponent<RawImage>().color = new Color32(255, modifiedColor.g, modifiedColor.b, 255);
         rComponent.transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = new Color32(0, modifiedColor.g, modifiedColor.b, 255);
@@ -123,8 +146,10 @@ public class ColorPicker : MonoBehaviour
         positionIndicator.anchorMin = new Vector2((float)modifiedHsv.S, (float)modifiedHsv.V);
         positionIndicator.anchorMax = positionIndicator.anchorMin;
         hexaComponent.text = useA ? ColorUtility.ToHtmlStringRGBA(modifiedColor) : ColorUtility.ToHtmlStringRGB(modifiedColor);
+        
         colorComponent.color = modifiedColor;
         onCC?.Invoke(modifiedColor);
+
         interact = true;
     }
 
@@ -141,6 +166,7 @@ public class ColorPicker : MonoBehaviour
             modifiedHsv.V = localpoint.y;
             RecalculateMenu(false);
         }
+
     }
 
     //gets main Slider value
@@ -253,13 +279,22 @@ public class ColorPicker : MonoBehaviour
     public static void Cancel()
     {
         modifiedColor = originalColor;
+
+        // Restaurer la texture originale
+        if (currentRenderer != null)
+        {
+            currentRenderer.material.SetTexture("_BaseMap", originalBaseMap);
+        }
+
         Done();
     }
     //done button call
     public void CDone()
     {
+        Debug.Log("Done button pressed");
         Done();
     }
+
     /// <summary>
     /// Manually close the ColorPicker and apply the selected color
     /// </summary>
@@ -267,9 +302,11 @@ public class ColorPicker : MonoBehaviour
     {
         done = true;
         onCC?.Invoke(modifiedColor);
-        onCS?.Invoke(modifiedColor);
+
+
         instance.transform.gameObject.SetActive(false);
     }
+
     //HSV helper class
     private sealed class HSV
     {

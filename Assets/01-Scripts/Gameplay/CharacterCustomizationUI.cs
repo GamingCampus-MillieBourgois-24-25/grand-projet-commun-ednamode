@@ -173,9 +173,10 @@ namespace CharacterCustomization
                 Renderer renderer = equippedObject.GetComponentInChildren<Renderer>();
                 if (renderer != null)
                 {
+                    renderer.material.SetTexture("_BaseMap", null);
                     // Ouvrir le ColorPicker avec la couleur actuelle du matériau
                     Color currentColor = renderer.material.color;
-                    ColorPicker.Create(currentColor, "Choisissez une couleur", OnColorChanged, OnColorSelected);
+                    ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
                 }
                 else
                 {
