@@ -86,7 +86,6 @@ public class ColorPicker : MonoBehaviour
 
             useA = useAlpha;
             instance.gameObject.SetActive(true);
-            instance.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = message;
             instance.aComponent.gameObject.SetActive(useAlpha);
 
             currentRenderer = renderer;
@@ -122,12 +121,6 @@ public class ColorPicker : MonoBehaviour
             modifiedColor = modifiedHsv.ToColor();
         }
 
-        rComponent.value = modifiedColor.r;
-        rComponent.transform.GetChild(3).GetComponent<InputField>().text = modifiedColor.r.ToString();
-        gComponent.value = modifiedColor.g;
-        gComponent.transform.GetChild(3).GetComponent<InputField>().text = modifiedColor.g.ToString();
-        bComponent.value = modifiedColor.b;
-        bComponent.transform.GetChild(3).GetComponent<InputField>().text = modifiedColor.b.ToString();
         if (useA)
         {
             aComponent.value = modifiedColor.a;
@@ -135,16 +128,7 @@ public class ColorPicker : MonoBehaviour
         }
 
         mainComponent.value = (float)modifiedHsv.H;
-        rComponent.transform.GetChild(0).GetComponent<RawImage>().color = new Color32(255, modifiedColor.g, modifiedColor.b, 255);
-        rComponent.transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = new Color32(0, modifiedColor.g, modifiedColor.b, 255);
-        gComponent.transform.GetChild(0).GetComponent<RawImage>().color = new Color32(modifiedColor.r, 255, modifiedColor.b, 255);
-        gComponent.transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = new Color32(modifiedColor.r, 0, modifiedColor.b, 255);
-        bComponent.transform.GetChild(0).GetComponent<RawImage>().color = new Color32(modifiedColor.r, modifiedColor.g, 255, 255);
-        bComponent.transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = new Color32(modifiedColor.r, modifiedColor.g, 0, 255);
         if (useA) aComponent.transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = new Color32(modifiedColor.r, modifiedColor.g, modifiedColor.b, 255);
-        positionIndicator.parent.GetChild(0).GetComponent<RawImage>().color = new HSV(modifiedHsv.H, 1d, 1d).ToColor();
-        positionIndicator.anchorMin = new Vector2((float)modifiedHsv.S, (float)modifiedHsv.V);
-        positionIndicator.anchorMax = positionIndicator.anchorMin;
         hexaComponent.text = useA ? ColorUtility.ToHtmlStringRGBA(modifiedColor) : ColorUtility.ToHtmlStringRGB(modifiedColor);
         
         colorComponent.color = modifiedColor;
