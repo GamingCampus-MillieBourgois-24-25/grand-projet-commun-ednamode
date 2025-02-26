@@ -5,11 +5,12 @@ namespace CharacterCustomization
 {
     public abstract class SlotBase
     {
+
         public abstract string Name { get; }
-        public abstract GameObject Preview { get; } // Prévisualisation du prefab
+        public abstract GameObject Preview { get; } 
         public abstract int SelectedIndex { get; }
         public abstract int VariantsCount { get; }
-        public abstract (SlotType, GameObject)[] Prefabs { get; } // Utilisez des prefabs au lieu de meshes
+        public abstract (SlotType, GameObject)[] Prefabs { get; } 
 
         public SlotType Type { get; }
         public bool IsEnabled { get; private set; } = true;
@@ -25,8 +26,9 @@ namespace CharacterCustomization
         public abstract bool TryGetVariantsCountInGroup(GroupType groupType, out int count);
         public abstract bool TryPickInGroup(GroupType groupType, int index, bool isEnabled);
 
-        public abstract List<GameObject> GetAvailablePrefabs(); // Retourne une liste de prefabs
-        public abstract void SetPrefab(GameObject newPrefab); // Applique un prefab
+        public abstract List<GameObject> GetAvailablePrefabs(); 
+        public abstract void SetPrefab(GameObject newPrefab); 
+
 
         public void Draw(Material material, int previewLayer, Camera camera, int submeshIndex)
         {
@@ -83,20 +85,18 @@ namespace CharacterCustomization
                 renderer.material = material;
             }
 
-            // Configurer le layer et la caméra pour la prévisualisation
             previewObject.layer = previewLayer;
             foreach (var renderer in renderers)
             {
                 renderer.gameObject.layer = previewLayer;
             }
 
-            // Détruire l'objet après la prévisualisation (si nécessaire)
-            Object.Destroy(previewObject, 0.1f); // Ajustez le délai selon vos besoins
+            Object.Destroy(previewObject, 0.1f); 
         }
 
         public virtual bool HasPrefab()
         {
-            return false; // À implémenter dans les classes dérivées
+            return false; 
         }
     }
 }

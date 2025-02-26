@@ -70,7 +70,6 @@ public class ColorPicker : MonoBehaviour
     {
         if (instance is null)
         {
-            Debug.LogError("No Colorpicker prefab active on 'Start' in scene");
             return false;
         }
         if (done)
@@ -82,7 +81,6 @@ public class ColorPicker : MonoBehaviour
             onCC = onColorChanged;
             onCS = onColorSelected;
 
-            Debug.Log($"onColorSelected assigned? {onCS != null}");
 
             useA = useAlpha;
             instance.gameObject.SetActive(true);
@@ -275,7 +273,6 @@ public class ColorPicker : MonoBehaviour
     //done button call
     public void CDone()
     {
-        Debug.Log("Done button pressed");
         Done();
     }
 
