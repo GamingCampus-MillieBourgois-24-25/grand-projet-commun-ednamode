@@ -7,13 +7,13 @@ public class ButtonScrollViewManager : MonoBehaviour
     [System.Serializable]
     public class ButtonScrollViewPair
     {
-        public Button button; // Le bouton qui active/désactive le ScrollView
-        public ScrollRect scrollView; // Le ScrollView associé à ce bouton
+        public Button button; 
+        public ScrollRect scrollView; 
     }
 
-    public ScrollRect mainScrollView; // Référence au ScrollView principal
-    public List<ButtonScrollViewPair> buttonScrollViewPairs; // Liste des boutons et ScrollView associés
-    public Button backButton; // Référence au bouton "Retour"
+    public ScrollRect mainScrollView; 
+    public List<ButtonScrollViewPair> buttonScrollViewPairs;
+    public Button backButton; 
 
     private void Start()
     {
@@ -33,10 +33,6 @@ public class ButtonScrollViewManager : MonoBehaviour
             {
                 pair.button.onClick.AddListener(() => OnButtonClicked(pair));
             }
-            else
-            {
-                Debug.LogWarning($"Bouton non assigné pour le ScrollView : {pair.scrollView?.name ?? "NULL"}");
-            }
         }
 
         // Assigner l'événement au bouton "Retour"
@@ -44,10 +40,6 @@ public class ButtonScrollViewManager : MonoBehaviour
         {
             backButton.onClick.AddListener(OnBackButtonClicked);
             backButton.gameObject.SetActive(false); // Désactiver le bouton "Retour" au démarrage
-        }
-        else
-        {
-            Debug.LogWarning("Bouton 'Retour' non assigné !");
         }
     }
 
@@ -72,11 +64,6 @@ public class ButtonScrollViewManager : MonoBehaviour
         if (clickedPair.scrollView != null)
         {
             clickedPair.scrollView.gameObject.SetActive(true);
-            Debug.Log($"ScrollView activé pour le bouton : {clickedPair.button.name}");
-        }
-        else
-        {
-            Debug.LogWarning($"Aucun ScrollView associé au bouton : {clickedPair.button.name}");
         }
 
         // Activer le bouton "Retour"
