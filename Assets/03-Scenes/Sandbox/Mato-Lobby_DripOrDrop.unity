@@ -8457,10 +8457,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 243725640}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &962965236
 MonoBehaviour:
@@ -8482,17 +8482,21 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 'DRIP
+
+    or
+
+    DROP'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3aa4e356c464fb14fa77f492323f9bc9, type: 2}
+  m_sharedMaterial: {fileID: -736431789846266551, guid: 3aa4e356c464fb14fa77f492323f9bc9, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4280098077
+  m_fontColor: {r: 0.11320752, g: 0.11320752, b: 0.11320752, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -8509,15 +8513,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 300
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_fontSizeMax: 300
+  m_fontStyle: 32
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 4096
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -11828,6 +11832,8 @@ GameObject:
   - component: {fileID: 1202633273}
   - component: {fileID: 1202633277}
   - component: {fileID: 1202633276}
+  - component: {fileID: 1202633279}
+  - component: {fileID: 1202633278}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -11936,6 +11942,43 @@ MonoBehaviour:
   chatPanel: {fileID: 260759252}
   fadeDuration: 0.3
   animationEase: 27
+--- !u!114 &1202633278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202633272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e13ea670305699c4caea3f1961f2d105, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textMeshPro: {fileID: 962965236}
+  letterFadeDuration: 0.3
+  letterScaleFactor: 1.2
+  letterMoveDistance: 10
+  letterAppearDelay: 0.05
+  amplitude: 20
+  frequency: 2
+  speed: 1
+--- !u!114 &1202633279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202633272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be86cc2e8910e24e9bc70a7b694175f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rectPanel: {fileID: 243725640}
+  gameobjectPanel: {fileID: 243725639}
+  slideDuration: 0.5
+  bounceHeight: 150
+  bounceDelay: 0.8
 --- !u!1 &1207795406
 GameObject:
   m_ObjectHideFlags: 0
