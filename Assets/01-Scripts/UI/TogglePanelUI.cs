@@ -44,6 +44,9 @@ public class TogglePanelUI : NetworkBehaviour
 
         // Désactive complètement le panel au démarrage
         panelCanvasGroup.gameObject.SetActive(false);
+
+        // Démarrer le clignotement dès le début
+        StartBlinkingBorder();
     }
 
     public override void OnNetworkSpawn()
@@ -144,6 +147,9 @@ public class TogglePanelUI : NetworkBehaviour
     private void StartBlinkingBorder()
     {
         if (borderImage == null)
+            return;
+
+        if (borderTween != null && borderTween.IsActive()) // Empêche le démarrage de plusieurs animations
             return;
 
         borderImage.gameObject.SetActive(true);
