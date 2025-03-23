@@ -1,9 +1,8 @@
 using UnityEngine;
-using Unity.Netcode; // Pour Netcode for GameObjects
-using TMPro; // Pour TextMeshPro
+using Unity.Netcode;
+using TMPro;
 using System.Collections.Generic;
 
-// Structure personnalisée pour encapsuler le thème et le rendre sérialisable
 public struct ThemeData : INetworkSerializable
 {
     public string theme;
@@ -16,84 +15,135 @@ public struct ThemeData : INetworkSerializable
 
 public class ThemeSelector : NetworkBehaviour
 {
-    // Liste des thèmes possibles
     private List<string> themes = new List<string>()
     {
-        "Soirée Chic",
-        "Streetwear",
-        "Années 80",
-        "Plage",
-        "Futuriste",
-        "Steampunk",
-        "Gothique",
-        "Kawaii",
-        "Sport",
-        "Haute Couture"
+        "Soirée Chic", "Streetwear", "Années 80", "Plage", "Futuriste",
+        "Steampunk", "Gothique", "Kawaii", "Sport", "Haute Couture"
     };
 
-    // NetworkVariable avec notre type personnalisé
+    private NetworkVariable<int> randomSeed = new NetworkVariable<int>(
+        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
+    );
     private NetworkVariable<ThemeData> currentTheme = new NetworkVariable<ThemeData>(
         new ThemeData { theme = "" },
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
 
-    [SerializeField] private TMP_Text themeText; // Référence au texte UI
-    private bool themeRequested = false; // Pour éviter les doublons
+    [SerializeField] private TMP_Text themeText;
 
-    // Appelé quand l'objet est spawn en réseau
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        Debug.Log("OnNetworkSpawn appelé - IsServer: " + IsServer + ", IsClient: " + IsClient);
+        Debug.Log($"OnNetworkSpawn appelé - IsServer: {IsServer}, IsClient: {IsClient}, NetworkObjectId: {NetworkObjectId}, ThemeText assigné: {(themeText != null)}");
 
-        // Si c'est un client et le thème n'a pas encore été demandé, demander au serveur
-        if (IsClient && !themeRequested)
+        if (NetworkManager.Singleton == null)
         {
-            RequestThemeServerRpc();
-            themeRequested = true;
+            Debug.LogError("NetworkManager.Singleton est null dans OnNetworkSpawn !");
+            return;
         }
 
-        // Écouter les changements de thème
+        // Si c'est le serveur, générer une graine
+        if (IsServer)
+        {
+            if (randomSeed.Value == 0)
+            {
+                int seed = (int)(System.DateTime.Now.Ticks % int.MaxValue);
+                randomSeed.Value = seed;
+                Debug.Log($"Serveur - Graine générée : {seed}");
+                GenerateThemeFromSeed();
+            }
+            else
+            {
+                Debug.Log($"Serveur - Graine déjà définie : {randomSeed.Value}");
+                GenerateThemeFromSeed();
+            }
+        }
+
+        // Écouter les changements
+        randomSeed.OnValueChanged += OnSeedChanged;
         currentTheme.OnValueChanged += UpdateThemeUI;
 
-        // Mettre à jour l'UI immédiatement avec la valeur actuelle
-        UpdateThemeUI(new ThemeData(), currentTheme.Value);
+        // Pour les clients
+        if (!IsServer)
+        {
+            Debug.Log($"Client - Vérification initiale de la graine : {randomSeed.Value}, currentTheme : {currentTheme.Value.theme}");
+            if (randomSeed.Value != 0 || !string.IsNullOrEmpty(currentTheme.Value.theme))
+            {
+                GenerateThemeFromSeed();
+            }
+            else
+            {
+                Invoke(nameof(TryGenerateThemeAfterDelay), 2f);
+            }
+        }
     }
 
-    // Appelé quand l'objet est despawn
     public override void OnNetworkDespawn()
     {
+        randomSeed.OnValueChanged -= OnSeedChanged;
         currentTheme.OnValueChanged -= UpdateThemeUI;
         base.OnNetworkDespawn();
     }
 
-    // ServerRpc : Un client demande au serveur de définir le thème
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestThemeServerRpc()
+    private void OnSeedChanged(int oldSeed, int newSeed)
     {
-        if (string.IsNullOrEmpty(currentTheme.Value.theme)) // S'assurer qu'un thème n'est pas déjà défini
+        Debug.Log($"Changement de graine détecté - Ancienne : {oldSeed}, Nouvelle : {newSeed}");
+        if (newSeed != 0)
         {
-            Random.InitState((int)(Time.time * 1000));
-            ThemeData newTheme = new ThemeData { theme = themes[Random.Range(0, themes.Count)] };
-            currentTheme.Value = newTheme;
-            Debug.Log("Serveur - Thème choisi via ServerRpc : " + newTheme.theme);
-            SyncThemeClientRpc(newTheme); // Propager à tous les clients
+            GenerateThemeFromSeed();
         }
     }
 
-    // ClientRpc : Propager le thème à tous les clients
-    [ClientRpc]
-    private void SyncThemeClientRpc(ThemeData theme)
+    private void TryGenerateThemeAfterDelay()
     {
-        currentTheme.Value = theme; // Mettre à jour la NetworkVariable pour cohérence
-        UpdateThemeUI(new ThemeData(), theme);
-        Debug.Log("Client - Thème synchronisé via ClientRpc : " + theme.theme);
+        Debug.Log($"Client - Tentative de génération après délai - Graine actuelle : {randomSeed.Value}, currentTheme : {currentTheme.Value.theme}");
+        if (randomSeed.Value != 0 || !string.IsNullOrEmpty(currentTheme.Value.theme))
+        {
+            GenerateThemeFromSeed();
+        }
+        else
+        {
+            Debug.Log("Client - Graine et thème toujours non définis, génération d'un thème temporaire...");
+            Random.InitState((int)(System.DateTime.Now.Ticks % int.MaxValue));
+            string tempTheme = themes[Random.Range(0, themes.Count)];
+            UpdateThemeUI(new ThemeData(), new ThemeData { theme = tempTheme + " (temporaire)" });
+        }
     }
 
-    // Met à jour l'affichage dans l'UI
+    private void GenerateThemeFromSeed()
+    {
+        if (randomSeed.Value == 0 && string.IsNullOrEmpty(currentTheme.Value.theme))
+        {
+            Debug.Log("Graine et thème non encore définis, en attente...");
+            return;
+        }
+
+        string initialTheme;
+        if (randomSeed.Value != 0)
+        {
+            Random.InitState(randomSeed.Value);
+            initialTheme = themes[Random.Range(0, themes.Count)];
+            Debug.Log($"Thème initial généré localement avec graine {randomSeed.Value} : {initialTheme}");
+        }
+        else
+        {
+            initialTheme = currentTheme.Value.theme;
+            Debug.Log($"Thème récupéré de currentTheme : {initialTheme}");
+        }
+
+        UpdateThemeUI(new ThemeData(), new ThemeData { theme = initialTheme });
+
+        if (IsServer && string.IsNullOrEmpty(currentTheme.Value.theme))
+        {
+            currentTheme.Value = new ThemeData { theme = initialTheme };
+            Debug.Log($"Serveur - currentTheme défini : {currentTheme.Value.theme}");
+        }
+    }
+
     private void UpdateThemeUI(ThemeData oldValue, ThemeData newValue)
     {
+        Debug.Log($"UpdateThemeUI appelé - Ancien thème : {oldValue.theme}, Nouveau thème : {newValue.theme}");
         if (themeText != null)
         {
             if (string.IsNullOrEmpty(newValue.theme))
@@ -104,33 +154,27 @@ public class ThemeSelector : NetworkBehaviour
             else
             {
                 themeText.text = "Thème : " + newValue.theme;
-                Debug.Log("UI mise à jour - Thème affiché : " + newValue.theme);
+                Debug.Log($"UI mise à jour - Thème affiché : {newValue.theme}");
             }
         }
         else
         {
-            Debug.LogWarning("ThemeText n'est pas assigné dans l'inspecteur !");
+            Debug.LogError("ThemeText n'est pas assigné dans l'inspecteur !");
         }
     }
 
-    // Méthode publique pour obtenir le thème actuel
     public string GetCurrentTheme()
     {
         return currentTheme.Value.theme;
     }
 
-    // Pour tester un nouveau thème avec une touche (optionnel)
     void Update()
     {
-        if (IsClient && Input.GetKeyDown(KeyCode.Space))
+        if (IsServer && Input.GetKeyDown(KeyCode.Space))
         {
-            RequestThemeServerRpc();
+            int newSeed = (int)(System.DateTime.Now.Ticks % int.MaxValue);
+            randomSeed.Value = newSeed;
+            Debug.Log($"Serveur - Nouvelle graine générée (via Space) : {newSeed}");
         }
-    }
-
-    // Méthode pour forcer la sélection d'un thème (optionnel)
-    public void ForceSelectTheme()
-    {
-        RequestThemeServerRpc();
     }
 }
