@@ -1,5 +1,4 @@
 using System;
-using UnityEditor;
 using UnityEngine;
 
 namespace CharacterCustomization
@@ -7,7 +6,6 @@ namespace CharacterCustomization
     public class MaterialOnDemand
     {
         private readonly string[] _paths;
-
         private Material _value;
 
         public Material Value => _value ? _value : LoadMaterial();
@@ -21,17 +19,22 @@ namespace CharacterCustomization
         {
             foreach (var path in _paths)
             {
-                var loadedMaterial = AssetDatabase.LoadAssetAtPath<Material>(path);
-
+                Debug.Log($"Tentative de chargement du matériau à : {path}");
+                string cleanPath = path.EndsWith(".mat") ? path.Substring(0, path.Length - 4) : path;
+                var loadedMaterial = Resources.Load<Material>(cleanPath);
                 if (loadedMaterial != null)
                 {
-                    throw new Exception("MaterialOnDemand: aucun matériau défini !");
-
+                    _value = loadedMaterial;
+                    Debug.Log($"Matériau chargé : {loadedMaterial.name}");
+                    return _value;
                 }
-                return loadedMaterial;
+                else
+                {
+                    Debug.LogWarning($"Échec du chargement du matériau à : {cleanPath}");
+                }
             }
 
-            throw new Exception();
+            throw new Exception("MaterialOnDemand: aucun matériau défini !");
         }
     }
 }

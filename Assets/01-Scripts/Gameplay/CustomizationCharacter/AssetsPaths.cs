@@ -17,12 +17,7 @@ namespace CharacterCustomization
 
         public static class BaseMesh
         {
-            public static readonly string[] Keywords =
-            {
-                "Base",
-                "Basic"
-            };
-
+            public static readonly string[] Keywords = { "Base", "Basic" };
             public static string Path => _root + "Meshes/";
         }
 

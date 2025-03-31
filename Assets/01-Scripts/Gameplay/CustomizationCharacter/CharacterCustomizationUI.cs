@@ -47,7 +47,12 @@ namespace CharacterCustomization
             UpdateEquippedItemsUI();
         }
 
-        private void PopulateUI()
+        public void PopulateUI()
+        {
+            ApplyTagFilter(new List<string>()); // Affiche tous les prefabs par défaut
+        }
+
+        public void ApplyTagFilter(List<string> selectedTags)
         {
             foreach (var slotUI in slotUIs)
             {
@@ -59,41 +64,44 @@ namespace CharacterCustomization
                     Destroy(child.gameObject);
                 }
 
-                foreach (var prefab in slot.GetAvailablePrefabs())
+                var prefabs = slot.GetAvailablePrefabs();
+                foreach (var prefab in prefabs)
                 {
-                    GameObject buttonObj = Instantiate(buttonPrefab, slotUI.content);
-                    var buttonImage = buttonObj.transform.Find("Icon")?.GetComponent<Image>(); // Ou "Sprite"
-                    var textMesh = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-
-                    if (textMesh != null)
+                    ItemsSprite itemSprite = prefab.GetComponent<ItemsSprite>();
+                    if (itemSprite == null || itemSprite.Tags == null)
                     {
-                        textMesh.gameObject.SetActive(false);
+                        continue; // Ignore les prefabs sans ItemsSprite ou tags
                     }
 
-                    if (buttonImage != null)
+                    // Si aucun tag n’est sélectionné, afficher tous les prefabs
+                    // Sinon, afficher uniquement ceux qui ont au moins un tag correspondant
+                    if (selectedTags.Count == 0 || selectedTags.Any(tag => itemSprite.Tags.Contains(tag)))
                     {
-                        ItemsSprite itemSprite = prefab.GetComponent<ItemsSprite>();
-                        if (itemSprite == null)
+                        GameObject buttonObj = Instantiate(buttonPrefab, slotUI.content);
+                        var buttonImage = buttonObj.transform.Find("Icon")?.GetComponent<Image>();
+                        var textMesh = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+
+                        if (textMesh != null)
                         {
-                            Debug.LogWarning($"Prefab {prefab.name} n’a pas de composant ItemsSprite !");
+                            textMesh.gameObject.SetActive(false);
                         }
-                        else if (itemSprite.ItemSprite == null)
-                        {
-                            Debug.LogWarning($"Prefab {prefab.name} a un composant ItemsSprite mais aucun sprite assigné !");
-                        }
-                        Sprite sprite = itemSprite != null ? itemSprite.ItemSprite : defaultSprite;
-                        Debug.Log($"Button {buttonObj.name} for prefab {prefab.name}: ItemSprite = {(itemSprite != null ? itemSprite.ItemSprite?.name : "null")}, Assigned Sprite = {sprite?.name}");
-                        buttonImage.sprite = sprite;
-                        buttonImage.preserveAspect = true;
-                        buttonImage.color = Color.white;
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Button {buttonObj.name} n’a pas d’enfant nommé 'Icon' avec un composant Image !");
-                    }
 
-                    Button button = buttonObj.GetComponent<Button>();
-                    button.onClick.AddListener(() => EquipPrefab(slotUI.slotType, prefab));
+                        if (buttonImage != null)
+                        {
+                            Sprite sprite = itemSprite.ItemSprite != null ? itemSprite.ItemSprite : defaultSprite;
+                            Debug.Log($"Filtered Button {buttonObj.name} for prefab {prefab.name}: ItemSprite = {sprite?.name}");
+                            buttonImage.sprite = sprite;
+                            buttonImage.preserveAspect = true;
+                            buttonImage.color = Color.white;
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Button {buttonObj.name} n’a pas d’enfant nommé 'Icon' avec un composant Image !");
+                        }
+
+                        Button button = buttonObj.GetComponent<Button>();
+                        button.onClick.AddListener(() => EquipPrefab(slotUI.slotType, prefab));
+                    }
                 }
             }
         }
@@ -124,7 +132,7 @@ namespace CharacterCustomization
                     instance.transform.localRotation = Quaternion.identity;
                     instance.transform.localScale = Vector3.one;
                     instance.SetActive(true);
-                    _equippedObjects[slotType] = (prefab, instance); // Stocke le prefab original et l’instance
+                    _equippedObjects[slotType] = (prefab, instance);
                     Debug.Log($"Equipped {slotType} with prefab {prefab.name}");
                 }
                 else
@@ -216,7 +224,7 @@ namespace CharacterCustomization
                 GameObject buttonObj = Instantiate(buttonPrefab, equippedItemsContent);
                 if (buttonObj != null)
                 {
-                    var buttonImage = buttonObj.transform.Find("Icon")?.GetComponent<Image>(); // Ou "Sprite" selon votre prefab
+                    var buttonImage = buttonObj.transform.Find("Icon")?.GetComponent<Image>();
                     var textMesh = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
 
                     if (textMesh != null)
@@ -226,7 +234,7 @@ namespace CharacterCustomization
 
                     if (buttonImage != null)
                     {
-                        GameObject originalPrefab = equippedItem.Value.prefab; // Récupère directement le prefab original
+                        GameObject originalPrefab = equippedItem.Value.prefab;
                         ItemsSprite itemSprite = originalPrefab.GetComponent<ItemsSprite>();
                         if (itemSprite == null)
                         {
