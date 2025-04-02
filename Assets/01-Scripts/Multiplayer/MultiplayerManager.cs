@@ -155,7 +155,17 @@ public class MultiplayerManager : MonoBehaviour
 
         try
         {
-            CurrentLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(code);
+            var playerName = "Joueur_" + UnityEngine.Random.Range(1000, 9999);
+
+            var joinOptions = new JoinLobbyByCodeOptions
+            {
+                Player = new Player(id: AuthenticationService.Instance.PlayerId, data: new Dictionary<string, PlayerDataObject>
+                {
+                    { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) }
+                })
+            };
+
+            CurrentLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(code, joinOptions);
             if (CurrentLobby == null)
             {
                 Debug.LogError("JoinLobbyByCodeAsync a retourné null.");
