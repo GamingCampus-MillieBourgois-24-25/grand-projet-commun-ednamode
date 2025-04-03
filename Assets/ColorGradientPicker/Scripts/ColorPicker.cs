@@ -35,15 +35,13 @@ public class ColorPicker : MonoBehaviour
     private bool interact;
 
 
+
     // these can only work with the prefab and its children
     public RectTransform positionIndicator;
     public Slider mainComponent;
-    public Slider rComponent;
-    public Slider gComponent;
-    public Slider bComponent;
-    public Slider aComponent;
-    public InputField hexaComponent;
     public RawImage colorComponent;
+
+    public RawImage chosenColor;
 
     private void Awake()
     {
@@ -84,7 +82,6 @@ public class ColorPicker : MonoBehaviour
 
             useA = useAlpha;
             instance.gameObject.SetActive(true);
-            instance.aComponent.gameObject.SetActive(useAlpha);
 
             currentRenderer = renderer;
             if (renderer != null)
@@ -94,7 +91,6 @@ public class ColorPicker : MonoBehaviour
             }
 
             instance.RecalculateMenu(true);
-            instance.hexaComponent.placeholder.GetComponent<Text>().text = "RRGGBB" + (useAlpha ? "AA" : "");
             return true;
         }
         else
@@ -110,7 +106,7 @@ public class ColorPicker : MonoBehaviour
     private void RecalculateMenu(bool recalculateHSV)
     {
         interact = false;
-        if(recalculateHSV)
+        if (recalculateHSV)
         {
             modifiedHsv = new HSV(modifiedColor);
         }
@@ -119,21 +115,29 @@ public class ColorPicker : MonoBehaviour
             modifiedColor = modifiedHsv.ToColor();
         }
 
-        if (useA)
-        {
-            aComponent.value = modifiedColor.a;
-            aComponent.transform.GetChild(3).GetComponent<InputField>().text = modifiedColor.a.ToString();
-        }
-
         mainComponent.value = (float)modifiedHsv.H;
-        if (useA) aComponent.transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = new Color32(modifiedColor.r, modifiedColor.g, modifiedColor.b, 255);
-        hexaComponent.text = useA ? ColorUtility.ToHtmlStringRGBA(modifiedColor) : ColorUtility.ToHtmlStringRGB(modifiedColor);
-        
-        colorComponent.color = modifiedColor;
+        colorComponent.color = modifiedColor; // Preview final
+        UpdateChosenColor(); // Mise à jour de ChosenColor
         onCC?.Invoke(modifiedColor);
 
         interact = true;
     }
+
+
+    private void UpdateChosenColor()
+    {
+        if (chosenColor != null)
+        {
+            // Crée une couleur HSV avec H = teinte du slider, S = 1, V = 1
+            HSV baseHsv = new HSV(modifiedHsv.H, 1.0, 1.0);
+            chosenColor.color = baseHsv.ToColor();
+        }
+        else
+        {
+            Debug.LogError("chosenColor n'est pas assigné dans ColorPicker !");
+        }
+    }
+
 
     //used by EventTrigger to calculate the chosen value in color box
     public void SetChooser()
@@ -148,108 +152,19 @@ public class ColorPicker : MonoBehaviour
             modifiedHsv.V = localpoint.y;
             RecalculateMenu(false);
         }
-
     }
 
-    //gets main Slider value
+    // Méthode appelée quand le slider change
     public void SetMain(float value)
     {
         if (interact)
         {
             modifiedHsv.H = value;
             RecalculateMenu(false);
+            UpdateChosenColor(); // Mise à jour de ChosenColor
         }
     }
 
-    //gets r Slider value
-    public void SetR(float value)
-    {
-        if (interact)
-        {
-            modifiedColor.r = (byte)value;
-            RecalculateMenu(true);
-        }
-    }
-    //gets r InputField value
-    public void SetR(string value)
-    {
-        if(interact)
-        {
-            modifiedColor.r = (byte)Mathf.Clamp(int.Parse(value), 0, 255);
-            RecalculateMenu(true);
-        }
-    }
-    //gets g Slider value
-    public void SetG(float value)
-    {
-        if(interact)
-        {
-            modifiedColor.g = (byte)value;
-            RecalculateMenu(true);
-        }
-    }
-    //gets g InputField value
-    public void SetG(string value)
-    {
-        if (interact)
-        {
-            modifiedColor.g = (byte)Mathf.Clamp(int.Parse(value), 0, 255);
-            RecalculateMenu(true);
-        }
-    }
-    //gets b Slider value
-    public void SetB(float value)
-    {
-        if (interact)
-        {
-            modifiedColor.b = (byte)value;
-            RecalculateMenu(true);
-        }
-    }
-    //gets b InputField value
-    public void SetB(string value)
-    {
-        if (interact)
-        {
-            modifiedColor.b = (byte)Mathf.Clamp(int.Parse(value), 0, 255);
-            RecalculateMenu(true);
-        }
-    }
-    //gets a Slider value
-    public void SetA(float value)
-    {
-        if (interact)
-        {
-            modifiedHsv.A = (byte)value;
-            RecalculateMenu(false);
-        }
-    }
-    //gets a InputField value
-    public void SetA(string value)
-    {
-        if (interact)
-        {
-            modifiedHsv.A = (byte)Mathf.Clamp(int.Parse(value), 0, 255);
-            RecalculateMenu(false);
-        }
-    }
-    //gets hexa InputField value
-    public void SetHexa(string value)
-    {
-        if (interact)
-        {
-            if (ColorUtility.TryParseHtmlString("#" + value, out Color c))
-            {
-                if (!useA) c.a = 1;
-                modifiedColor = c;
-                RecalculateMenu(true);
-            }
-            else
-            {
-                hexaComponent.text = useA ? ColorUtility.ToHtmlStringRGBA(modifiedColor) : ColorUtility.ToHtmlStringRGB(modifiedColor);
-            }
-        }
-    }
     //cancel button call
     public void CCancel()
     {
