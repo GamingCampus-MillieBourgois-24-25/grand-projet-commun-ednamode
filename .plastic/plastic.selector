@@ -1,0 +1,4 @@
+repository "DripOrDrop@Onnen@cloud"
+  path "/"
+    br "/main"
+    co "/main"
