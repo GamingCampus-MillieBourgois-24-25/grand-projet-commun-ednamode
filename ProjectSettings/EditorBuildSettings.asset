@@ -26,7 +26,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/03-Scenes/Authentification/FirebaseLogin.unity
     guid: 07020c8fc917ce448bfb264687aa7ede
+  - enabled: 1
+    path: Assets/03-Scenes/Authentification/GameSceneExample.unity
+    guid: 63da3480631d4784d9f4cc73b920c1b8
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 84b22ac815dc1f34b857c3d73e369e80, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 04b203ae0c150614fa491c3a30b24b05, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

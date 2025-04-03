@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1064458188877",
+    "firebase_url": "https://drip-or-drop-default-rtdb.firebaseio.com",
     "project_id": "drip-or-drop",
     "storage_bucket": "drip-or-drop.firebasestorage.app"
   },
