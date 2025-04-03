@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Mono.Cecil.Cil;
+using Type = NotificationData.NotificationType;
 
 /// <summary>
 /// MULTIPLAYER UI – Connecte les boutons à MultiplayerManager
@@ -69,7 +71,7 @@ public class MultiplayerUI : MonoBehaviour
     {
         string lobbyName = string.IsNullOrEmpty(inputLobbyName.text) ? "FashionSession" : inputLobbyName.text;
         MultiplayerManager.Instance.CreateLobby(lobbyName);
-        ShowFeedback("Création du lobby...");
+        NotificationManager.Instance.ShowNotification("Create Lobby...", Type.Normal);
     }
 
     private void OnJoinClicked()
@@ -77,24 +79,24 @@ public class MultiplayerUI : MonoBehaviour
         string code = inputJoinCode.text.Trim();
         if (string.IsNullOrEmpty(code))
         {
-            ShowFeedback("Veuillez entrer un code valide.");
+            NotificationManager.Instance.ShowNotification("Invalid Code", Type.Important);
             return;
         }
 
         MultiplayerManager.Instance.JoinLobbyByCode(code);
-        ShowFeedback("Tentative de rejoindre : " + code);
+        NotificationManager.Instance.ShowNotification("Joining : " + code, Type.Normal);
     }
 
     private void OnQuickJoinClicked()
     {
         MultiplayerManager.Instance.QuickJoin();
-        ShowFeedback("Recherche de lobby disponible...");
+        NotificationManager.Instance.ShowNotification("Search Lobby...", Type.Normal);
     }
 
     private void OnLeaveClicked()
     {
         MultiplayerManager.Instance.LeaveLobby();
-        ShowFeedback("Déconnexion...");
+        NotificationManager.Instance.ShowNotification("Disconnect...", Type.Normal);
     }
 
     /// <summary>
