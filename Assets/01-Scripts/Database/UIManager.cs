@@ -8,6 +8,10 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance;
 
     [SerializeField]
+    private FirebaseAuthManager firebaseAuthManager;
+
+
+    [SerializeField]
     private GameObject loginPanel;
 
     [SerializeField]
@@ -17,16 +21,23 @@ public class UIManager : MonoBehaviour
     private GameObject emailVerifPanel;
     public Text EmailVerifText;
 
+    [SerializeField]
+    private GameObject EnterGamePanel;
+
+    [SerializeField]
+    private GameObject SignedInPanel;
+
     private void Awake()
     {
         CreateInstance();
+     
 
+        if (firebaseAuthManager == null)
+        {
+            Debug.LogError("FirebaseAuthManager n'a pas été trouvé dans la scène.");
+        }
     }
 
-    private void Start()
-    {
-        OpenLoginPanel();
-    }
 
     private void CreateInstance()
     {
@@ -36,11 +47,20 @@ public class UIManager : MonoBehaviour
         }
     }
 
+
+    public void OpenGame()
+    {
+        OpenLoginPanel();
+        firebaseAuthManager.StartGameLoginProcess();
+    }
+
     public void ClearUI()
     {
         loginPanel.SetActive(false);
         registrationPanel.SetActive(false);
         emailVerifPanel.SetActive(false);
+        EnterGamePanel.SetActive(false);
+        SignedInPanel.SetActive(false);
     }
 
     public void OpenLoginPanel()
@@ -71,5 +91,11 @@ public class UIManager : MonoBehaviour
                 "Couldn't sent email";
         }
 
+    }
+
+    public void OpenSignedInPanel()
+    {
+        ClearUI();
+        SignedInPanel.SetActive(true);
     }
 }

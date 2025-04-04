@@ -28,10 +28,11 @@ public class FirebaseAuthManager : MonoBehaviour
     public InputField confirmPasswordRegisterField;
 
 
-    private void Start()
+    public void StartGameLoginProcess()
     {
         StartCoroutine(CheckAndFixDependenciesAsync());
     }
+
     private IEnumerator CheckAndFixDependenciesAsync()
     {
         var dependencyTask = FirebaseApp.CheckAndFixDependenciesAsync();
@@ -45,6 +46,7 @@ public class FirebaseAuthManager : MonoBehaviour
             InitializeFirebase();
             yield return new WaitForEndOfFrame();
             StartCoroutine(CheckForAutoLogin());
+
         }
         else
         {
@@ -60,6 +62,7 @@ public class FirebaseAuthManager : MonoBehaviour
         auth.StateChanged += AuthStateChanged;
         AuthStateChanged(this, null);
     }
+
 
     private IEnumerator CheckForAutoLogin()
     {
@@ -86,7 +89,7 @@ public class FirebaseAuthManager : MonoBehaviour
             {
                 Debug.Log("Auto Login Success");
                 References.userName = user.DisplayName;
-                UnityEngine.SceneManagement.SceneManager.LoadScene("GameSceneExample");
+                UIManager.Instance.OpenSignedInPanel();
             }
             else
             {
@@ -109,6 +112,8 @@ public class FirebaseAuthManager : MonoBehaviour
             if (!signedIn && user != null)
             {
                 Debug.Log("Signed out " + user.UserId);
+                UIManager.Instance.OpenLoginPanel();
+                ClearLoginFieldInputText();
             }
 
             user = auth.CurrentUser;
@@ -117,6 +122,21 @@ public class FirebaseAuthManager : MonoBehaviour
             {
                 Debug.Log("Signed in " + user.UserId);
             }
+        }
+    }
+
+    private void ClearLoginFieldInputText()
+    {
+        emailLoginField.text = "";
+        passwordLoginField.text = "";
+    }
+
+    public void Logout()
+    {
+        if (user != null && auth != null)
+        {
+            auth.SignOut();
+
         }
     }
 
@@ -170,7 +190,7 @@ public class FirebaseAuthManager : MonoBehaviour
             if (user.IsEmailVerified)
             {
                 References.userName = user.DisplayName;
-                UnityEngine.SceneManagement.SceneManager.LoadScene("GameSceneExample");
+                UIManager.Instance.OpenSignedInPanel();
             }
             else
             {
@@ -335,4 +355,12 @@ public class FirebaseAuthManager : MonoBehaviour
         }
     }
 
+    public void OpenGameScene()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GameSceneExample");
+    }
+
 }
+
+
+    

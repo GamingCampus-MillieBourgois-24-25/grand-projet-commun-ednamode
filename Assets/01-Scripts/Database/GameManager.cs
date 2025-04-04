@@ -16,4 +16,11 @@ public class GameManager : MonoBehaviour
     {
         messageText.text = string.Format("Welcome, {0} In our game scene", References.userName);
     }
+
+    public void BackToLogin()
+    {
+        // Load the main menu scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene("FirebaseLogin");
+    }
+
 }
