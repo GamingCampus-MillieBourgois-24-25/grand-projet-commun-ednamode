@@ -23,19 +23,19 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/03-Scenes/Sandbox/Mato-Lobby_DripOrDrop.unity
     guid: b27077153d6761d47abb035f59cdbad7
-  - enabled: 1
+  - enabled: 0
     path: Assets/03-Scenes/Sandbox/Mato-Lobby_DripOrDrop 1.unity
     guid: 98956ec3c2cd2154fb29b22916797e0b
-  - enabled: 1
+  - enabled: 0
     path: Assets/03-Scenes/Sandbox/Mato-Lobby_DripOrDrop 2.unity
     guid: 5e9e3d39f4b6d4340b132021bd2c59b2
   - enabled: 0
     path: Assets/03-Scenes/Sandbox/Lucie_BasicGameplay.unity
     guid: ba1da8e515c3fda4fa36690fb49e1fe5
-
+  - enabled: 1
+    path: Assets/03-Scenes/Sandbox/Lucie_BasicGameplay Horizontal.unity
+    guid: abd1482e2598155438ef636d05962fb1
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 217b9a160693b5c4780e0e854ab4e27c, type: 2}
-    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 0948e78a5ee48474788809ed23970033, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 04b203ae0c150614fa491c3a30b24b05, type: 2}
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
