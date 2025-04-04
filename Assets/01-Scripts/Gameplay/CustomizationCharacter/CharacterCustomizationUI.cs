@@ -24,12 +24,15 @@ namespace CharacterCustomization
         public Button buttonEdit;
         public Button buttonDelete;
         public Button buttonCustomize;
+        public Button buttonChangeColor;
 
         [Header("Color Picker")]
         public ColorPicker colorPicker;
 
         [Header("Configuration des slots et des éléments UI")]
         public List<SlotUI> slotUIs;
+        public GameObject prefabsPanel;
+        public GameObject tagsPanel;
         public GameObject buttonPrefab;
         public Sprite defaultSprite;
 
@@ -51,11 +54,9 @@ namespace CharacterCustomization
             buttonEdit.gameObject.SetActive(false);
             buttonDelete.gameObject.SetActive(false);
             buttonCustomize.gameObject.SetActive(false);
+            buttonChangeColor.gameObject.SetActive(false);
 
             PopulateUI();
-
-            // Plus d’équipement par défaut ici
-            // Les vêtements ne seront équipés que via l’UI (slotUIs)
         }
 
         void Update()
@@ -69,7 +70,7 @@ namespace CharacterCustomization
                     HandleTouch(touch.position);
                 }
             }
-            else if (Input.GetMouseButtonDown(0)) // Test dans l’éditeur
+            else if (Input.GetMouseButtonDown(0))
             {
                 Debug.Log($"Clic souris détecté à la position : {Input.mousePosition}");
                 HandleTouch(Input.mousePosition);
@@ -93,6 +94,7 @@ namespace CharacterCustomization
                     Debug.Log($"Slot sélectionné : {_selectedSlotType}, Instance : {_selectedInstance.name}");
                     ZoomToObject(_selectedInstance);
                     ShowActionButtons();
+                    DisableUIPanels();
                 }
                 else
                 {
@@ -110,7 +112,7 @@ namespace CharacterCustomization
             Renderer renderer = target.GetComponentInChildren<Renderer>();
             Vector3 targetCenter = renderer != null ? renderer.bounds.center : target.transform.position;
             Vector3 direction = (targetCenter - mainCamera.transform.position).normalized;
-            Vector3 zoomPosition = targetCenter - direction * 1.5f;
+            Vector3 zoomPosition = targetCenter - direction * 0.5f;
             mainCamera.transform.position = zoomPosition;
             mainCamera.transform.LookAt(targetCenter);
             Debug.Log($"Zoom sur {target.name}, Centre : {targetCenter}");
@@ -123,6 +125,8 @@ namespace CharacterCustomization
             buttonEdit.gameObject.SetActive(false);
             buttonDelete.gameObject.SetActive(false);
             buttonCustomize.gameObject.SetActive(false);
+            buttonChangeColor.gameObject.SetActive(false);
+            EnableUIPanels();
             _selectedInstance = null;
         }
 
@@ -130,16 +134,49 @@ namespace CharacterCustomization
         {
             buttonEdit.gameObject.SetActive(true);
             buttonDelete.gameObject.SetActive(true);
-            buttonCustomize.gameObject.SetActive(true);
+            buttonCustomize.gameObject.SetActive(false);
+            buttonChangeColor.gameObject.SetActive(false);
 
             buttonEdit.onClick.RemoveAllListeners();
             buttonEdit.onClick.AddListener(() => OnEditClicked());
 
             buttonDelete.onClick.RemoveAllListeners();
             buttonDelete.onClick.AddListener(() => OnDeleteClicked());
+        }
+
+        private void ShowEditOptions()
+        {
+            buttonEdit.gameObject.SetActive(false);
+            buttonDelete.gameObject.SetActive(false);
+            buttonCustomize.gameObject.SetActive(true);
+            buttonChangeColor.gameObject.SetActive(true);
 
             buttonCustomize.onClick.RemoveAllListeners();
             buttonCustomize.onClick.AddListener(() => OnCustomizeClicked());
+
+            buttonChangeColor.onClick.RemoveAllListeners();
+            buttonChangeColor.onClick.AddListener(() => OnChangeColorClicked());
+            Debug.Log("Événement Change Color assigné");
+        }
+
+        private void DisableUIPanels()
+        {
+            foreach (var slotUI in slotUIs)
+            {
+                if (slotUI.scrollView != null) slotUI.scrollView.gameObject.SetActive(false);
+            }
+            if (prefabsPanel != null) prefabsPanel.SetActive(false);
+            if (tagsPanel != null) tagsPanel.SetActive(false);
+        }
+
+        private void EnableUIPanels()
+        {
+            foreach (var slotUI in slotUIs)
+            {
+                if (slotUI.scrollView != null) slotUI.scrollView.gameObject.SetActive(true);
+            }
+            if (prefabsPanel != null) prefabsPanel.SetActive(true);
+            if (tagsPanel != null) tagsPanel.SetActive(true);
         }
 
         public void PopulateUI()
@@ -242,12 +279,7 @@ namespace CharacterCustomization
         {
             if (_selectedInstance != null)
             {
-                Renderer renderer = _selectedInstance.GetComponentInChildren<Renderer>();
-                if (renderer != null)
-                {
-                    Color currentColor = renderer.material.color;
-                    ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
-                }
+                ShowEditOptions();
             }
         }
 
@@ -260,6 +292,31 @@ namespace CharacterCustomization
         private void OnCustomizeClicked()
         {
             Debug.Log("Personnalisation à implémenter plus tard !");
+        }
+
+        private void OnChangeColorClicked()
+        {
+            Debug.Log("Bouton Change Color cliqué");
+            if (_selectedInstance != null)
+            {
+                Debug.Log($"Instance sélectionnée : {_selectedInstance.name}");
+                Renderer renderer = _selectedInstance.GetComponentInChildren<Renderer>();
+                if (renderer != null)
+                {
+                    Debug.Log($"Renderer trouvé : {renderer.name}, Couleur actuelle : {renderer.material.color}");
+                    Color currentColor = renderer.material.color;
+                    ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
+                    Debug.Log("ColorPicker.Create appelé");
+                }
+                else
+                {
+                    Debug.LogWarning("Aucun Renderer trouvé sur l’instance sélectionnée.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Aucune instance sélectionnée (_selectedInstance est null).");
+            }
         }
 
         private void OnColorChanged(Color color)
