@@ -36,11 +36,19 @@ namespace CharacterCustomization
         public GameObject buttonPrefab;
         public Sprite defaultSprite;
 
+        [Header("Peinture")]
+        public Texture2D brushCursor;
+        public int brushSize = 10;
+        public Color brushColor = Color.black;
+
         private CharacterCustomization _characterCustomization;
         private SlotType _selectedSlotType;
         private GameObject _selectedInstance;
         private Vector3 _originalCameraPosition;
         private Quaternion _originalCameraRotation;
+        private bool _isPaintingMode = false;
+        private Texture2D _paintTexture;
+        private SkinnedMeshRenderer _selectedRenderer; // Changé en SkinnedMeshRenderer
 
         private Dictionary<SlotType, (GameObject prefab, GameObject instance)> _equippedObjects = new();
 
@@ -61,19 +69,30 @@ namespace CharacterCustomization
 
         void Update()
         {
-            if (Input.touchCount > 0)
+            Debug.Log($"Mode peinture actif : {_isPaintingMode}");
+            if (_isPaintingMode)
             {
-                Touch touch = Input.GetTouch(0);
-                Debug.Log($"Touch détecté à la position : {touch.position}");
-                if (touch.phase == TouchPhase.Began)
+                if (Input.GetMouseButton(0))
                 {
-                    HandleTouch(touch.position);
+                    PaintOnClothing();
                 }
             }
-            else if (Input.GetMouseButtonDown(0))
+            else
             {
-                Debug.Log($"Clic souris détecté à la position : {Input.mousePosition}");
-                HandleTouch(Input.mousePosition);
+                if (Input.touchCount > 0)
+                {
+                    Touch touch = Input.GetTouch(0);
+                    Debug.Log($"Touch détecté à la position : {touch.position}");
+                    if (touch.phase == TouchPhase.Began)
+                    {
+                        HandleTouch(touch.position);
+                    }
+                }
+                else if (Input.GetMouseButtonDown(0))
+                {
+                    Debug.Log($"Clic souris détecté à la position : {Input.mousePosition}");
+                    HandleTouch(Input.mousePosition);
+                }
             }
         }
 
@@ -109,10 +128,10 @@ namespace CharacterCustomization
 
         private void ZoomToObject(GameObject target)
         {
-            Renderer renderer = target.GetComponentInChildren<Renderer>();
+            SkinnedMeshRenderer renderer = target.GetComponentInChildren<SkinnedMeshRenderer>();
             Vector3 targetCenter = renderer != null ? renderer.bounds.center : target.transform.position;
             Vector3 direction = (targetCenter - mainCamera.transform.position).normalized;
-            Vector3 zoomPosition = targetCenter - direction * 0.5f;
+            Vector3 zoomPosition = targetCenter - direction * 1f;
             mainCamera.transform.position = zoomPosition;
             mainCamera.transform.LookAt(targetCenter);
             Debug.Log($"Zoom sur {target.name}, Centre : {targetCenter}");
@@ -120,6 +139,7 @@ namespace CharacterCustomization
 
         private void ResetCamera()
         {
+            Debug.Log("ResetCamera appelé");
             mainCamera.transform.position = _originalCameraPosition;
             mainCamera.transform.rotation = _originalCameraRotation;
             buttonEdit.gameObject.SetActive(false);
@@ -128,6 +148,10 @@ namespace CharacterCustomization
             buttonChangeColor.gameObject.SetActive(false);
             EnableUIPanels();
             _selectedInstance = null;
+            _isPaintingMode = false;
+            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            _paintTexture = null;
+            _selectedRenderer = null;
         }
 
         private void ShowActionButtons()
@@ -233,7 +257,10 @@ namespace CharacterCustomization
                 if (_equippedObjects.ContainsKey(slotType))
                 {
                     GameObject previousObject = _equippedObjects[slotType].instance;
-                    if (previousObject != null) Destroy(previousObject);
+                    if (previousObject != null)
+                    {
+                        Destroy(previousObject);
+                    }
                 }
 
                 slot.SetPrefab(prefab);
@@ -249,7 +276,7 @@ namespace CharacterCustomization
                     instance.transform.localScale = Vector3.one;
                     instance.SetActive(true);
                     _equippedObjects[slotType] = (prefab, instance);
-                    Debug.Log($"Équipé : {slotType} avec instance {instance.name}, Total équipés : {_equippedObjects.Count}");
+                    Debug.Log($"Equipped {slotType} with prefab {prefab.name}");
                 }
                 else
                 {
@@ -291,7 +318,30 @@ namespace CharacterCustomization
 
         private void OnCustomizeClicked()
         {
-            Debug.Log("Personnalisation à implémenter plus tard !");
+            if (_selectedInstance != null)
+            {
+                Debug.Log("Mode peinture activé !");
+                _isPaintingMode = true;
+
+                Cursor.SetCursor(brushCursor, new Vector2(brushSize / 2, brushSize / 2), CursorMode.Auto);
+
+                _selectedRenderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (_selectedRenderer != null)
+                {
+                    _paintTexture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+                    _paintTexture.Clear(Color.white);
+                    // Utiliser le matériau existant et assigner la nouvelle texture
+                    Material currentMaterial = _selectedRenderer.material;
+                    currentMaterial.SetTexture("_MainTex", _paintTexture); // "_MainTex" est standard pour la plupart des shaders
+                    Debug.Log($"Texture assignée à _MainTex : {_paintTexture}, Matériau : {currentMaterial.name}, Shader : {currentMaterial.shader.name}");
+                }
+                else
+                {
+                    Debug.LogWarning("Aucun SkinnedMeshRenderer trouvé sur l’instance sélectionnée pour la peinture.");
+                    _isPaintingMode = false;
+                    Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                }
+            }
         }
 
         private void OnChangeColorClicked()
@@ -300,17 +350,22 @@ namespace CharacterCustomization
             if (_selectedInstance != null)
             {
                 Debug.Log($"Instance sélectionnée : {_selectedInstance.name}");
-                Renderer renderer = _selectedInstance.GetComponentInChildren<Renderer>();
+                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
                     Debug.Log($"Renderer trouvé : {renderer.name}, Couleur actuelle : {renderer.material.color}");
+                    if (colorPicker == null)
+                    {
+                        Debug.LogError("ColorPicker n’est pas assigné dans l’inspecteur !");
+                        return;
+                    }
                     Color currentColor = renderer.material.color;
                     ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
                     Debug.Log("ColorPicker.Create appelé");
                 }
                 else
                 {
-                    Debug.LogWarning("Aucun Renderer trouvé sur l’instance sélectionnée.");
+                    Debug.LogWarning("Aucun SkinnedMeshRenderer trouvé sur l’instance sélectionnée.");
                 }
             }
             else
@@ -323,7 +378,7 @@ namespace CharacterCustomization
         {
             if (_selectedInstance != null)
             {
-                Renderer renderer = _selectedInstance.GetComponentInChildren<Renderer>();
+                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null) renderer.material.color = color;
             }
         }
@@ -332,7 +387,7 @@ namespace CharacterCustomization
         {
             if (_selectedInstance != null)
             {
-                Renderer renderer = _selectedInstance.GetComponentInChildren<Renderer>();
+                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
                     renderer.material = new Material(renderer.material);
@@ -342,6 +397,40 @@ namespace CharacterCustomization
             ResetCamera();
         }
 
+        private void PaintOnClothing()
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Debug.Log($"Raycast touché : {hit.collider.gameObject.name}, Position : {hit.point}");
+                if (hit.collider.gameObject == _selectedInstance)
+                {
+                    Vector2 uv = hit.textureCoord;
+                    Debug.Log($"Peinture à UV : {uv}, Renderer : {_selectedRenderer.name}");
+
+                    int x = (int)(uv.x * _paintTexture.width);
+                    int y = (int)(uv.y * _paintTexture.height);
+                    Debug.Log($"Coordonnées texture : ({x}, {y})");
+                    float radius = brushSize / 2f;
+
+                    for (int i = -50; i < 50; i++)
+                    {
+                        for (int j = -50; j < 50; j++)
+                        {
+                            int px = x + i;
+                            int py = y + j;
+                            if (px >= 0 && px < _paintTexture.width && py >= 0 && py < _paintTexture.height)
+                            {
+                                _paintTexture.SetPixel(px, py, brushColor);
+                            }
+                        }
+                    }
+                    _paintTexture.Apply();
+                    Debug.Log("Texture mise à jour");
+                }
+            }
+        }
+
         private SlotType? GetSlotTypeFromInstance(GameObject instance)
         {
             foreach (var equipped in _equippedObjects)
@@ -349,6 +438,17 @@ namespace CharacterCustomization
                 if (equipped.Value.instance == instance) return equipped.Key;
             }
             return null;
+        }
+    }
+
+    public static class Texture2DExtensions
+    {
+        public static void Clear(this Texture2D texture, Color color)
+        {
+            Color[] pixels = new Color[texture.width * texture.height];
+            for (int i = 0; i < pixels.Length; i++) pixels[i] = color;
+            texture.SetPixels(pixels);
+            texture.Apply();
         }
     }
 }
