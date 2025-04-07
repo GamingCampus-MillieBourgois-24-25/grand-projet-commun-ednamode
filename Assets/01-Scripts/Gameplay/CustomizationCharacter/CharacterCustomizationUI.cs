@@ -34,8 +34,7 @@ namespace CharacterCustomization
         public Button buttonCustomize; // Bouton pour personnaliser la texture
         public Button buttonChangeColor; // Bouton pour changer la couleur
         public Button buttonBackFromTexture; // Bouton pour revenir au mode Customize/Change Color
-        public Button buttonBackFromEdit; // Bouton pour revenir au mode Edit/Delete
-        public Button buttonBackFromInitial; // Bouton pour revenir à l’état initial depuis Edit/Delete
+        public Button buttonBackFromEdit; // Bouton pour revenir au mode Edit/Delete depuis Customize/Change Color
 
         [Header("Color Picker")]
         public ColorPicker colorPicker; // Composant pour sélectionner les couleurs
@@ -75,7 +74,6 @@ namespace CharacterCustomization
             buttonChangeColor.gameObject.SetActive(false);
             buttonBackFromTexture.gameObject.SetActive(false);
             buttonBackFromEdit.gameObject.SetActive(false);
-            buttonBackFromInitial.gameObject.SetActive(false);
 
             PopulateUI();
             InitializeTexturePanel();
@@ -132,7 +130,6 @@ namespace CharacterCustomization
             buttonChangeColor.gameObject.SetActive(false);
             buttonBackFromTexture.gameObject.SetActive(false);
             buttonBackFromEdit.gameObject.SetActive(false);
-            buttonBackFromInitial.gameObject.SetActive(false);
             EnableUIPanels();
             if (texturePanel != null) texturePanel.SetActive(false);
             _selectedInstance = null;
@@ -146,16 +143,12 @@ namespace CharacterCustomization
             buttonChangeColor.gameObject.SetActive(false);
             buttonBackFromTexture.gameObject.SetActive(false);
             buttonBackFromEdit.gameObject.SetActive(false);
-            buttonBackFromInitial.gameObject.SetActive(true);
 
             buttonEdit.onClick.RemoveAllListeners();
             buttonEdit.onClick.AddListener(() => OnEditClicked());
 
             buttonDelete.onClick.RemoveAllListeners();
             buttonDelete.onClick.AddListener(() => OnDeleteClicked());
-
-            buttonBackFromInitial.onClick.RemoveAllListeners();
-            buttonBackFromInitial.onClick.AddListener(() => OnBackFromInitialClicked());
         }
 
         private void ShowEditOptions()
@@ -166,7 +159,6 @@ namespace CharacterCustomization
             buttonChangeColor.gameObject.SetActive(true);
             buttonBackFromTexture.gameObject.SetActive(false);
             buttonBackFromEdit.gameObject.SetActive(true);
-            buttonBackFromInitial.gameObject.SetActive(false);
 
             buttonCustomize.onClick.RemoveAllListeners();
             buttonCustomize.onClick.AddListener(() => OnCustomizeClicked());
@@ -272,7 +264,10 @@ namespace CharacterCustomization
                     instance.SetActive(true);
                     _equippedObjects[slotType] = (prefab, instance);
                 }
-             
+                else
+                {
+                    Debug.LogWarning($"slot.Preview est null pour {slotType} avec prefab {prefab.name} !");
+                }
 
                 _characterCustomization.RefreshCustomization();
             }
@@ -318,12 +313,14 @@ namespace CharacterCustomization
                     buttonChangeColor.gameObject.SetActive(false);
                     buttonBackFromTexture.gameObject.SetActive(true);
                     buttonBackFromEdit.gameObject.SetActive(false);
-                    buttonBackFromInitial.gameObject.SetActive(false);
 
                     buttonBackFromTexture.onClick.RemoveAllListeners();
                     buttonBackFromTexture.onClick.AddListener(() => OnBackFromTextureClicked());
                 }
-               
+                else
+                {
+                    Debug.LogError("TexturePanel n’est pas assigné dans l’inspecteur !");
+                }
             }
         }
 
@@ -336,6 +333,7 @@ namespace CharacterCustomization
                 {
                     if (colorPicker == null)
                     {
+                        Debug.LogError("ColorPicker n’est pas assigné dans l’inspecteur !");
                         return;
                     }
                     Color currentColor = renderer.material.color;
@@ -353,11 +351,6 @@ namespace CharacterCustomization
         private void OnBackFromEditClicked()
         {
             ShowActionButtons(); // Revenir au mode Edit/Delete
-        }
-
-        private void OnBackFromInitialClicked()
-        {
-            ResetCamera(); // Revenir à l’état initial avec les ScrollView
         }
 
         private void OnColorChanged(Color color)
@@ -387,6 +380,7 @@ namespace CharacterCustomization
         {
             if (textureButtonContainer == null || textureButtonPrefab == null)
             {
+                Debug.LogError("textureButtonContainer ou textureButtonPrefab n’est pas assigné dans l’inspecteur !");
                 return;
             }
 
@@ -410,7 +404,10 @@ namespace CharacterCustomization
                     buttonImage.sprite = textureOption.preview;
                     buttonImage.preserveAspect = true;
                 }
-             
+                else
+                {
+                    Debug.LogWarning($"Image ou preview manquant pour la texture : {textureOption.name}");
+                }
 
                 if (button != null)
                 {
@@ -419,7 +416,10 @@ namespace CharacterCustomization
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => ApplyTexture(index));
                 }
-            
+                else
+                {
+                    Debug.LogWarning($"Aucun composant Button trouvé sur le clone pour la texture : {textureOption.name}");
+                }
             }
 
             if (texturePanel != null) texturePanel.SetActive(false);
@@ -437,12 +437,24 @@ namespace CharacterCustomization
                         Texture2D newTexture = availableTextures[textureIndex].texture;
                         Material material = new Material(renderer.material);
                         renderer.material = material;
-                      
-                    
+                        if (!material.HasProperty("_BaseMap"))
+                        {
+                            Debug.LogWarning("Le shader n’a pas de propriété _BaseMap ! Vérifiez le shader utilisé.");
+                        }
+                        else
+                        {
+                            material.SetTexture("_BaseMap", newTexture);
+                        }
                     }
-               
+                    else
+                    {
+                        Debug.LogWarning("Index de texture invalide !");
+                    }
                 }
-              
+                else
+                {
+                    Debug.LogWarning("Aucun SkinnedMeshRenderer trouvé sur l’instance sélectionnée.");
+                }
             }
         }
 
