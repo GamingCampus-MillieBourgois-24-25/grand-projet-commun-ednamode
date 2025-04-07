@@ -33,6 +33,9 @@ namespace CharacterCustomization
         public Button buttonDelete; // Bouton pour supprimer un slot
         public Button buttonCustomize; // Bouton pour personnaliser la texture
         public Button buttonChangeColor; // Bouton pour changer la couleur
+        public Button buttonBackFromTexture; // Bouton pour revenir au mode Customize/Change Color
+        public Button buttonBackFromEdit; // Bouton pour revenir au mode Edit/Delete
+        public Button buttonBackFromInitial; // Bouton pour revenir à l’état initial depuis Edit/Delete
 
         [Header("Color Picker")]
         public ColorPicker colorPicker; // Composant pour sélectionner les couleurs
@@ -70,12 +73,14 @@ namespace CharacterCustomization
             buttonDelete.gameObject.SetActive(false);
             buttonCustomize.gameObject.SetActive(false);
             buttonChangeColor.gameObject.SetActive(false);
+            buttonBackFromTexture.gameObject.SetActive(false);
+            buttonBackFromEdit.gameObject.SetActive(false);
+            buttonBackFromInitial.gameObject.SetActive(false);
 
-            PopulateUI(); 
-            InitializeTexturePanel(); 
+            PopulateUI();
+            InitializeTexturePanel();
         }
 
-        // Gestion des entrées tactiles
         void Update()
         {
             if (Input.touchCount > 0)
@@ -88,7 +93,6 @@ namespace CharacterCustomization
             }
         }
 
-        // Détection et sélection d’un objet touché
         private void HandleTouch(Vector2 touchPosition)
         {
             Ray ray = mainCamera.ScreenPointToRay(touchPosition);
@@ -101,14 +105,13 @@ namespace CharacterCustomization
                 {
                     _selectedSlotType = clickedSlotType.Value;
                     _selectedInstance = hitObject;
-                    ZoomToObject(_selectedInstance); 
-                    ShowActionButtons(); 
+                    ZoomToObject(_selectedInstance);
+                    ShowActionButtons();
                     DisableUIPanels();
                 }
             }
         }
 
-        // Zoom sur l’objet sélectionné
         private void ZoomToObject(GameObject target)
         {
             SkinnedMeshRenderer renderer = target.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -119,7 +122,6 @@ namespace CharacterCustomization
             mainCamera.transform.LookAt(targetCenter);
         }
 
-        // Réinitialisation de la caméra et de l’UI
         private void ResetCamera()
         {
             mainCamera.transform.position = _originalCameraPosition;
@@ -128,42 +130,54 @@ namespace CharacterCustomization
             buttonDelete.gameObject.SetActive(false);
             buttonCustomize.gameObject.SetActive(false);
             buttonChangeColor.gameObject.SetActive(false);
-            EnableUIPanels(); 
-            if (texturePanel != null) texturePanel.SetActive(false); 
+            buttonBackFromTexture.gameObject.SetActive(false);
+            buttonBackFromEdit.gameObject.SetActive(false);
+            buttonBackFromInitial.gameObject.SetActive(false);
+            EnableUIPanels();
+            if (texturePanel != null) texturePanel.SetActive(false);
             _selectedInstance = null;
         }
 
-        // Affichage des boutons "Edit" et "Delete"
         private void ShowActionButtons()
         {
             buttonEdit.gameObject.SetActive(true);
             buttonDelete.gameObject.SetActive(true);
             buttonCustomize.gameObject.SetActive(false);
             buttonChangeColor.gameObject.SetActive(false);
+            buttonBackFromTexture.gameObject.SetActive(false);
+            buttonBackFromEdit.gameObject.SetActive(false);
+            buttonBackFromInitial.gameObject.SetActive(true);
 
             buttonEdit.onClick.RemoveAllListeners();
             buttonEdit.onClick.AddListener(() => OnEditClicked());
 
             buttonDelete.onClick.RemoveAllListeners();
             buttonDelete.onClick.AddListener(() => OnDeleteClicked());
+
+            buttonBackFromInitial.onClick.RemoveAllListeners();
+            buttonBackFromInitial.onClick.AddListener(() => OnBackFromInitialClicked());
         }
 
-        // Affichage des options d’édition 
         private void ShowEditOptions()
         {
             buttonEdit.gameObject.SetActive(false);
             buttonDelete.gameObject.SetActive(false);
             buttonCustomize.gameObject.SetActive(true);
             buttonChangeColor.gameObject.SetActive(true);
+            buttonBackFromTexture.gameObject.SetActive(false);
+            buttonBackFromEdit.gameObject.SetActive(true);
+            buttonBackFromInitial.gameObject.SetActive(false);
 
             buttonCustomize.onClick.RemoveAllListeners();
             buttonCustomize.onClick.AddListener(() => OnCustomizeClicked());
 
             buttonChangeColor.onClick.RemoveAllListeners();
             buttonChangeColor.onClick.AddListener(() => OnChangeColorClicked());
+
+            buttonBackFromEdit.onClick.RemoveAllListeners();
+            buttonBackFromEdit.onClick.AddListener(() => OnBackFromEditClicked());
         }
 
-        // Désactivation des panneaux UI
         private void DisableUIPanels()
         {
             foreach (var slotUI in slotUIs)
@@ -174,7 +188,6 @@ namespace CharacterCustomization
             if (tagsPanel != null) tagsPanel.SetActive(false);
         }
 
-        // Réactivation des panneaux UI
         private void EnableUIPanels()
         {
             foreach (var slotUI in slotUIs)
@@ -185,13 +198,11 @@ namespace CharacterCustomization
             if (tagsPanel != null) tagsPanel.SetActive(true);
         }
 
-        // Remplissage de l’UI avec les prefabs disponibles
         public void PopulateUI()
         {
             ApplyTagFilter(new List<string>());
         }
 
-        // Application d’un filtre par tags aux prefabs affichés
         public void ApplyTagFilter(List<string> selectedTags)
         {
             foreach (var slotUI in slotUIs)
@@ -201,7 +212,7 @@ namespace CharacterCustomization
 
                 foreach (Transform child in slotUI.content)
                 {
-                    Destroy(child.gameObject); 
+                    Destroy(child.gameObject);
                 }
 
                 var prefabs = slot.GetAvailablePrefabs();
@@ -233,7 +244,6 @@ namespace CharacterCustomization
             }
         }
 
-        // Équiper un prefab sur un slot
         private void EquipPrefab(SlotType slotType, GameObject prefab)
         {
             var slot = _characterCustomization.Slots.FirstOrDefault(s => s.Type == slotType);
@@ -262,16 +272,12 @@ namespace CharacterCustomization
                     instance.SetActive(true);
                     _equippedObjects[slotType] = (prefab, instance);
                 }
-                else
-                {
-                    Debug.LogWarning($"slot.Preview est null pour {slotType} avec prefab {prefab.name} !");
-                }
+             
 
-                _characterCustomization.RefreshCustomization(); 
+                _characterCustomization.RefreshCustomization();
             }
         }
 
-        // Déséquiper un prefab d’un slot
         private void UnequipPrefab(SlotType slotType)
         {
             if (_equippedObjects.ContainsKey(slotType))
@@ -287,39 +293,40 @@ namespace CharacterCustomization
             }
         }
 
-        // Gestion du clic sur le bouton "Edit"
         private void OnEditClicked()
         {
             if (_selectedInstance != null)
             {
-                ShowEditOptions(); 
+                ShowEditOptions();
             }
         }
 
-        // Gestion du clic sur le bouton "Delete"
         private void OnDeleteClicked()
         {
-            UnequipPrefab(_selectedSlotType); 
-            ResetCamera(); 
+            UnequipPrefab(_selectedSlotType);
+            ResetCamera();
         }
 
-        // Gestion du clic sur le bouton "Customize"
         private void OnCustomizeClicked()
         {
             if (_selectedInstance != null)
             {
                 if (texturePanel != null)
                 {
-                    texturePanel.SetActive(true); 
+                    texturePanel.SetActive(true);
+                    buttonCustomize.gameObject.SetActive(false);
+                    buttonChangeColor.gameObject.SetActive(false);
+                    buttonBackFromTexture.gameObject.SetActive(true);
+                    buttonBackFromEdit.gameObject.SetActive(false);
+                    buttonBackFromInitial.gameObject.SetActive(false);
+
+                    buttonBackFromTexture.onClick.RemoveAllListeners();
+                    buttonBackFromTexture.onClick.AddListener(() => OnBackFromTextureClicked());
                 }
-                else
-                {
-                    Debug.LogError("TexturePanel n’est pas assigné dans l’inspecteur !");
-                }
+               
             }
         }
 
-        // Gestion du clic sur le bouton "Change Color"
         private void OnChangeColorClicked()
         {
             if (_selectedInstance != null)
@@ -329,7 +336,6 @@ namespace CharacterCustomization
                 {
                     if (colorPicker == null)
                     {
-                        Debug.LogError("ColorPicker n’est pas assigné dans l’inspecteur !");
                         return;
                     }
                     Color currentColor = renderer.material.color;
@@ -338,7 +344,22 @@ namespace CharacterCustomization
             }
         }
 
-        // Mise à jour de la couleur pendant la sélection
+        private void OnBackFromTextureClicked()
+        {
+            texturePanel.SetActive(false);
+            ShowEditOptions();
+        }
+
+        private void OnBackFromEditClicked()
+        {
+            ShowActionButtons(); // Revenir au mode Edit/Delete
+        }
+
+        private void OnBackFromInitialClicked()
+        {
+            ResetCamera(); // Revenir à l’état initial avec les ScrollView
+        }
+
         private void OnColorChanged(Color color)
         {
             if (_selectedInstance != null)
@@ -348,7 +369,6 @@ namespace CharacterCustomization
             }
         }
 
-        // Confirmation de la couleur sélectionnée
         private void OnColorSelected(Color color)
         {
             if (_selectedInstance != null)
@@ -360,61 +380,51 @@ namespace CharacterCustomization
                     renderer.material.color = color;
                 }
             }
-            ResetCamera(); 
+            ResetCamera();
         }
 
-        // Initialisation du panneau de textures avec des boutons
         private void InitializeTexturePanel()
         {
             if (textureButtonContainer == null || textureButtonPrefab == null)
             {
-                Debug.LogError("textureButtonContainer ou textureButtonPrefab n’est pas assigné dans l’inspecteur !");
                 return;
             }
 
-            // Supprimer les anciens boutons
             foreach (Transform child in textureButtonContainer)
             {
                 Destroy(child.gameObject);
             }
 
-            // Créer un bouton pour chaque texture
             for (int i = 0; i < availableTextures.Count; i++)
             {
                 int index = i;
                 TextureOption textureOption = availableTextures[i];
                 GameObject buttonObj = Instantiate(textureButtonPrefab, textureButtonContainer);
-                buttonObj.SetActive(true); 
+                buttonObj.SetActive(true);
                 Button button = buttonObj.GetComponent<Button>();
                 Image buttonImage = buttonObj.GetComponent<Image>();
 
                 if (buttonImage != null && textureOption.preview != null)
                 {
-                    buttonImage.enabled = true; 
+                    buttonImage.enabled = true;
                     buttonImage.sprite = textureOption.preview;
                     buttonImage.preserveAspect = true;
                 }
-                else
-                {
-                    Debug.LogWarning($"Image ou preview manquant pour la texture : {textureOption.name}");
-                }
+             
 
                 if (button != null)
                 {
-                    button.enabled = true; 
+                    button.enabled = true;
+                    button.interactable = true;
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => ApplyTexture(index));
                 }
-                else
-                {
-                    Debug.LogWarning($"Aucun composant Button trouvé sur le clone pour la texture : {textureOption.name}");
-                }
+            
             }
 
-            if (texturePanel != null) texturePanel.SetActive(false); 
+            if (texturePanel != null) texturePanel.SetActive(false);
         }
 
-        // Application d’une texture sur l’objet sélectionné
         private void ApplyTexture(int textureIndex)
         {
             if (_selectedInstance != null)
@@ -425,31 +435,17 @@ namespace CharacterCustomization
                     if (textureIndex >= 0 && textureIndex < availableTextures.Count)
                     {
                         Texture2D newTexture = availableTextures[textureIndex].texture;
-                        Material material = new Material(renderer.material); 
+                        Material material = new Material(renderer.material);
                         renderer.material = material;
-                        if (!material.HasProperty("_BaseMap"))
-                        {
-                            Debug.LogWarning("Le shader n’a pas de propriété _BaseMap ! Vérifiez le shader utilisé.");
-                        }
-                        else
-                        {
-                            material.SetTexture("_BaseMap", newTexture); // Appliquer la texture sur _BaseMap 
-                        }
-                        texturePanel.SetActive(false); // Cacher le panneau après sélection
+                      
+                    
                     }
-                    else
-                    {
-                        Debug.LogWarning("Index de texture invalide !");
-                    }
+               
                 }
-                else
-                {
-                    Debug.LogWarning("Aucun SkinnedMeshRenderer trouvé sur l’instance sélectionnée.");
-                }
+              
             }
         }
 
-        // Récupération du type de slot à partir d’une instance
         private SlotType? GetSlotTypeFromInstance(GameObject instance)
         {
             foreach (var equipped in _equippedObjects)
