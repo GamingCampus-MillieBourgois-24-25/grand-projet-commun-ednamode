@@ -1,6 +1,3 @@
-// MULTIPLAYER MANAGER – Stable Unity 6 (Lobby + Relay + AuthGuard)
-// Gère : Authentification unique, création/join/lobby, netcode
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,6 +9,8 @@ using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+
+using Type = NotificationData.NotificationType;
 
 public class MultiplayerManager : MonoBehaviour
 {
@@ -31,7 +30,6 @@ public class MultiplayerManager : MonoBehaviour
 
     private async void Awake()
     {
-        // S'assurer qu'un seul existe
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -51,7 +49,6 @@ public class MultiplayerManager : MonoBehaviour
         isReady = AuthenticationService.Instance.IsSignedIn;
         Debug.Log($"MultiplayerManager isReady = {isReady}");
     }
-
 
     private void Update()
     {
@@ -102,6 +99,8 @@ public class MultiplayerManager : MonoBehaviour
             if (allocation == null || string.IsNullOrEmpty(joinCode))
             {
                 Debug.LogError("Échec allocation Relay: allocation ou code null.");
+                NotificationManager.Instance.ShowNotification("Relay allocation failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -129,6 +128,8 @@ public class MultiplayerManager : MonoBehaviour
             if (CurrentLobby == null)
             {
                 Debug.LogError("Échec création lobby: Lobby est null après CreateLobbyAsync");
+                NotificationManager.Instance.ShowNotification("Lobby creation failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -140,7 +141,11 @@ public class MultiplayerManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError("Échec création lobby: " + e.Message);
+            NotificationManager.Instance.ShowNotification("Lobby creation failed", Type.Important);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
         }
+        FindAnyObjectByType<MultiplayerUI>()?.NotifyCreateResult(true);
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
     }
 
     public async void JoinLobbyByCode(string code)
@@ -169,6 +174,8 @@ public class MultiplayerManager : MonoBehaviour
             if (CurrentLobby == null)
             {
                 Debug.LogError("JoinLobbyByCodeAsync a retourné null.");
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -178,6 +185,8 @@ public class MultiplayerManager : MonoBehaviour
             if (string.IsNullOrEmpty(relayCode))
             {
                 Debug.LogError("JoinCode introuvable dans les données du lobby.");
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -185,11 +194,17 @@ public class MultiplayerManager : MonoBehaviour
             RelayUtils.StartClient(allocation);
 
             Debug.Log("Rejoint lobby avec code: " + code);
+            FindFirstObjectByType<MultiplayerUI>()?.UpdateConnectionUI(true);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(true);
+            UIManager.Instance?.HideAllPanels();
         }
         catch (Exception e)
         {
             Debug.LogError("Échec join lobby: " + e.Message);
+            NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
         }
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
     }
 
     public async void QuickJoin()
@@ -211,6 +226,8 @@ public class MultiplayerManager : MonoBehaviour
             if (string.IsNullOrEmpty(relayCode))
             {
                 Debug.LogError("JoinCode manquant dans QuickJoin.");
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -218,16 +235,26 @@ public class MultiplayerManager : MonoBehaviour
             RelayUtils.StartClient(allocation);
 
             Debug.Log("Quick Join lobby: " + CurrentLobby.Name);
+            FindFirstObjectByType<MultiplayerUI>()?.UpdateConnectionUI(true);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(true);
+            UIManager.Instance?.HideAllPanels();
         }
         catch (LobbyServiceException e)
         {
             if (e.Reason == LobbyExceptionReason.NoOpenLobbies)
             {
-                Debug.LogWarning("Aucun lobby trouvé, création automatique.");
-                CreateLobby("LobbyAuto");
+                Debug.LogWarning("Aucun lobby trouvé");
+                NotificationManager.Instance.ShowNotification("No Lobby found", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyNoLobbyFound();
             }
-            else Debug.LogError("Quick Join fail: " + e.Message);
+            else
+            {
+                Debug.LogError("Quick Join fail: " + e.Message);
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
+            }
         }
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
     }
 
     public async void LeaveLobby()
@@ -257,5 +284,6 @@ public class MultiplayerManager : MonoBehaviour
             NetworkManager.Singleton.Shutdown();
             Debug.Log("Session quittée.");
         }
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode("");
     }
 }

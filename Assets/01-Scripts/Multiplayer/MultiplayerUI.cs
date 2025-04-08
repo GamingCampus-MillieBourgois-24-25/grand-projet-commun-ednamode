@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Mono.Cecil.Cil;
+using System.Collections;
 using Type = NotificationData.NotificationType;
+using DG.Tweening;
 
 /// <summary>
 /// MULTIPLAYER UI – Connecte les boutons à MultiplayerManager
@@ -11,31 +12,25 @@ using Type = NotificationData.NotificationType;
 public class MultiplayerUI : MonoBehaviour
 {
     [Header("Entrées utilisateur")]
-
-    [Tooltip("Champ pour entrer le nom du lobby à créer.")]
     [SerializeField] private TMP_InputField inputLobbyName;
-
-    [Tooltip("Champ pour entrer un code pour rejoindre un lobby.")]
     [SerializeField] private TMP_InputField inputJoinCode;
 
     [Header("Boutons")]
-
-    [Tooltip("Bouton pour créer un lobby avec le nom spécifié.")]
     [SerializeField] private Button buttonCreate;
-
-    [Tooltip("Bouton pour rejoindre un lobby via un code.")]
     [SerializeField] private Button buttonJoin;
-
-    [Tooltip("Bouton pour rejoindre automatiquement un lobby ouvert.")]
     [SerializeField] private Button buttonQuickJoin;
-
-    [Tooltip("Bouton pour quitter le lobby actuel.")]
     [SerializeField] private Button buttonLeave;
 
     [Header("Feedback UI")]
-
-    [Tooltip("Texte affichant les retours d'état ou erreurs à l'utilisateur.")]
+    [Tooltip("Affiche le code de session en cours")]
+    [SerializeField] private TMP_Text joinCodeText;
     [SerializeField] private TMP_Text feedbackText;
+
+    [Header("Activer quand connecté")]
+    [SerializeField] private GameObject[] showOnConnected;
+
+    [Header("Masquer quand connecté")]
+    [SerializeField] private GameObject[] hideOnConnected;
 
     private void Awake()
     {
@@ -43,6 +38,12 @@ public class MultiplayerUI : MonoBehaviour
         buttonJoin.onClick.AddListener(OnJoinClicked);
         buttonQuickJoin.onClick.AddListener(OnQuickJoinClicked);
         buttonLeave.onClick.AddListener(OnLeaveClicked);
+
+        inputLobbyName.onValueChanged.AddListener(OnInputChanged);
+        inputJoinCode.onValueChanged.AddListener(OnInputChanged);
+
+        buttonCreate.interactable = false;
+        buttonJoin.interactable = false;
     }
 
     private void Start()
@@ -50,10 +51,7 @@ public class MultiplayerUI : MonoBehaviour
         StartCoroutine(WaitForMultiplayerReady());
     }
 
-    /// <summary>
-    /// Attend que le MultiplayerManager soit prêt avant d’activer les boutons.
-    /// </summary>
-    private System.Collections.IEnumerator WaitForMultiplayerReady()
+    private IEnumerator WaitForMultiplayerReady()
     {
         while (MultiplayerManager.Instance == null || !MultiplayerManager.Instance.IsReady)
         {
@@ -62,14 +60,21 @@ public class MultiplayerUI : MonoBehaviour
 
         Debug.Log("MultiplayerUI: MultiplayerManager prêt, activation des boutons.");
 
-        buttonCreate.interactable = true;
-        buttonJoin.interactable = true;
         buttonQuickJoin.interactable = true;
+        buttonLeave.interactable = true;
+
+        OnInputChanged("");
+    }
+
+    private void OnInputChanged(string _)
+    {
+        buttonCreate.interactable = !string.IsNullOrWhiteSpace(inputLobbyName.text);
+        buttonJoin.interactable = !string.IsNullOrWhiteSpace(inputJoinCode.text);
     }
 
     private void OnCreateClicked()
     {
-        string lobbyName = string.IsNullOrEmpty(inputLobbyName.text) ? "FashionSession" : inputLobbyName.text;
+        string lobbyName = inputLobbyName.text.Trim();
         MultiplayerManager.Instance.CreateLobby(lobbyName);
         NotificationManager.Instance.ShowNotification("Create Lobby...", Type.Normal);
     }
@@ -84,25 +89,22 @@ public class MultiplayerUI : MonoBehaviour
         }
 
         MultiplayerManager.Instance.JoinLobbyByCode(code);
-        NotificationManager.Instance.ShowNotification("Joining : " + code, Type.Normal);
+        NotificationManager.Instance.ShowNotification("Joining : " + code, Type.Info);
     }
 
     private void OnQuickJoinClicked()
     {
         MultiplayerManager.Instance.QuickJoin();
-        NotificationManager.Instance.ShowNotification("Search Lobby...", Type.Normal);
+        NotificationManager.Instance.ShowNotification("Searching for Lobby...", Type.Info);
     }
 
     private void OnLeaveClicked()
     {
         MultiplayerManager.Instance.LeaveLobby();
-        NotificationManager.Instance.ShowNotification("Disconnect...", Type.Normal);
+        NotificationManager.Instance.ShowNotification("Disconnect...", Type.Info);
+        UpdateConnectionUI(false);
     }
 
-    /// <summary>
-    /// Affiche un message dans l'interface et la console.
-    /// </summary>
-    /// <param name="message">Message à afficher</param>
     private void ShowFeedback(string message)
     {
         if (feedbackText != null)
@@ -111,5 +113,117 @@ public class MultiplayerUI : MonoBehaviour
         }
 
         Debug.Log("[UI] " + message);
+    }
+
+    public void NotifyCreateResult(bool success)
+    {
+        if (success)
+        {
+            NotificationManager.Instance.ShowNotification("Create Success", Type.Info);
+            UpdateConnectionUI(true);
+        }
+        else
+        {
+            NotificationManager.Instance.ShowNotification("Create Failed", Type.Important);
+            UpdateConnectionUI(false);
+        }
+    }
+
+    public void NotifyJoinResult(bool success)
+    {
+        if (success)
+        {
+            NotificationManager.Instance.ShowNotification("Join Success", Type.Info);
+            UpdateConnectionUI(true);
+        }
+        else
+        {
+            NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+            UpdateConnectionUI(false);
+        }
+    }
+
+    public void NotifyNoLobbyFound()
+    {
+        NotificationManager.Instance.ShowNotification("No Lobby found", Type.Important);
+        UpdateConnectionUI(false);
+    }
+
+    public void UpdateJoinCode(string code)
+    {
+        if (joinCodeText != null)
+        {
+            joinCodeText.text = string.IsNullOrEmpty(code) ? "" : $"Code : {code}";
+        }
+    }
+
+    public void UpdateConnectionUI(bool connected)
+    {
+        foreach (var go in showOnConnected)
+        {
+            if (!go) continue;
+
+            if (connected)
+            {
+                AnimateShow(go);
+            }
+            else
+            {
+                AnimateHide(go);
+            }
+        }
+
+        foreach (var go in hideOnConnected)
+        {
+            if (!go) continue;
+
+            if (connected)
+            {
+                AnimateHide(go);
+            }
+            else
+            {
+                AnimateShow(go);
+            }
+        }
+    }
+
+    private void AnimateShow(GameObject go)
+    {
+        go.SetActive(true);
+
+        if (go.TryGetComponent<CanvasGroup>(out var cg))
+        {
+            cg.DOKill();
+            cg.alpha = 0f;
+            cg.DOFade(1f, 0.4f).SetEase(Ease.OutQuad);
+        }
+        else
+        {
+            var t = go.transform;
+            t.DOKill();
+            t.localScale = Vector3.zero;
+            t.DOScale(Vector3.one, 0.4f).SetEase(Ease.OutBack);
+        }
+        UIManager.Instance?.HideAllPanels();
+    }
+
+    private void AnimateHide(GameObject go)
+    {
+        if (!go.activeInHierarchy) return;
+
+        if (go.TryGetComponent<CanvasGroup>(out var cg))
+        {
+            cg.DOKill();
+            cg.DOFade(0f, 0.3f).SetEase(Ease.InQuad)
+              .OnComplete(() => go.SetActive(false));
+        }
+        else
+        {
+            var t = go.transform;
+            t.DOKill();
+            t.DOScale(Vector3.zero, 0.3f).SetEase(Ease.InBack)
+              .OnComplete(() => go.SetActive(false));
+        }
     }
 }

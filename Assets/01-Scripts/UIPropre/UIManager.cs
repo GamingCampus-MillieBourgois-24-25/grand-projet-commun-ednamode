@@ -1,0 +1,352 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
+using TMPro;
+using DG.Tweening;
+
+public class UIManager : MonoBehaviour
+{
+    #region Singleton
+    public static UIManager Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        InitializePanels();
+
+        if (autoPlayIntroOnStart)
+            PlaySceneIntro();
+    }
+    #endregion
+
+    #region Structs & Fields
+    [System.Serializable]
+    public class PanelEntry
+    {
+        public string panelName;
+        public GameObject panelObject;
+        public Button triggerButton;
+        public bool startVisible;
+        public bool closeOnOutsideClick = true;
+
+        [Header("➕ Options avancées")]
+        public bool closeOtherPanelWhenOpened = true;
+        public bool hasCloseButton = false;           // ❌ pour affichage croix
+    }
+
+    [Header("🧩 Panels")]
+    [SerializeField] private List<PanelEntry> panels = new();
+    [SerializeField] private float animationDuration = 0.4f;
+    [SerializeField] private Ease animationEase = Ease.OutBack;
+    [SerializeField] private Vector3 hiddenScale = new(0.85f, 0.85f, 1);
+
+    private GameObject _currentPanel;
+    private Dictionary<string, GameObject> _panelDict;
+    private Dictionary<Button, string> _buttonToPanel;
+    private bool _isAnimating = false;
+    #endregion
+
+    #region 🔊 UI Sounds
+    [Header("🔊 Sons UI")]
+    [SerializeField] private AudioSource uiAudioSource;
+    [SerializeField] private AudioClip clickSound;
+    [SerializeField] private AudioClip panelOpenSound;
+    [SerializeField] private AudioClip panelCloseSound;
+    [SerializeField] private AudioClip transitionIntroSound;
+    [SerializeField] private AudioClip transitionOutroSound;
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (uiAudioSource && clip)
+            uiAudioSource.PlayOneShot(clip);
+    }
+    #endregion
+
+    #region 🎬 Transition Scene UI
+    [Header("🎬 Transition d'Écran")]
+    [SerializeField] private RectTransform screenTransitionPanel;
+    [SerializeField] private Vector2 centerPosition = Vector2.zero;
+    [SerializeField] private Vector2 openExitPosition = new(1850, -1450);
+    [SerializeField] private Vector2 closeStartPosition = new(-1850, 1450);
+    [SerializeField] private float screenMoveDuration = 0.5f;
+    [SerializeField] private bool autoPlayIntroOnStart = true;
+
+    public void PlaySceneIntro(System.Action onComplete = null)
+    {
+        if (screenTransitionPanel == null) return;
+        screenTransitionPanel.gameObject.SetActive(true);
+        PlaySound(transitionIntroSound);
+        screenTransitionPanel.anchoredPosition = centerPosition;
+        StartCoroutine(MovePanel(screenTransitionPanel, centerPosition, openExitPosition, onComplete));
+    }
+
+    public void PlaySceneOutro(System.Action onComplete = null)
+    {
+        if (screenTransitionPanel == null) return;
+        screenTransitionPanel.gameObject.SetActive(true);
+        PlaySound(transitionOutroSound);
+        screenTransitionPanel.anchoredPosition = closeStartPosition;
+        StartCoroutine(MovePanel(screenTransitionPanel, closeStartPosition, centerPosition, onComplete));
+    }
+
+    private IEnumerator MovePanel(RectTransform panel, Vector2 from, Vector2 to, System.Action onComplete)
+    {
+        float elapsed = 0f;
+        panel.anchoredPosition = from;
+
+        while (elapsed < screenMoveDuration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / screenMoveDuration);
+            panel.anchoredPosition = Vector2.Lerp(from, to, progress);
+            yield return null;
+        }
+
+        panel.anchoredPosition = to;
+        onComplete?.Invoke();
+    }
+    #endregion
+
+    #region 📱 Gestes Tactiles
+    [Header("📱 Gestes Tactiles")]
+    public UnityEvent OnSwipeLeft;
+    public UnityEvent OnSwipeRight;
+    public UnityEvent OnTap;
+    public UnityEvent OnDoubleTap;
+
+    private Vector2 _touchStartPos;
+    private float _lastTapTime;
+    private bool _waitingSecondTap;
+
+    private void DetectTouchGestures()
+    {
+        if (Input.touchCount != 1) return;
+
+        Touch touch = Input.GetTouch(0);
+
+        switch (touch.phase)
+        {
+            case TouchPhase.Began:
+                _touchStartPos = touch.position;
+
+                if (_waitingSecondTap && Time.time - _lastTapTime < 0.3f)
+                {
+                    OnDoubleTap?.Invoke();
+                    _waitingSecondTap = false;
+                }
+                else
+                {
+                    _lastTapTime = Time.time;
+                    _waitingSecondTap = true;
+                }
+                break;
+
+            case TouchPhase.Ended:
+                float deltaX = touch.position.x - _touchStartPos.x;
+
+                if (Mathf.Abs(deltaX) > 100f)
+                {
+                    if (deltaX > 0) OnSwipeRight?.Invoke();
+                    else OnSwipeLeft?.Invoke();
+                }
+                else
+                {
+                    OnTap?.Invoke();
+                }
+                break;
+        }
+    }
+    #endregion
+
+    #region 🎯 Panel Management
+    private void InitializePanels()
+    {
+        _panelDict = new();
+        _buttonToPanel = new();
+
+        foreach (var entry in panels)
+        {
+            if (entry.panelObject == null) continue;
+
+            string key = entry.panelName.Trim();
+            _panelDict[key] = entry.panelObject;
+
+            if (entry.startVisible)
+            {
+                ShowPanel(key, true);
+                _currentPanel = entry.panelObject;
+            }
+            else
+            {
+                entry.panelObject.SetActive(false);
+                entry.panelObject.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                entry.panelObject.transform.localScale = hiddenScale;
+            }
+
+            if (entry.triggerButton != null)
+            {
+                _buttonToPanel[entry.triggerButton] = key;
+                entry.triggerButton.onClick.AddListener(() => OnPanelButtonClicked(entry.triggerButton));
+            }
+            if (entry.hasCloseButton)
+            {
+                // Cherche un bouton dans les enfants nommé "Close" ou tagué "UIClose"
+                Button closeButton = entry.panelObject.GetComponentInChildren<Button>(true);
+                if (closeButton != null && closeButton.name.ToLower().Contains("close"))
+                {
+                    closeButton.onClick.AddListener(() => HidePanel(entry.panelObject));
+                }
+            }
+
+        }
+    }
+
+    private void OnPanelButtonClicked(Button clickedButton)
+    {
+        PlaySound(clickSound);
+
+        if (!_buttonToPanel.TryGetValue(clickedButton, out var panelName)) return;
+
+        var targetPanel = _panelDict[panelName];
+
+        // Cas : on clique sur le bouton du panel déjà ouvert → on le ferme
+        if (_currentPanel == targetPanel)
+        {
+            HidePanel(targetPanel);
+            return;
+        }
+
+        // Cas : un autre panel était ouvert → on le ferme puis on ouvre le nouveau
+        ShowPanel(panelName);
+    }
+
+    public void ShowPanel(string panelName, bool instant = false, bool replaceCurrentPanel = true)
+    {
+        if (!_panelDict.ContainsKey(panelName) || _isAnimating) return;
+
+        var panelToShow = _panelDict[panelName];
+        var entry = panels.Find(p => p.panelName == panelName);
+
+        if (_currentPanel == panelToShow)
+        {
+            // S'il est déjà actif et qu'on re-clique dessus
+            HidePanel(panelToShow, instant);
+            return;
+        }
+
+        if (_currentPanel != null && _currentPanel != panelToShow && replaceCurrentPanel)
+        {
+            HidePanel(_currentPanel, instant);
+        }
+
+        if (panelToShow.activeSelf && _currentPanel == panelToShow)
+        {
+            // Le panel est déjà actif → ne rien faire
+            return;
+        }
+
+        panelToShow.SetActive(true);
+        PlaySound(panelOpenSound);
+
+        RectTransform rect = panelToShow.GetComponent<RectTransform>();
+        rect.localScale = hiddenScale;
+        rect.anchoredPosition = Vector2.zero;
+
+        if (instant)
+        {
+            rect.localScale = Vector3.one;
+        }
+        else
+        {
+            rect.DOScale(Vector3.one, animationDuration).SetEase(animationEase);
+        }
+
+        _currentPanel = panelToShow;
+    }
+
+    public void HidePanel(GameObject panel, bool instant = false)
+    {
+        if (panel == null || _isAnimating) return;
+        PlaySound(panelCloseSound);
+
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        _isAnimating = true;
+
+        if (instant)
+        {
+            panel.SetActive(false);
+            _isAnimating = false;
+            if (panel == _currentPanel) _currentPanel = null;
+            return;
+        }
+
+        rect.DOKill(); // stoppe animations éventuelles
+
+        rect.DOAnchorPosY(-Screen.height, animationDuration)
+            .SetEase(Ease.InBack)
+            .OnComplete(() =>
+            {
+                panel.SetActive(false);
+                rect.anchoredPosition = Vector2.zero;
+                _isAnimating = false;
+                if (panel == _currentPanel) _currentPanel = null;
+            });
+    }
+
+    public void HideAllPanels(bool instant = false)
+    {
+        _isAnimating = false; // stoppe toute animation en cours (si mal annulée)
+
+        foreach (var kvp in _panelDict)
+        {
+            if (kvp.Value.activeSelf)
+                HidePanel(kvp.Value, instant);
+        }
+
+        _currentPanel = null;
+    }
+    #endregion
+
+    #region 🖱 Outside Click Detection & Utility
+    private void Update()
+    {
+        DetectTouchGestures();
+
+        if (_currentPanel == null) return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            RectTransform rect = _currentPanel.GetComponent<RectTransform>();
+            if (!RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, null))
+            {
+                string panelName = GetCurrentPanelName();
+                PanelEntry entry = panels.Find(p => p.panelName == panelName);
+                if (entry != null && entry.closeOnOutsideClick)
+                {
+                    HidePanel(_currentPanel);
+                }
+            }
+        }
+    }
+
+    public bool IsAnyPanelOpen() => _currentPanel != null;
+
+    public string GetCurrentPanelName()
+    {
+        foreach (var kvp in _panelDict)
+        {
+            if (kvp.Value == _currentPanel)
+                return kvp.Key;
+        }
+        return null;
+    }
+    #endregion
+}

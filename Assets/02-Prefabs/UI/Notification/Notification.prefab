@@ -330,4 +330,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayDuration: 3
   startOffset: {x: 0, y: 300}
-  verticalSpacing: 300
+  verticalSpacing: 160
