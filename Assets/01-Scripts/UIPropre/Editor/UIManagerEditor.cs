@@ -49,6 +49,14 @@ public class UIManagerEditor : Editor
                 "animationEase",
                 "hiddenScale"
             }
+        },
+        {
+            "⏳ Countdown", new[]
+            {
+                "countdownText",
+                "normalColor",
+                "alertColor"
+            }
         }
     };
 

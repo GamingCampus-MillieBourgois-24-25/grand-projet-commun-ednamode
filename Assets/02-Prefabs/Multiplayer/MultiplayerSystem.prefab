@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3608241694104119795}
   - component: {fileID: 49227422852989333}
   - component: {fileID: 2774369131479229652}
+  - component: {fileID: 1683860000234220956}
   m_Layer: 0
   m_Name: MultiplayerSystem
   m_TagString: Untagged
@@ -133,3 +134,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxPlayers: 8
   lobbyHeartbeatInterval: 15
+--- !u!114 &1683860000234220956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8558988197707113204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11c8fbc075d01ec45b5e775856e5b8b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputLobbyName: {fileID: 0}
+  inputJoinCode: {fileID: 0}
+  buttonCreate: {fileID: 0}
+  buttonJoin: {fileID: 0}
+  buttonQuickJoin: {fileID: 0}
+  buttonLeave: {fileID: 0}
+  readyColor: {r: 0.35933605, g: 0.8018868, b: 0.35933605, a: 1}
+  notReadyColor: {r: 0.8113208, g: 0.2793699, b: 0.2793699, a: 1}
+  readyText: Ready
+  notReadyText: Not Ready
+  readyCountText: {fileID: 0}
+  buttonReady: {fileID: 0}
+  gameModeButtons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  joinCodeText: {fileID: 0}
+  feedbackText: {fileID: 0}
+  showOnConnected:
+  - {fileID: 0}
+  hideOnConnected:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}

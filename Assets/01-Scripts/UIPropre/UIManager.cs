@@ -349,4 +349,36 @@ public class UIManager : MonoBehaviour
         return null;
     }
     #endregion
+
+    #region ⏳ Countdown
+    [SerializeField] private TMP_Text countdownText;
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color alertColor = Color.red;
+
+    public void StartCountdown(System.Action onComplete)
+    {
+        StartCoroutine(CountdownRoutine(onComplete));
+    }
+
+    private IEnumerator CountdownRoutine(System.Action onComplete)
+    {
+        countdownText.gameObject.SetActive(true);
+
+        for (int i = 10; i >= 0; i--)
+        {
+            countdownText.text = i.ToString();
+            countdownText.fontSize = (i <= 3) ? 160 : 100;
+            countdownText.color = (i <= 3) ? alertColor : normalColor;
+
+            countdownText.transform.localScale = Vector3.one * 0.5f;
+            countdownText.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack);
+
+            yield return new WaitForSeconds(1f);
+        }
+
+        countdownText.gameObject.SetActive(false);
+        onComplete?.Invoke();
+    }
+    #endregion
+
 }

@@ -1,17 +1,19 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
+using Unity.Netcode;
 using System.Collections;
-using Type = NotificationData.NotificationType;
 using DG.Tweening;
+using TMPro;
+
+using Type = NotificationData.NotificationType;
 
 /// <summary>
-/// MULTIPLAYER UI – Connecte les boutons à MultiplayerManager
-/// Gère la création, la connexion et la déconnexion de sessions.
+/// MULTIPLAYER UI â€“ Connecte les boutons Ã  MultiplayerManager
+/// GÃ¨re la crÃ©ation, la connexion et la dÃ©connexion de sessions.
 /// </summary>
 public class MultiplayerUI : MonoBehaviour
 {
-    [Header("Entrées utilisateur")]
+    [Header("EntrÃ©es utilisateur")]
     [SerializeField] private TMP_InputField inputLobbyName;
     [SerializeField] private TMP_InputField inputJoinCode;
 
@@ -21,16 +23,28 @@ public class MultiplayerUI : MonoBehaviour
     [SerializeField] private Button buttonQuickJoin;
     [SerializeField] private Button buttonLeave;
 
+    [Header("GameMode")]
+    [Header("Style Ready")]
+    [SerializeField] private Color readyColor = Color.green;
+    [SerializeField] private Color notReadyColor = Color.red;
+    [SerializeField] private string readyText = "Ready";
+    [SerializeField] private string notReadyText = "Not Ready";
+    [SerializeField] private TMP_Text readyCountText;
+    [SerializeField] private Button buttonReady;
+    [SerializeField] private Button[] gameModeButtons; // 3 boutons
+
     [Header("Feedback UI")]
     [Tooltip("Affiche le code de session en cours")]
     [SerializeField] private TMP_Text joinCodeText;
     [SerializeField] private TMP_Text feedbackText;
 
-    [Header("Activer quand connecté")]
+    [Header("Activer quand connectÃ©")]
     [SerializeField] private GameObject[] showOnConnected;
 
-    [Header("Masquer quand connecté")]
+    [Header("Masquer quand connectÃ©")]
     [SerializeField] private GameObject[] hideOnConnected;
+
+    private bool isReady = false;
 
     private void Awake()
     {
@@ -49,6 +63,27 @@ public class MultiplayerUI : MonoBehaviour
     private void Start()
     {
         StartCoroutine(WaitForMultiplayerReady());
+
+        for (int i = 0; i < gameModeButtons.Length; i++)
+        {
+            int mode = i; // trÃ¨s important : capture la valeur
+            gameModeButtons[i].onClick.AddListener(() =>
+            {
+                MultiplayerManager.Instance.SelectGameMode(mode);
+                NotificationManager.Instance.ShowNotification($"GameMode {mode + 1} selected", Type.Normal);
+            });
+        }
+
+        UpdateHostUI();
+
+        buttonReady.onClick.AddListener(() =>
+        {
+            isReady = !isReady;
+            MultiplayerManager.Instance.SetReady(isReady);
+            UpdateReadyButtonUI();
+        });
+
+        UpdateReadyButtonUI();
     }
 
     private IEnumerator WaitForMultiplayerReady()
@@ -58,7 +93,7 @@ public class MultiplayerUI : MonoBehaviour
             yield return new WaitForSeconds(0.2f);
         }
 
-        Debug.Log("MultiplayerUI: MultiplayerManager prêt, activation des boutons.");
+        Debug.Log("MultiplayerUI: MultiplayerManager prÃªt, activation des boutons.");
 
         buttonQuickJoin.interactable = true;
         buttonLeave.interactable = true;
@@ -121,6 +156,7 @@ public class MultiplayerUI : MonoBehaviour
         {
             NotificationManager.Instance.ShowNotification("Create Success", Type.Info);
             UpdateConnectionUI(true);
+            UpdateHostUI();
         }
         else
         {
@@ -129,12 +165,14 @@ public class MultiplayerUI : MonoBehaviour
         }
     }
 
+
     public void NotifyJoinResult(bool success)
     {
         if (success)
         {
             NotificationManager.Instance.ShowNotification("Join Success", Type.Info);
             UpdateConnectionUI(true);
+            UpdateHostUI();
         }
         else
         {
@@ -226,4 +264,41 @@ public class MultiplayerUI : MonoBehaviour
               .OnComplete(() => go.SetActive(false));
         }
     }
+
+    private void UpdateReadyButtonUI()
+    {
+        TMP_Text label = buttonReady.GetComponentInChildren<TMP_Text>();
+        if (label != null)
+            label.text = isReady ? readyText : notReadyText;
+
+        ColorBlock colors = buttonReady.colors;
+        colors.normalColor = isReady ? readyColor : notReadyColor;
+        colors.highlightedColor = colors.normalColor * 1.2f;
+        colors.pressedColor = colors.normalColor * 0.8f;
+        buttonReady.colors = colors;
+    }
+
+    public void UpdateHostUI()
+    {
+        bool isHost = NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
+
+        foreach (var btn in gameModeButtons)
+            btn.interactable = isHost;
+    }
+
+    public void UpdateReadyCount(int current, int total)
+    {
+        if (readyCountText == null) return;
+
+        current = Mathf.Clamp(current, 0, total);
+        readyCountText.text = $"{current} / {total}";
+    }
+
+    #region NETWORKING
+    public void OnClientConnected()
+    {
+        MultiplayerManager.Instance?.UpdateReadyUI();
+    }
+
+    #endregion
 }
