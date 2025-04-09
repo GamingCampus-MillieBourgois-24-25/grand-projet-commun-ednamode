@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class Rotatable : MonoBehaviour
 {
-    [SerializeField] private float speed = 1;
+    [SerializeField] private float speed = 3;
     [SerializeField] private bool inverted;
 
     private Button rotateLeftButton;

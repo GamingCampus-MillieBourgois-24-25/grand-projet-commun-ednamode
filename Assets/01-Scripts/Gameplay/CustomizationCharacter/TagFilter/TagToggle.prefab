@@ -222,7 +222,7 @@ GameObject:
   - component: {fileID: 7991841448474250816}
   - component: {fileID: 8328908299277315390}
   m_Layer: 5
-  m_Name: TagToggle 1
+  m_Name: TagToggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
