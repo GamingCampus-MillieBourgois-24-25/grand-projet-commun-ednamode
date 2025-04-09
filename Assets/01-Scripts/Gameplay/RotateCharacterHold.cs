@@ -6,7 +6,12 @@ public class RotateCharacterHold : MonoBehaviour
 {
     private InputSystem_Actions inputActions;
     private bool isHolding = false;
+    private float currentRotationSpeed = 0f;
 
+    [SerializeField]
+    private float decelerationRate = 5f;
+    [SerializeField]
+    private float maxRotationSpeed = 100f;
     private void Awake()
     {
         inputActions = new InputSystem_Actions();
@@ -29,6 +34,7 @@ public class RotateCharacterHold : MonoBehaviour
     private void OnHoldStarted(InputAction.CallbackContext context)
     {
         isHolding = true;
+        currentRotationSpeed = 0f;
     }
 
     private void OnHoldCanceled(InputAction.CallbackContext context)
@@ -41,7 +47,21 @@ public class RotateCharacterHold : MonoBehaviour
         if (isHolding)
         {
             Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-            transform.Rotate(-Vector3.up, mouseDelta.x * Time.deltaTime * 100f);
+            currentRotationSpeed = mouseDelta.x*100;
+            if (currentRotationSpeed > maxRotationSpeed)
+            {
+                currentRotationSpeed = maxRotationSpeed;
+            }
+            else if (currentRotationSpeed < -maxRotationSpeed)
+            {
+                currentRotationSpeed = -maxRotationSpeed;
+            }
+            transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
+        }
+        else if (currentRotationSpeed != 0f)
+        {
+            transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
+            currentRotationSpeed = Mathf.MoveTowards(currentRotationSpeed, 0f, decelerationRate * Time.deltaTime);
         }
     }
 }

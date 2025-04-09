@@ -11,7 +11,6 @@ public class SwitchTab : MonoBehaviour
     {
         // Get all buttons in the parent object
         buttons = new List<Button>(GetComponentsInChildren<Button>(true));
-        Debug.Log("buttons.count= "+buttons.Count);
         foreach (Button button in buttons)
         {
             button.onClick.AddListener(() => OnButtonClick(button));
@@ -28,9 +27,7 @@ public class SwitchTab : MonoBehaviour
         IsClickedButtonInteractable(clickedButton);
         // Get the name of the clicked button
         clickedButtonName = clickedButton.name.Replace("Button", "");
-        Debug.Log("clickedButtonName= " + clickedButtonName);
         selectedCategory = transform.parent.Find(clickedButtonName+"ScrollBack").gameObject;
-        Debug.Log("selectedCategory= " + selectedCategory.name);
         selectedCategory.SetActive(true);
     }
     private void IsClickedButtonInteractable(Button clickedButton)
