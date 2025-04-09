@@ -16,7 +16,7 @@ using UnityEngine.SceneManagement;
 
 using Type = NotificationData.NotificationType;
 
-public class MultiplayerManager : MonoBehaviour
+public class MultiplayerManager : NetworkBehaviour
 {
     public static MultiplayerManager Instance { get; private set; }
 
@@ -27,6 +27,7 @@ public class MultiplayerManager : MonoBehaviour
     public Lobby CurrentLobby { get; private set; }
     public string JoinCode { get; private set; }
 
+    private NetworkObject netObj;
     private float heartbeatTimer;
     private bool isReady;
 
@@ -54,24 +55,40 @@ public class MultiplayerManager : MonoBehaviour
             Debug.Log($"MultiplayerManager isReady = {isReady}");
         }*/
 
+
     private async void Start()
     {
         isReady = false;
         await AuthGuard.EnsureSignedInAsync();
         isReady = AuthenticationService.Instance.IsSignedIn;
+
         Debug.Log($"MultiplayerManager isReady = {isReady}");
 
-        // 🔄 On attend que le NetworkManager soit initialisé
+        // 🔍 Référence au NetworkObject
+        netObj = GetComponent<NetworkObject>();
+
+        // 🔄 Attente que le NetworkManager soit initialisé
         while (NetworkManager.Singleton == null)
         {
             Debug.LogWarning("🕓 Attente du NetworkManager...");
             await Task.Delay(100); // ⏱️ petite pause pour éviter un while infini en frame
         }
 
-        // ✅ Une fois prêt, on peut s'abonner
+
+        // ⏳ Attendre qu'on soit bien serveur et que tout soit initialisé
+        await Task.Delay(500);
+
+        // ✅ Spawn du MultiplayerNetwork
+        var net = FindAnyObjectByType<MultiplayerNetwork>();
+        // ✅ On spawn si nécessaire
+        if (netObj != null && !netObj.IsSpawned && NetworkManager.Singleton.IsServer)
+        {
+            netObj.Spawn();
+            Debug.Log("✅ MultiplayerManager spawné.");
+        }
+
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-        Debug.Log("✅ Callbacks Multiplayer enregistrés.");
     }
 
     private void Update()
@@ -88,8 +105,6 @@ public class MultiplayerManager : MonoBehaviour
     }
 
     #region NETWORKING
-    private NetworkVariable<int> playerCount = new(writePerm: NetworkVariableWritePermission.Server);
-
     private void OnDisable()
     {
         if (NetworkManager.Singleton != null)
@@ -103,20 +118,24 @@ public class MultiplayerManager : MonoBehaviour
     {
         playerReadyStates[clientId] = false;
 
-        // Mise à jour du nombre total de joueurs
-        playerCount.Value = playerReadyStates.Count;
-        UpdateReadyUI();
+        if (CanWriteNetworkData())
+            MultiplayerNetwork.Instance.PlayerCount.Value = playerReadyStates.Count;
 
+        // 🔁 Synchronise l'état pour ce nouveau client
+        NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
+
+        UpdateReadyUI();
         FindFirstObjectByType<MultiplayerUI>()?.OnClientConnected();
     }
-
 
     private void OnClientDisconnected(ulong clientId)
     {
         if (playerReadyStates.ContainsKey(clientId))
             playerReadyStates.Remove(clientId);
 
-        playerCount.Value = playerReadyStates.Count;
+        if (CanWriteNetworkData())
+            MultiplayerNetwork.Instance.PlayerCount.Value = playerReadyStates.Count;
+
         UpdateReadyUI();
     }
 
@@ -355,12 +374,10 @@ public class MultiplayerManager : MonoBehaviour
     #region GAME START MANAGEMENT
 
     private Dictionary<ulong, bool> playerReadyStates = new();
-    private NetworkVariable<int> readyCount = new(writePerm: NetworkVariableWritePermission.Server);
-    private int selectedGameMode = -1;
 
     public void SetReady(bool isReady)
     {
-        if (NetworkManager.Singleton.IsClient)
+        if (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost)
             SubmitReadyServerRpc(isReady);
     }
 
@@ -368,30 +385,33 @@ public class MultiplayerManager : MonoBehaviour
     private void SubmitReadyServerRpc(bool isReady, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
+        Debug.Log($"[ServerRpc] Client {clientId} isReady = {isReady}");
+
         playerReadyStates[clientId] = isReady;
         UpdateReadyCount();
 
         NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
 
-        if (IsHost() && selectedGameMode != -1 && AllPlayersReady())
+        if (IsHost() && AllPlayersReady())
             StartCountdown();
     }
 
     private void UpdateReadyCount()
     {
-        readyCount.Value = GetReadyCount();
+        if (!CanWriteNetworkData()) return;
+
+        MultiplayerNetwork.Instance.ReadyCount.Value = GetReadyCount();
+        MultiplayerNetwork.Instance.PlayerCount.Value = playerReadyStates.Count;
     }
 
-
-    public void SelectGameMode(int mode)
+    public void SelectGameMode(int selectedGameMode)
     {
-        if (!IsHost()) return;
-        selectedGameMode = mode;
+        if (!IsHost() || !CanWriteNetworkData()) return;
+
+        MultiplayerNetwork.Instance.SelectedGameMode.Value = selectedGameMode;
 
         if (AllPlayersReady())
-        {
             StartCountdown();
-        }
     }
 
     private void StartCountdown()
@@ -406,6 +426,7 @@ public class MultiplayerManager : MonoBehaviour
         {
             if (IsHost())
             {
+                int selectedGameMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
                 string sceneToLoad = selectedGameMode switch
                 {
                     0 => "Scene_PassMode",
@@ -438,11 +459,19 @@ public class MultiplayerManager : MonoBehaviour
     public void UpdateReadyUI()
     {
         int ready = GetReadyCount();
-        int total = playerCount.Value;
+        int total = playerReadyStates.Count;
         NotifyReadyCountClientRpc(ready, total);
     }
 
     private bool IsHost() => NetworkManager.Singleton.IsHost;
 
     #endregion
+
+    private bool CanWriteNetworkData()
+    {
+        return MultiplayerNetwork.Instance != null
+               && MultiplayerNetwork.Instance.IsSpawned
+               && NetworkManager.Singleton.IsServer;
+    }
+
 }
