@@ -66,10 +66,11 @@ public class MultiplayerUI : MonoBehaviour
 
         for (int i = 0; i < gameModeButtons.Length; i++)
         {
-            int mode = i; // très important : capture la valeur
+            int mode = i;
             gameModeButtons[i].onClick.AddListener(() =>
             {
                 MultiplayerManager.Instance.SelectGameMode(mode);
+                UpdateGameModeButtonVisuals(mode);
                 NotificationManager.Instance.ShowNotification($"GameMode {mode + 1} selected", Type.Normal);
             });
         }
@@ -82,6 +83,15 @@ public class MultiplayerUI : MonoBehaviour
             MultiplayerManager.Instance.SetReady(isReady);
             UpdateReadyButtonUI();
         });
+
+        // 🔁 Synchronise également à l’ouverture si data déjà dispo
+        if (MultiplayerNetwork.Instance != null)
+        {
+            UpdateReadyCount(
+                MultiplayerNetwork.Instance.ReadyCount.Value,
+                MultiplayerNetwork.Instance.PlayerCount.Value
+            );
+        }
 
         UpdateReadyButtonUI();
     }
@@ -288,17 +298,41 @@ public class MultiplayerUI : MonoBehaviour
 
     public void UpdateReadyCount(int current, int total)
     {
+        Debug.Log($"[UI] UpdateReadyCount: {current} / {total}");
         if (readyCountText == null) return;
 
         current = Mathf.Clamp(current, 0, total);
         readyCountText.text = $"{current} / {total}";
     }
 
+    private void UpdateGameModeButtonVisuals(int selectedIndex)
+    {
+        for (int i = 0; i < gameModeButtons.Length; i++)
+        {
+            var btn = gameModeButtons[i];
+            if (btn == null) continue;
+
+            // Cible l'image du GameObject parent (Game 1 Button)
+            Image backgroundImage = btn.GetComponent<Image>();
+            if (backgroundImage == null) continue;
+
+            // Garde la couleur (r, g, b) intacte, modifie seulement l'alpha
+            Color color = backgroundImage.color;
+            color.a = (i == selectedIndex) ? 1f : 0.2f;
+            backgroundImage.color = color;
+        }
+    }
+
     #region NETWORKING
     public void OnClientConnected()
     {
-        MultiplayerManager.Instance?.UpdateReadyUI();
+        if (NetworkManager.Singleton.IsClient && MultiplayerNetwork.Instance != null)
+        {
+            UpdateReadyCount(
+                MultiplayerNetwork.Instance.ReadyCount.Value,
+                MultiplayerNetwork.Instance.PlayerCount.Value
+            );
+        }
     }
-
     #endregion
 }
