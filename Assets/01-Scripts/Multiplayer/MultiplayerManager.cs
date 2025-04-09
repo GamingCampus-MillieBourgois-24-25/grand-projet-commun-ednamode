@@ -1,10 +1,10 @@
-// MULTIPLAYER MANAGER ñ Stable Unity 6 (Lobby + Relay + AuthGuard)
-// GËre : Authentification unique, crÈation/join/lobby, netcode
-
-using System;
+Ôªøusing System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Collections;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
@@ -12,6 +12,9 @@ using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
+using Type = NotificationData.NotificationType;
 
 public class MultiplayerManager : MonoBehaviour
 {
@@ -31,7 +34,6 @@ public class MultiplayerManager : MonoBehaviour
 
     private async void Awake()
     {
-        // S'assurer qu'un seul existe
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -44,14 +46,33 @@ public class MultiplayerManager : MonoBehaviour
         IsReady = false;
     }
 
+    /*    private async void Start()
+        {
+            isReady = false;
+            await AuthGuard.EnsureSignedInAsync();
+            isReady = AuthenticationService.Instance.IsSignedIn;
+            Debug.Log($"MultiplayerManager isReady = {isReady}");
+        }*/
+
     private async void Start()
     {
         isReady = false;
         await AuthGuard.EnsureSignedInAsync();
         isReady = AuthenticationService.Instance.IsSignedIn;
         Debug.Log($"MultiplayerManager isReady = {isReady}");
-    }
 
+        // üîÑ On attend que le NetworkManager soit initialis√©
+        while (NetworkManager.Singleton == null)
+        {
+            Debug.LogWarning("üïì Attente du NetworkManager...");
+            await Task.Delay(100); // ‚è±Ô∏è petite pause pour √©viter un while infini en frame
+        }
+
+        // ‚úÖ Une fois pr√™t, on peut s'abonner
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        Debug.Log("‚úÖ Callbacks Multiplayer enregistr√©s.");
+    }
 
     private void Update()
     {
@@ -65,6 +86,47 @@ public class MultiplayerManager : MonoBehaviour
             }
         }
     }
+
+    #region NETWORKING
+    private NetworkVariable<int> playerCount = new(writePerm: NetworkVariableWritePermission.Server);
+
+    private void OnDisable()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        playerReadyStates[clientId] = false;
+
+        // Mise √† jour du nombre total de joueurs
+        playerCount.Value = playerReadyStates.Count;
+        UpdateReadyUI();
+
+        FindFirstObjectByType<MultiplayerUI>()?.OnClientConnected();
+    }
+
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        if (playerReadyStates.ContainsKey(clientId))
+            playerReadyStates.Remove(clientId);
+
+        playerCount.Value = playerReadyStates.Count;
+        UpdateReadyUI();
+    }
+
+    [ClientRpc]
+    private void NotifyReadyCountClientRpc(int ready, int total)
+    {
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateReadyCount(ready, total);
+    }
+    #endregion
+
 
     private async void SendHeartbeat()
     {
@@ -85,13 +147,13 @@ public class MultiplayerManager : MonoBehaviour
 
         if (!AuthenticationService.Instance.IsSignedIn)
         {
-            Debug.LogWarning("Impossible de crÈer un lobby sans authentification.");
+            Debug.LogWarning("Impossible de cr√©er un lobby sans authentification.");
             return;
         }
 
         if (!isReady)
         {
-            Debug.LogWarning("MultiplayerManager pas encore prÍt.");
+            Debug.LogWarning("MultiplayerManager pas encore pr√™t.");
             return;
         }
 
@@ -101,7 +163,9 @@ public class MultiplayerManager : MonoBehaviour
 
             if (allocation == null || string.IsNullOrEmpty(joinCode))
             {
-                Debug.LogError("…chec allocation Relay: allocation ou code null.");
+                Debug.LogError("√âchec allocation Relay: allocation ou code null.");
+                NotificationManager.Instance.ShowNotification("Relay allocation failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -128,19 +192,25 @@ public class MultiplayerManager : MonoBehaviour
 
             if (CurrentLobby == null)
             {
-                Debug.LogError("…chec crÈation lobby: Lobby est null aprËs CreateLobbyAsync");
+                Debug.LogError("√âchec cr√©ation lobby: Lobby est null apr√®s CreateLobbyAsync");
+                NotificationManager.Instance.ShowNotification("Lobby creation failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
             SessionStore.Instance.SetLobby(CurrentLobby);
             RelayUtils.StartHost(allocation);
 
-            Debug.Log("Lobby crÈÈ: " + lobbyName + " | Code: " + JoinCode);
+            Debug.Log("Lobby cr√©√©: " + lobbyName + " | Code: " + JoinCode);
         }
         catch (Exception e)
         {
-            Debug.LogError("…chec crÈation lobby: " + e.Message);
+            Debug.LogError("√âchec cr√©ation lobby: " + e.Message);
+            NotificationManager.Instance.ShowNotification("Lobby creation failed", Type.Important);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
         }
+        FindAnyObjectByType<MultiplayerUI>()?.NotifyCreateResult(true);
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
     }
 
     public async void JoinLobbyByCode(string code)
@@ -149,7 +219,7 @@ public class MultiplayerManager : MonoBehaviour
 
         if (!isReady)
         {
-            Debug.LogWarning("MultiplayerManager pas encore prÍt.");
+            Debug.LogWarning("MultiplayerManager pas encore pr√™t.");
             return;
         }
 
@@ -168,7 +238,9 @@ public class MultiplayerManager : MonoBehaviour
             CurrentLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(code, joinOptions);
             if (CurrentLobby == null)
             {
-                Debug.LogError("JoinLobbyByCodeAsync a retournÈ null.");
+                Debug.LogError("JoinLobbyByCodeAsync a retourn√© null.");
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -177,7 +249,9 @@ public class MultiplayerManager : MonoBehaviour
             string relayCode = CurrentLobby.Data?["joinCode"]?.Value;
             if (string.IsNullOrEmpty(relayCode))
             {
-                Debug.LogError("JoinCode introuvable dans les donnÈes du lobby.");
+                Debug.LogError("JoinCode introuvable dans les donn√©es du lobby.");
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -185,11 +259,17 @@ public class MultiplayerManager : MonoBehaviour
             RelayUtils.StartClient(allocation);
 
             Debug.Log("Rejoint lobby avec code: " + code);
+            FindFirstObjectByType<MultiplayerUI>()?.UpdateConnectionUI(true);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(true);
+            UIManager.Instance?.HideAllPanels();
         }
         catch (Exception e)
         {
-            Debug.LogError("…chec join lobby: " + e.Message);
+            Debug.LogError("√âchec join lobby: " + e.Message);
+            NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
         }
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
     }
 
     public async void QuickJoin()
@@ -198,7 +278,7 @@ public class MultiplayerManager : MonoBehaviour
 
         if (!isReady)
         {
-            Debug.LogWarning("MultiplayerManager pas encore prÍt.");
+            Debug.LogWarning("MultiplayerManager pas encore pr√™t.");
             return;
         }
 
@@ -211,6 +291,8 @@ public class MultiplayerManager : MonoBehaviour
             if (string.IsNullOrEmpty(relayCode))
             {
                 Debug.LogError("JoinCode manquant dans QuickJoin.");
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
@@ -218,23 +300,33 @@ public class MultiplayerManager : MonoBehaviour
             RelayUtils.StartClient(allocation);
 
             Debug.Log("Quick Join lobby: " + CurrentLobby.Name);
+            FindFirstObjectByType<MultiplayerUI>()?.UpdateConnectionUI(true);
+            FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(true);
+            UIManager.Instance?.HideAllPanels();
         }
         catch (LobbyServiceException e)
         {
             if (e.Reason == LobbyExceptionReason.NoOpenLobbies)
             {
-                Debug.LogWarning("Aucun lobby trouvÈ, crÈation automatique.");
-                CreateLobby("LobbyAuto");
+                Debug.LogWarning("Aucun lobby trouv√©");
+                NotificationManager.Instance.ShowNotification("No Lobby found", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyNoLobbyFound();
             }
-            else Debug.LogError("Quick Join fail: " + e.Message);
+            else
+            {
+                Debug.LogError("Quick Join fail: " + e.Message);
+                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
+            }
         }
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
     }
 
     public async void LeaveLobby()
     {
         if (!isReady)
         {
-            Debug.LogWarning("MultiplayerManager pas encore prÍt.");
+            Debug.LogWarning("MultiplayerManager pas encore pr√™t.");
             return;
         }
 
@@ -255,7 +347,102 @@ public class MultiplayerManager : MonoBehaviour
             JoinCode = null;
             SessionStore.Instance.SetLobby(null);
             NetworkManager.Singleton.Shutdown();
-            Debug.Log("Session quittÈe.");
+            Debug.Log("Session quitt√©e.");
+        }
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode("");
+    }
+
+    #region GAME START MANAGEMENT
+
+    private Dictionary<ulong, bool> playerReadyStates = new();
+    private NetworkVariable<int> readyCount = new(writePerm: NetworkVariableWritePermission.Server);
+    private int selectedGameMode = -1;
+
+    public void SetReady(bool isReady)
+    {
+        if (NetworkManager.Singleton.IsClient)
+            SubmitReadyServerRpc(isReady);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SubmitReadyServerRpc(bool isReady, ServerRpcParams rpcParams = default)
+    {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        playerReadyStates[clientId] = isReady;
+        UpdateReadyCount();
+
+        NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
+
+        if (IsHost() && selectedGameMode != -1 && AllPlayersReady())
+            StartCountdown();
+    }
+
+    private void UpdateReadyCount()
+    {
+        readyCount.Value = GetReadyCount();
+    }
+
+
+    public void SelectGameMode(int mode)
+    {
+        if (!IsHost()) return;
+        selectedGameMode = mode;
+
+        if (AllPlayersReady())
+        {
+            StartCountdown();
         }
     }
+
+    private void StartCountdown()
+    {
+        StartCountdownClientRpc();
+    }
+
+    [ClientRpc]
+    private void StartCountdownClientRpc()
+    {
+        UIManager.Instance?.StartCountdown(() =>
+        {
+            if (IsHost())
+            {
+                string sceneToLoad = selectedGameMode switch
+                {
+                    0 => "Scene_PassMode",
+                    1 => "Scene_Sabotage",
+                    2 => "Lucie_BasicGameplay",
+                    _ => "Mato-Lobby_Horizontal"
+                };
+
+                NetworkManager.Singleton.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Single);
+            }
+        });
+    }
+
+    private bool AllPlayersReady()
+    {
+        foreach (var kvp in playerReadyStates)
+            if (!kvp.Value) return false;
+        return true;
+    }
+
+    private int GetReadyCount()
+    {
+        int count = 0;
+        foreach (var r in playerReadyStates.Values)
+            if (r) count++;
+        return count;
+    }
+
+
+    public void UpdateReadyUI()
+    {
+        int ready = GetReadyCount();
+        int total = playerCount.Value;
+        NotifyReadyCountClientRpc(ready, total);
+    }
+
+    private bool IsHost() => NetworkManager.Singleton.IsHost;
+
+    #endregion
 }
