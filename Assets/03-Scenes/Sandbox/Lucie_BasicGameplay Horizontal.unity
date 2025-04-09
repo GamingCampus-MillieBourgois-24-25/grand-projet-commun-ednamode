@@ -3291,7 +3291,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Costumes (Vide)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -7612,7 +7612,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Pants(Vide)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -8494,7 +8494,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Shorts(Vide)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -9718,7 +9718,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Mascots(Vide)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -14441,7 +14441,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Button
+  m_text: 'Glasses
 
 '
   m_isRightToLeft: 0
@@ -15953,10 +15953,7 @@ MonoBehaviour:
   characterPrefab: {fileID: 146935546818660778, guid: 7f6862d8aee10a042821738d523fc6fa, type: 3}
   slotLibrary: {fileID: 11400000, guid: ddee382934caf604e8a9199b8118a57e, type: 2}
   mainCamera: {fileID: 1443695819}
-  buttonEdit: {fileID: 1688402088}
-  buttonDelete: {fileID: 1059830579}
-  buttonCustomize: {fileID: 314551821}
-  buttonChangeColor: {fileID: 1902538334}
+  buttonManager: {fileID: 0}
   colorPicker: {fileID: 2645092813589395219}
   slotUIs:
   - slotType: 0
@@ -17929,7 +17926,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0000076293945, y: 100.17418}
+  m_AnchoredPosition: {x: 0.0000076293945, y: 100.000374}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1255527684
@@ -20479,7 +20476,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Hat(Vide)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -20972,8 +20969,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 836318472}
   m_HandleRect: {fileID: 836318471}
   m_Direction: 2
-  m_Value: -0.0017420959
-  m_Size: 0.6620299
+  m_Value: -0.0000038146973
+  m_Size: 0.6666667
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -21352,7 +21349,7 @@ GameObject:
   - component: {fileID: 1591449212}
   - component: {fileID: 1591449211}
   m_Layer: 0
-  m_Name: ScrollViewButtonManager
+  m_Name: ButtonManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21374,33 +21371,48 @@ MonoBehaviour:
   buttonScrollViewPairs:
   - button: {fileID: 1045460815}
     scrollView: {fileID: 743316919}
+    actionName: 
   - button: {fileID: 71706077}
     scrollView: {fileID: 415228905}
+    actionName: 
   - button: {fileID: 1622834158}
     scrollView: {fileID: 955400248}
+    actionName: 
   - button: {fileID: 947647390}
     scrollView: {fileID: 469647775}
+    actionName: 
   - button: {fileID: 317943187}
     scrollView: {fileID: 1191195932}
+    actionName: 
   - button: {fileID: 1114171454}
     scrollView: {fileID: 239750534}
+    actionName: 
   - button: {fileID: 1330766423}
     scrollView: {fileID: 1637202365}
+    actionName: 
   - button: {fileID: 202958849}
     scrollView: {fileID: 1712812035}
+    actionName: 
   - button: {fileID: 678943030}
     scrollView: {fileID: 604903590}
+    actionName: 
   - button: {fileID: 269954907}
     scrollView: {fileID: 114082052}
+    actionName: 
   - button: {fileID: 722437960}
     scrollView: {fileID: 1112332490}
+    actionName: 
   - button: {fileID: 586120000}
     scrollView: {fileID: 1878378753}
+    actionName: 
   - button: {fileID: 1674225586}
     scrollView: {fileID: 369385398}
+    actionName: 
   - button: {fileID: 645830192}
     scrollView: {fileID: 1111848775}
+    actionName: 
   backButton: {fileID: 1757316117}
+  buttonTags: {fileID: 0}
 --- !u!4 &1591449212
 Transform:
   m_ObjectHideFlags: 0
@@ -24958,6 +24970,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 269954906}
+  - {fileID: 586119999}
   - {fileID: 1045460814}
   - {fileID: 71706076}
   - {fileID: 1622834157}
@@ -24968,7 +24981,6 @@ RectTransform:
   - {fileID: 202958848}
   - {fileID: 678943029}
   - {fileID: 722437959}
-  - {fileID: 586119999}
   - {fileID: 1674225585}
   - {fileID: 645830191}
   m_Father: {fileID: 1593309766}
@@ -26064,7 +26076,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 'Shoes
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -26321,7 +26335,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Socks(Vidde)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -27627,7 +27641,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 1250119096}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
@@ -28570,7 +28584,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Outfit(Vide)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
