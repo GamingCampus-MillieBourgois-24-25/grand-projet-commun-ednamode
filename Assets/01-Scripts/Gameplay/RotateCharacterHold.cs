@@ -11,7 +11,8 @@ public class RotateCharacterHold : MonoBehaviour
     [SerializeField]
     private float decelerationRate = 5f;
     [SerializeField]
-    private float maxRotationSpeed = 100f;
+    private float maxRotationSpeed = 3000f;
+
     private void Awake()
     {
         inputActions = new InputSystem_Actions();
@@ -33,8 +34,12 @@ public class RotateCharacterHold : MonoBehaviour
 
     private void OnHoldStarted(InputAction.CallbackContext context)
     {
-        isHolding = true;
-        currentRotationSpeed = 0f;
+        // Vérifie si le pointeur est dans le premier tiers gauche de l'écran
+        if (IsPointerInLeftThird())
+        {
+            isHolding = true;
+            currentRotationSpeed = 0f;
+        }
     }
 
     private void OnHoldCanceled(InputAction.CallbackContext context)
@@ -46,16 +51,11 @@ public class RotateCharacterHold : MonoBehaviour
     {
         if (isHolding)
         {
-            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-            currentRotationSpeed = mouseDelta.x*100;
-            if (currentRotationSpeed > maxRotationSpeed)
-            {
-                currentRotationSpeed = maxRotationSpeed;
-            }
-            else if (currentRotationSpeed < -maxRotationSpeed)
-            {
-                currentRotationSpeed = -maxRotationSpeed;
-            }
+            Vector2 pointerDelta = GetPointerDelta();
+            currentRotationSpeed = pointerDelta.x * 100;
+            currentRotationSpeed = Mathf.Clamp(currentRotationSpeed, -maxRotationSpeed, maxRotationSpeed);
+
+            Debug.Log("currentRotationSpeed= " + currentRotationSpeed);
             transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
         }
         else if (currentRotationSpeed != 0f)
@@ -63,5 +63,49 @@ public class RotateCharacterHold : MonoBehaviour
             transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
             currentRotationSpeed = Mathf.MoveTowards(currentRotationSpeed, 0f, decelerationRate * Time.deltaTime);
         }
+    }
+
+    private bool IsPointerInLeftThird()
+    {
+        Vector2 pointerPosition = GetPointerPosition();
+
+        // Calculer la largeur du premier tiers gauche de l'écran
+        float screenWidth = Screen.width;
+        float leftThirdWidth = screenWidth / 3f;
+
+        Debug.Log($"Position du pointeur : {pointerPosition.x}, Largeur du premier tiers : {leftThirdWidth}");
+
+        // Vérifier si la position du pointeur est dans le premier tiers gauche
+        return pointerPosition.x <= leftThirdWidth;
+    }
+
+    private Vector2 GetPointerPosition()
+    {
+        // Récupérer la position de la souris ou du toucher
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+        {
+            return Touchscreen.current.primaryTouch.position.ReadValue();
+        }
+        else if (Mouse.current != null)
+        {
+            return Mouse.current.position.ReadValue();
+        }
+
+        return Vector2.zero;
+    }
+
+    private Vector2 GetPointerDelta()
+    {
+        // Récupérer le delta de la souris ou du toucher
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+        {
+            return Touchscreen.current.primaryTouch.delta.ReadValue();
+        }
+        else if (Mouse.current != null)
+        {
+            return Mouse.current.delta.ReadValue();
+        }
+
+        return Vector2.zero;
     }
 }
