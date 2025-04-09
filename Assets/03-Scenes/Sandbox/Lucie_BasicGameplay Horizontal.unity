@@ -1235,7 +1235,7 @@ GameObject:
   - component: {fileID: 101958356}
   - component: {fileID: 101958355}
   m_Layer: 5
-  m_Name: Button
+  m_Name: TextureButtonPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15953,8 +15953,11 @@ MonoBehaviour:
   characterPrefab: {fileID: 146935546818660778, guid: 7f6862d8aee10a042821738d523fc6fa, type: 3}
   slotLibrary: {fileID: 11400000, guid: ddee382934caf604e8a9199b8118a57e, type: 2}
   mainCamera: {fileID: 1443695819}
-  buttonManager: {fileID: 0}
-  colorPicker: {fileID: 2645092813589395219}
+  buttonManager: {fileID: 1591449211}
+  buttonChangeTexture: {fileID: 314551821}
+  buttonChangeColor: {fileID: 1902538334}
+  texturePanel: {fileID: 690531582}
+  colorPickerPanel: {fileID: 2645092813589395230}
   slotUIs:
   - slotType: 0
     scrollView: {fileID: 415228905}
@@ -15994,7 +15997,6 @@ MonoBehaviour:
   - name: test
     texture: {fileID: 2800000, guid: 8cc28ce80f8ad453690b5824462729ec, type: 3}
     preview: {fileID: 21300000, guid: 8cc28ce80f8ad453690b5824462729ec, type: 3}
-  texturePanel: {fileID: 690531582}
   textureButtonPrefab: {fileID: 101958353}
   textureButtonContainer: {fileID: 806999550}
 --- !u!114 &1120090856
@@ -17926,7 +17928,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0000076293945, y: 100.000374}
+  m_AnchoredPosition: {x: 0.0000076293945, y: 100.00034}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1255527684
@@ -20970,7 +20972,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 836318471}
   m_Direction: 2
   m_Value: -0.0000038146973
-  m_Size: 0.6666667
+  m_Size: 0.66665995
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -21371,48 +21373,39 @@ MonoBehaviour:
   buttonScrollViewPairs:
   - button: {fileID: 1045460815}
     scrollView: {fileID: 743316919}
-    actionName: 
   - button: {fileID: 71706077}
     scrollView: {fileID: 415228905}
-    actionName: 
   - button: {fileID: 1622834158}
     scrollView: {fileID: 955400248}
-    actionName: 
   - button: {fileID: 947647390}
     scrollView: {fileID: 469647775}
-    actionName: 
   - button: {fileID: 317943187}
     scrollView: {fileID: 1191195932}
-    actionName: 
   - button: {fileID: 1114171454}
     scrollView: {fileID: 239750534}
-    actionName: 
   - button: {fileID: 1330766423}
     scrollView: {fileID: 1637202365}
-    actionName: 
   - button: {fileID: 202958849}
     scrollView: {fileID: 1712812035}
-    actionName: 
   - button: {fileID: 678943030}
     scrollView: {fileID: 604903590}
-    actionName: 
   - button: {fileID: 269954907}
     scrollView: {fileID: 114082052}
-    actionName: 
   - button: {fileID: 722437960}
     scrollView: {fileID: 1112332490}
-    actionName: 
   - button: {fileID: 586120000}
     scrollView: {fileID: 1878378753}
-    actionName: 
   - button: {fileID: 1674225586}
     scrollView: {fileID: 369385398}
-    actionName: 
   - button: {fileID: 645830192}
     scrollView: {fileID: 1111848775}
-    actionName: 
   backButton: {fileID: 1757316117}
-  buttonTags: {fileID: 0}
+  buttonTags: {fileID: 75745860}
+  buttonEdit: {fileID: 1688402088}
+  buttonDelete: {fileID: 1059830579}
+  buttonBackFromTexture: {fileID: 175706744}
+  buttonBackFromEdit: {fileID: 796743289}
+  buttonBackFromInitial: {fileID: 694956875}
 --- !u!4 &1591449212
 Transform:
   m_ObjectHideFlags: 0
