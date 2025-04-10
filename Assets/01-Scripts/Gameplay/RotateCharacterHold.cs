@@ -55,7 +55,6 @@ public class RotateCharacterHold : MonoBehaviour
             currentRotationSpeed = pointerDelta.x * 100;
             currentRotationSpeed = Mathf.Clamp(currentRotationSpeed, -maxRotationSpeed, maxRotationSpeed);
 
-            Debug.Log("currentRotationSpeed= " + currentRotationSpeed);
             transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
         }
         else if (currentRotationSpeed != 0f)
@@ -72,8 +71,6 @@ public class RotateCharacterHold : MonoBehaviour
         // Calculer la largeur du premier tiers gauche de l'écran
         float screenWidth = Screen.width;
         float leftThirdWidth = screenWidth / 3f;
-
-        Debug.Log($"Position du pointeur : {pointerPosition.x}, Largeur du premier tiers : {leftThirdWidth}");
 
         // Vérifier si la position du pointeur est dans le premier tiers gauche
         return pointerPosition.x <= leftThirdWidth;
