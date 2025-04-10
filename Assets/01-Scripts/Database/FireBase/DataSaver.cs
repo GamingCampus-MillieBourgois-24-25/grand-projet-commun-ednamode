@@ -4,7 +4,8 @@ using UnityEngine;
 using System;
 using Firebase.Database;
 using Firebase.Auth;
-using TMPro; // Import nécessaire pour TextMeshPro
+using TMPro;
+using UnityEditor; // Import nécessaire pour TextMeshPro
 
 public class DataSaver : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class DataSaver : MonoBehaviour
         {
             userId = auth.CurrentUser.UserId;
             Debug.Log($"Utilisateur connecté avec UID : {userId}");
+
+            LoadDataFn(); // Charge les données à l'initialisation
         }
         else
         {
@@ -70,6 +73,7 @@ public class DataSaver : MonoBehaviour
             print("server data found");
 
             dts = JsonUtility.FromJson<dataToSave>(jsonData);
+
             UpdateDataDisplay(); // Met à jour l'affichage des données
         }
         else
@@ -146,6 +150,18 @@ public class DataSaver : MonoBehaviour
         SaveDataFn();
         UpdateDataDisplay();
     }
+
+    [ContextMenu("Save")]
+    public void Save()
+    {
+        SaveDataFn();
+    }
+
+    [ContextMenu("Load")]
+    public void Load()
+    {
+        LoadDataFn();
+    }
 }
 
 [Serializable]
@@ -158,3 +174,5 @@ public class dataToSave
     public int crrLevelProgress;
     public int totalLevelProgress;
 }
+
+

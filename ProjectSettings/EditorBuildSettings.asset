@@ -20,7 +20,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/03-Scenes/Lobby/Lobby_DripOrDrop.unity
     guid: dabd245b1066a8b4d920b88c92ed33c9
-  - enabled: 1
+  - enabled: 0
     path: Assets/03-Scenes/Sandbox/Mato-Lobby_DripOrDrop.unity
     guid: b27077153d6761d47abb035f59cdbad7
   - enabled: 1
@@ -29,7 +29,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/03-Scenes/Authentification/GameSceneExample.unity
     guid: 63da3480631d4784d9f4cc73b920c1b8
+  - enabled: 1
+    path: Assets/03-Scenes/Account/AccountScene.unity
+    guid: 37b53452a556d3149aafe8799fd81b82
   m_configObjects:
+    com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: b7236eb4ebea37547935f7109273cb01, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 84b22ac815dc1f34b857c3d73e369e80, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 04b203ae0c150614fa491c3a30b24b05, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

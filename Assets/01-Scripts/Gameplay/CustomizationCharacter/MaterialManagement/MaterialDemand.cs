@@ -21,14 +21,14 @@ namespace CharacterCustomization
         {
             foreach (var path in _paths)
             {
-                var loadedMaterial = AssetDatabase.LoadAssetAtPath<Material>(path);
+                //var loadedMaterial = AssetDatabase.LoadAssetAtPath<Material>(path);
 
-                if (loadedMaterial != null)
+                //if (loadedMaterial != null)
                 {
                     throw new Exception("MaterialOnDemand: aucun matériau défini !");
 
                 }
-                return loadedMaterial;
+                //return loadedMaterial;
             }
 
             throw new Exception();
