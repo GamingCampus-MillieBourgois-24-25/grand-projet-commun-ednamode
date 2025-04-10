@@ -1,62 +1,83 @@
-using System.Collections.Generic;
-using TMPro;
+Ôªøusing System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
+using DG.Tweening;
+using Unity.Services.Authentication;
 using Unity.Services.Lobbies.Models;
 
-/// <summary>
-/// GËre líaffichage de tous les joueurs dans le lobby.
-/// </summary>
 public class PlayerListUI : MonoBehaviour
 {
-    [Header("RÈfÈrences")]
+    [Header("R√©f√©rences UI")]
+    [SerializeField] private Transform container;
+    [SerializeField] private GameObject playerNamePrefab;
 
-    [Tooltip("Prefab reprÈsentant un joueur.")]
-    [SerializeField] private PlayerListItemUI playerItemPrefab;
-
-    [Tooltip("Conteneur o˘ seront instanciÈs les items.")]
-    [SerializeField] private Transform contentRoot;
-
-    [Tooltip("Texte affichant le nom du lobby.")]
-    [SerializeField] private TMP_Text lobbyNameText;
-
-    private readonly List<PlayerListItemUI> playerItems = new();
+    private Dictionary<string, GameObject> playerEntries = new();
 
     private void OnEnable()
     {
-        InvokeRepeating(nameof(Refresh), 0.5f, 2f); // polling toutes les 2s
+        RefreshPlayerList();
     }
 
-    private void OnDisable()
+    public void RefreshPlayerList()
     {
-        CancelInvoke(nameof(Refresh));
-    }
+        // Nettoyage
+        foreach (Transform child in container)
+            Destroy(child.gameObject);
 
-    private void Refresh()
-    {
-        var lobby = SessionStore.Instance.CurrentLobby;
+        playerEntries.Clear();
+
+        var lobby = MultiplayerManager.Instance?.CurrentLobby;
         if (lobby == null) return;
 
-        // Affiche le nom du lobby
-        if (lobbyNameText != null)
-            lobbyNameText.text = lobby.Name;
+        string hostId = lobby.HostId;
 
-        // Supprime les anciens items
-        foreach (var item in playerItems)
+        // Trie : Host en haut, puis noms alphab√©tiques
+        var sortedPlayers = new List<Player>(lobby.Players);
+        sortedPlayers.Sort((a, b) =>
         {
-            Destroy(item.gameObject);
-        }
-        playerItems.Clear();
+            if (a.Id == hostId) return -1;
+            if (b.Id == hostId) return 1;
 
-        // Ajoute les nouveaux joueurs
-        foreach (var player in lobby.Players)
+            string nameA = a.Data.TryGetValue("name", out var dA) ? dA.Value : a.Id;
+            string nameB = b.Data.TryGetValue("name", out var dB) ? dB.Value : b.Id;
+            return nameA.CompareTo(nameB);
+        });
+
+        foreach (var player in sortedPlayers)
         {
-            var item = Instantiate(playerItemPrefab, contentRoot);
-            string playerName = player.Data != null && player.Data.ContainsKey("name")
-                ? player.Data["name"].Value
-                : "Joueur inconnu";
-            item.SetPlayerName(playerName);
-            playerItems.Add(item);
+            string playerId = player.Id;
+            string name = player.Data.TryGetValue("name", out var data) ? data.Value : $"Player_{player.Id}";
+
+            GameObject entry = Instantiate(playerNamePrefab, container);
+
+            TMP_Text[] texts = entry.GetComponentsInChildren<TMP_Text>();
+            TMP_Text nameText = texts[0];
+            TMP_Text statusText = texts.Length > 1 ? texts[1] : null;
+
+            bool isHost = playerId == hostId;
+            nameText.text = isHost ? $"üëë {name}" : name;
+            nameText.fontStyle = isHost ? FontStyles.Bold : FontStyles.Normal;
+
+            if (statusText != null)
+            {
+                bool isReady = MultiplayerManager.Instance.IsPlayerReady(playerId);
+
+                statusText.text = isReady
+                    ? "<color=#4CAF50>‚úÖ Ready</color>"
+                    : "<color=#F44336>‚ùå Not Ready</color>";
+
+                statusText.fontStyle = isReady ? FontStyles.Bold : FontStyles.Italic;
+            }
+
+            playerEntries[playerId] = entry;
+
+            // üí´ Animation d‚Äôapparition
+            CanvasGroup cg = entry.AddComponent<CanvasGroup>();
+            cg.alpha = 0f;
+            entry.transform.localScale = Vector3.zero;
+
+            cg.DOFade(1f, 0.4f).SetEase(Ease.OutQuad);
+            entry.transform.DOScale(1f, 0.4f).SetEase(Ease.OutBack);
         }
     }
 }

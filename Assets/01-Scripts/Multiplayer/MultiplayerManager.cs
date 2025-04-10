@@ -47,15 +47,6 @@ public class MultiplayerManager : NetworkBehaviour
         IsReady = false;
     }
 
-    /*    private async void Start()
-        {
-            isReady = false;
-            await AuthGuard.EnsureSignedInAsync();
-            isReady = AuthenticationService.Instance.IsSignedIn;
-            Debug.Log($"MultiplayerManager isReady = {isReady}");
-        }*/
-
-
     private async void Start()
     {
         isReady = false;
@@ -116,6 +107,9 @@ public class MultiplayerManager : NetworkBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
+        string playerId = AuthenticationService.Instance?.PlayerId;
+        SessionStore.Instance?.RegisterClient(clientId, playerId);
+
         playerReadyStates[clientId] = false;
 
         if (CanWriteNetworkData())
@@ -125,6 +119,7 @@ public class MultiplayerManager : NetworkBehaviour
         NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
 
         UpdateReadyUI();
+        FindAnyObjectByType<PlayerListUI>()?.RefreshPlayerList();
         FindFirstObjectByType<MultiplayerUI>()?.OnClientConnected();
     }
 
@@ -136,6 +131,7 @@ public class MultiplayerManager : NetworkBehaviour
         if (CanWriteNetworkData())
             MultiplayerNetwork.Instance.PlayerCount.Value = playerReadyStates.Count;
 
+        FindAnyObjectByType<PlayerListUI>()?.RefreshPlayerList();
         UpdateReadyUI();
     }
 
@@ -145,6 +141,17 @@ public class MultiplayerManager : NetworkBehaviour
         FindFirstObjectByType<MultiplayerUI>()?.UpdateReadyCount(ready, total);
     }
     #endregion
+
+    public bool IsPlayerReady(string playerId)
+    {
+        foreach (var kvp in playerReadyStates)
+        {
+            if (SessionStore.Instance.GetPlayerId(kvp.Key) == playerId)
+                return kvp.Value;
+        }
+        return false;
+    }
+
 
 
     private async void SendHeartbeat()
@@ -310,7 +317,6 @@ public class MultiplayerManager : NetworkBehaviour
             if (string.IsNullOrEmpty(relayCode))
             {
                 Debug.LogError("JoinCode manquant dans QuickJoin.");
-                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
                 FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
@@ -328,13 +334,11 @@ public class MultiplayerManager : NetworkBehaviour
             if (e.Reason == LobbyExceptionReason.NoOpenLobbies)
             {
                 Debug.LogWarning("Aucun lobby trouvé");
-                NotificationManager.Instance.ShowNotification("No Lobby found", Type.Important);
                 FindAnyObjectByType<MultiplayerUI>()?.NotifyNoLobbyFound();
             }
             else
             {
                 Debug.LogError("Quick Join fail: " + e.Message);
-                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
                 FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
             }
         }

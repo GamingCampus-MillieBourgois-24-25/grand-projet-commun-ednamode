@@ -44,7 +44,7 @@ public static class RelayUtils
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         transport.SetRelayServerData(relayData);
         NetworkManager.Singleton.StartHost();
-        Debug.Log("?? Host lancé via Relay.");
+        Debug.Log("[Relay] Host lancé via Relay.");
     }
 
     public static void StartClient(JoinAllocation allocation)
@@ -63,6 +63,6 @@ public static class RelayUtils
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         transport.SetRelayServerData(relayData);
         NetworkManager.Singleton.StartClient();
-        Debug.Log("?? Client connecté via Relay.");
+        Debug.Log("[Relay] Client connecté via Relay.");
     }
 }
