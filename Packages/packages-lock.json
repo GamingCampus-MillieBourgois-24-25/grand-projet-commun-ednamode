@@ -21,8 +21,8 @@
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.modules.subsystems": "1.0.0",
         "com.unity.modules.androidjni": "1.0.0",
+        "com.unity.modules.subsystems": "1.0.0",
         "com.unity.adaptiveperformance": "5.1.0"
       },
       "url": "https://packages.unity.com"
@@ -236,7 +236,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.services.authentication": {
-      "version": "3.4.1",
+      "version": "3.4.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {

@@ -25,7 +25,7 @@ public class NotificationManager : MonoBehaviour
     public Color colorNormal = Color.white;
 
     [Tooltip("Couleur pour les notifications info.")]
-    public Color colorInfo = Color.cyan;
+    public Color colorInfo = Color.yellow;
 
     [Tooltip("Couleur pour les notifications importantes.")]
     public Color colorImportant = Color.red;

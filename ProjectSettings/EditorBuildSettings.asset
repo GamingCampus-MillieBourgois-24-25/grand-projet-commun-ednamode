@@ -5,30 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/03-Scenes/Sandbox/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 0
-    path: Assets/Plugins/DA_Minimal_Setup/DA_Setup.unity
-    guid: 76eab1e267b69f747bba890e2875d674
-  - enabled: 0
-    path: Assets/Widgets/Scenes/WidgetsQuickstart.unity
-    guid: 4c4d6e789e258834e91184588cb0e0eb
-  - enabled: 0
-    path: Assets/Plugins/NGO_Minimal_Setup/NGO_Setup.unity
-    guid: 1cbc40856b460984897b4643ac529f71
   - enabled: 1
-    path: Assets/03-Scenes/Lobby/Lobby_Horizontal.unity
-    guid: 0ac13300046e37343a94211ae8457fbe
+    path: Assets/03-Scenes/Sandbox/Lobby_Horizontal 1.unity
+    guid: 8229dce35f0d0ca49b79f229705c51aa
   - enabled: 1
     path: Assets/03-Scenes/Sandbox/Lucie_BasicGameplay.unity
     guid: ba1da8e515c3fda4fa36690fb49e1fe5
   - enabled: 1
-    path: Assets/DA_Minimal_Setup/DA_Setup.unity
-    guid: 7cb2ec801f482614ebafec6b8c9f61c0
-  - enabled: 1
-    path: Assets/03-Scenes/Sandbox/Lobby_Horizontal 1.unity
-    guid: 8229dce35f0d0ca49b79f229705c51aa
+    path: Assets/03-Scenes/Lobby/Lobby_Horizontal.unity
+    guid: 0ac13300046e37343a94211ae8457fbe
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 217b9a160693b5c4780e0e854ab4e27c, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 04b203ae0c150614fa491c3a30b24b05, type: 2}
