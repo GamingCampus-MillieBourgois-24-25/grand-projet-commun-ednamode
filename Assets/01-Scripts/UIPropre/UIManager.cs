@@ -167,6 +167,9 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region 🎯 Panel Management
+    private List<GameObject> _previouslyClosedPanels = new();
+    private Stack<GameObject> _panelHistory = new();
+
     private void InitializePanels()
     {
         _panelDict = new();
@@ -198,11 +201,19 @@ public class UIManager : MonoBehaviour
             }
             if (entry.hasCloseButton)
             {
-                // Cherche un bouton dans les enfants nommé "Close" ou tagué "UIClose"
-                Button closeButton = entry.panelObject.GetComponentInChildren<Button>(true);
-                if (closeButton != null && closeButton.name.ToLower().Contains("close"))
+                // Recherche dans les enfants actifs/inactifs
+                Button[] buttons = entry.panelObject.GetComponentsInChildren<Button>(true);
+                foreach (var btn in buttons)
                 {
-                    closeButton.onClick.AddListener(() => HidePanel(entry.panelObject));
+                    string btnName = btn.name.ToLowerInvariant();
+
+                    if (btnName.Contains("close"))
+                    {
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(() => OnCloseAndRestore(entry.panelObject));
+                        Debug.Log($"[UIManager] 🔒 Bouton 'Close' trouvé et relié pour : {entry.panelName}");
+                        break;
+                    }
                 }
             }
 
@@ -244,6 +255,10 @@ public class UIManager : MonoBehaviour
 
         if (_currentPanel != null && _currentPanel != panelToShow && replaceCurrentPanel)
         {
+            if (!_previouslyClosedPanels.Contains(_currentPanel))
+                _previouslyClosedPanels.Add(_currentPanel);
+
+            _panelHistory.Push(_currentPanel);
             HidePanel(_currentPanel, instant);
         }
 
@@ -313,6 +328,39 @@ public class UIManager : MonoBehaviour
 
         _currentPanel = null;
     }
+
+    public void OnCloseAndRestore()
+    {
+        HidePanel(_currentPanel);
+        RestorePreviousPanels();
+    }
+
+    public void GoBackToPreviousPanel()
+    {
+        if (_panelHistory.Count > 0)
+        {
+            var previousPanel = _panelHistory.Pop();
+            if (previousPanel != null)
+                ShowPanel(previousPanel.name, false, replaceCurrentPanel: false);
+        }
+    }
+
+    public void OnCloseAndRestore(GameObject panel)
+    {
+        HidePanel(panel);
+        RestorePreviousPanels();
+    }
+
+    public void RestorePreviousPanels()
+    {
+        foreach (var panel in _previouslyClosedPanels)
+        {
+            if (panel != null)
+                ShowPanel(panel.name, false, replaceCurrentPanel: false);
+        }
+
+        _previouslyClosedPanels.Clear();
+    }
     #endregion
 
     #region 🖱 Outside Click Detection & Utility
@@ -372,6 +420,10 @@ public class UIManager : MonoBehaviour
 
             countdownText.transform.localScale = Vector3.one * 0.5f;
             countdownText.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack);
+            if (i <= 3 && i > 0)
+            {
+                VibrationManager.Vibrate();
+            }
 
             yield return new WaitForSeconds(1f);
         }
