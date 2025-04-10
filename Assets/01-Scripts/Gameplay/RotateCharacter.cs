@@ -1,68 +1,66 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
 public class Rotatable : MonoBehaviour
 {
-    [SerializeField] private float speed = 3;
-    [SerializeField] private bool inverted;
+    [SerializeField] private float speed = 300f; // Vitesse de rotation (ajustable dans l’inspecteur)
+    [SerializeField] private bool inverted = false; // Inversion de la direction
 
-    private Button rotateLeftButton;
-    private Button rotateRightButton;
-    private float rotationDirection = 0f;
-    private bool rotateAllowed = false;
+    private bool isRotating = false;
+    private Vector2 lastPosition;
 
-    private void Start()
+    void Update()
     {
-        // Trouver les boutons dans la scène
-        rotateLeftButton = GameObject.Find("RotateLeftButton").GetComponent<Button>();
-        rotateRightButton = GameObject.Find("RotateRightButton").GetComponent<Button>();
-
-        if (rotateLeftButton == null || rotateRightButton == null)
+        // Gestion de la souris (PC)
+        if (Input.GetMouseButtonDown(0)) // Clic gauche pressé
         {
-            Debug.LogError("Les boutons de rotation n'ont pas été trouvés dans la scène !");
-            return;
+            isRotating = true;
+            lastPosition = Input.mousePosition;
+        }
+        else if (Input.GetMouseButtonUp(0)) // Clic gauche relâché
+        {
+            isRotating = false;
         }
 
-        // Ajouter les événements aux boutons
-        AddEventTrigger(rotateLeftButton.gameObject, EventTriggerType.PointerDown, _ => StartRotation(-1));
-        AddEventTrigger(rotateLeftButton.gameObject, EventTriggerType.PointerUp, _ => StopRotation());
-
-        AddEventTrigger(rotateRightButton.gameObject, EventTriggerType.PointerDown, _ => StartRotation(1));
-        AddEventTrigger(rotateRightButton.gameObject, EventTriggerType.PointerUp, _ => StopRotation());
-    }
-
-    private void StartRotation(float direction)
-    {
-        rotationDirection = direction;
-        if (!rotateAllowed)
+        // Gestion du toucher (mobile)
+        if (Input.touchCount > 0)
         {
-            rotateAllowed = true;
-            StartCoroutine(Rotate());
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began)
+            {
+                isRotating = true;
+                lastPosition = touch.position;
+            }
+            else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                isRotating = false;
+            }
         }
-    }
 
-    private void StopRotation()
-    {
-        rotateAllowed = false;
-    }
-
-    private IEnumerator Rotate()
-    {
-        while (rotateAllowed)
+        // Rotation si en cours
+        if (isRotating)
         {
-            float rotationAmount = rotationDirection * speed;
-            transform.Rotate(Vector3.up, (inverted ? -rotationAmount : rotationAmount), Space.World);
-            yield return null;
-        }
-    }
+            Vector2 currentPosition = Vector2.zero;
 
-    private void AddEventTrigger(GameObject obj, EventTriggerType type, System.Action<BaseEventData> action)
-    {
-        EventTrigger trigger = obj.GetComponent<EventTrigger>() ?? obj.AddComponent<EventTrigger>();
-        EventTrigger.Entry entry = new EventTrigger.Entry { eventID = type };
-        entry.callback.AddListener(eventData => action(eventData));
-        trigger.triggers.Add(entry);
+            // Souris
+            if (Input.GetMouseButton(0))
+            {
+                currentPosition = Input.mousePosition;
+            }
+            // Toucher
+            else if (Input.touchCount > 0)
+            {
+                currentPosition = Input.GetTouch(0).position;
+            }
+
+            // Calculer le déplacement horizontal
+            float deltaX = currentPosition.x - lastPosition.x;
+            float rotationAmount = deltaX * speed * Time.deltaTime;
+
+            // Appliquer la rotation autour de l’axe Y (Vector3.up)
+            transform.Rotate(Vector3.up, inverted ? rotationAmount : -rotationAmount, Space.World);
+
+            // Mettre à jour la dernière position
+            lastPosition = currentPosition;
+        }
     }
 }
