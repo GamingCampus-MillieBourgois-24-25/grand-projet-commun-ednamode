@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2525337e2dc59934c9197f9b94b9fa33, type: 3}
-  m_Name: HatTab 1
+  m_Name: Face_Accessories
   m_EditorClassIdentifier: 
   tabIcon: {fileID: 21300000, guid: 528cb202238ff467cb179c07d5c47c6b, type: 3}
   tabName: Accessory

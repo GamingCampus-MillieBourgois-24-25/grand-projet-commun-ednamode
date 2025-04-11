@@ -16,4 +16,4 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: b041c349ea64f4d9d871289d00c0dc1c, type: 3}
   prefab: {fileID: 6968167550943319159, guid: 48a2d6ad33d109a498cf23739e5d3cae, type: 3}
   price: 200
-  itemType: 0
+  category: 7

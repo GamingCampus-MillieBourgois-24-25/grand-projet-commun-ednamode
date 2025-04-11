@@ -2,20 +2,31 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class ItemSorter : MonoBehaviour
+namespace CharacterCustomization
 {
-    public void SortItemsByCategory(string category)
+    public class ItemSorter : MonoBehaviour
     {
-        foreach (Transform child in transform)
+        public void SortItemsByCategory(string category)
         {
-            Debug.Log("Child: " + child.gameObject.name);
-            if (child.gameObject.GetComponent<ShopButton>().GetCategory() == category)
+            foreach (Transform child in transform)
+            {
+                Debug.Log("Child: " + child.gameObject.name);
+                if (child.gameObject.GetComponent<ShopButton>().GetCategory() == category)
+                {
+                    child.gameObject.SetActive(true);
+                }
+                else
+                {
+                    child.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        public void ShowAllItems()
+        {
+            foreach (Transform child in transform)
             {
                 child.gameObject.SetActive(true);
-            }
-            else
-            {
-                child.gameObject.SetActive(false);
             }
         }
     }
