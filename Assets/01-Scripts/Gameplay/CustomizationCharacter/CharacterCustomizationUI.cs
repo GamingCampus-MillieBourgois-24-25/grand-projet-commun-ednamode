@@ -243,18 +243,9 @@ namespace CharacterCustomization
                     bool success = ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
                     if (!success)
                     {
-                        Debug.LogError("Échec de la création du ColorPicker !");
                         colorPickerPanel.SetActive(false);
                     }
                 }
-                else
-                {
-                    Debug.LogError("Aucun SkinnedMeshRenderer trouvé sur l’instance sélectionnée !");
-                }
-            }
-            else
-            {
-                Debug.LogError("colorPickerPanel ou _selectedInstance est null !");
             }
         }
         public void OnChangeBaseColorClicked()
@@ -264,7 +255,6 @@ namespace CharacterCustomization
                 SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
-                    Debug.Log("Ouverture du ColorPicker pour le personnage de base.");
                     if (texturePanel != null) texturePanel.SetActive(false);
 
                     colorPickerPanel.SetActive(true);
@@ -272,18 +262,9 @@ namespace CharacterCustomization
                     bool success = ColorPicker.Create(currentColor, "Couleur du personnage de base", renderer, OnColorChangedBase, OnBaseColorSelected);
                     if (!success)
                     {
-                        Debug.LogError("Échec de la création du ColorPicker pour le personnage de base !");
                         colorPickerPanel.SetActive(false);
                     }
                 }
-                else
-                {
-                    Debug.LogError("Aucun SkinnedMeshRenderer trouvé sur CharacterInstance !");
-                }
-            }
-            else
-            {
-                Debug.LogError("_characterCustomization, CharacterInstance ou colorPickerPanel est null !");
             }
         }
         public void OnBackFromTextureClicked()
@@ -437,7 +418,6 @@ namespace CharacterCustomization
                 if (renderer != null)
                 {
                     renderer.material.color = color;
-                    Debug.Log("Couleur de base mise à jour : " + color);
                 }
             }
         }
@@ -451,7 +431,6 @@ namespace CharacterCustomization
                 {
                     renderer.material = new Material(renderer.material);
                     renderer.material.color = color;
-                    Debug.Log("Couleur de base appliquée : " + color);
                 }
             }
             ResetCamera();
@@ -460,7 +439,6 @@ namespace CharacterCustomization
         {
             if (textureButtonContainer == null || textureButtonPrefab == null)
             {
-                Debug.LogError("textureButtonContainer ou textureButtonPrefab n’est pas assigné dans l’inspecteur !");
                 return;
             }
 
@@ -484,10 +462,7 @@ namespace CharacterCustomization
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => ApplyTexture(index));
                 }
-                else
-                {
-                    Debug.LogWarning($"Aucun composant Button trouvé sur textureButtonPrefab pour la texture {option.name} !");
-                }
+           
 
                 Image buttonImage = buttonObj.GetComponent<Image>();
                 if (buttonImage != null && option.preview != null)
@@ -497,10 +472,7 @@ namespace CharacterCustomization
                     buttonImage.preserveAspect = true;
                     buttonImage.color = Color.white;
                 }
-                else
-                {
-                    Debug.LogWarning($"Image ou preview manquant pour la texture : {option.name}");
-                }
+            
             }
 
             if (texturePanel != null) texturePanel.SetActive(false);
