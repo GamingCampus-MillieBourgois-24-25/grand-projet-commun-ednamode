@@ -68,8 +68,9 @@ public class RotateCharacterHold : MonoBehaviour
     {
         if (IsHolding)
         {
-            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-            currentRotationSpeed = mouseDelta.x*100;
+            Vector2 inputDelta = GetInputDelta();
+
+            currentRotationSpeed = inputDelta.x*100;
             if (currentRotationSpeed > maxRotationSpeed)
             {
                 currentRotationSpeed = maxRotationSpeed;
@@ -120,4 +121,20 @@ public class RotateCharacterHold : MonoBehaviour
 
         return Vector2.zero;
     }
+
+
+    private Vector2 GetInputDelta()
+    {
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+        {
+            return Touchscreen.current.delta.ReadValue();
+        }
+        else if (Mouse.current != null)
+        {
+            return Mouse.current.delta.ReadValue();
+        }
+
+        return Vector2.zero;
+    }
+
 }

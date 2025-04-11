@@ -9,6 +9,14 @@ public class ChooseCamPoint : MonoBehaviour
     private List<Transform> camPoints = new List<Transform>();
     private Transform targetCamPoint;
 
+    public enum CamPointType
+    {
+        Face,
+        Torso,
+        Legs,
+        Shoe,
+        FullBody
+    }
     private void Start()
     {
         GameObject[] camPointObjects = GameObject.FindGameObjectsWithTag("CamPoint");
@@ -45,9 +53,9 @@ public class ChooseCamPoint : MonoBehaviour
         }
     }
 
-    public void SwitchToCamPoint(string camPoint)
+    public void SwitchToCamPoint(CamPointType camPoint)
     {
-        GameObject targetObject = GameObject.Find(camPoint);
+        GameObject targetObject = GameObject.Find(camPoint.ToString()+"CamPoint");
 
         if (targetObject != null)
         {
