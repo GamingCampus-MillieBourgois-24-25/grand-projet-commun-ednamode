@@ -1,9 +1,11 @@
-// SESSION STORE � Centralise les infos multijoueur (Lobby, JoinCode)
+﻿// SESSION STORE – Centralise les infos multijoueur (Lobby, JoinCode)
 using UnityEngine;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using System.Collections.Generic;
 using Unity.Services.Authentication;
+using System;
+using System.Threading.Tasks;
 
 public class SessionStore : MonoBehaviour
 {
@@ -39,8 +41,8 @@ public class SessionStore : MonoBehaviour
         JoinCode = null;
     }
 
-    private Dictionary<ulong, string> clientIdToPlayerId = new();
-    private Dictionary<string, ulong> playerIdToClientId = new();
+    public Dictionary<ulong, string> clientIdToPlayerId = new();
+    public Dictionary<string, ulong> playerIdToClientId = new();
 
     public void RegisterClient(ulong clientId, string playerId)
     {
@@ -63,23 +65,55 @@ public class SessionStore : MonoBehaviour
 
     public string GetPlayerName(string playerId)
     {
-        if (CurrentLobby == null) return playerId;
+        if (CurrentLobby == null)
+        {
+            Debug.LogWarning($"[SessionStore] GetPlayerName() appelé alors que CurrentLobby est null");
+            return $"(offline) {playerId}";
+        }
+
+        if (string.IsNullOrEmpty(playerId))
+        {
+            Debug.LogWarning("[SessionStore] playerId est vide ou null");
+            return "(invalid id)";
+        }
 
         foreach (var player in CurrentLobby.Players)
         {
-            if (player.Id == playerId)
+            if (player.Id == playerId && player.Data != null &&
+                player.Data.TryGetValue("name", out var data) && !string.IsNullOrEmpty(data.Value))
             {
-                if (player.Data.TryGetValue("name", out var data))
-                    return data.Value;
+                return data.Value;
             }
         }
 
-        return playerId;
+        return $"Player_{playerId}";
     }
-
 
     public string GetLocalPlayerId()
     {
         return AuthenticationService.Instance?.PlayerId;
     }
+
+    public async Task RefreshLobbyAsync(Action<Lobby> onUpdated = null)
+    {
+        if (string.IsNullOrEmpty(CurrentLobby?.Id))
+        {
+            Debug.LogWarning("[SessionStore] ⚠️ Impossible de rafraîchir le lobby : ID manquant");
+            return;
+        }
+
+        try
+        {
+            Lobby updatedLobby = await LobbyService.Instance.GetLobbyAsync(CurrentLobby.Id);
+            SetLobby(updatedLobby);
+            Debug.Log("[SessionStore] ✅ Lobby mis à jour depuis le serveur.");
+
+            onUpdated?.Invoke(updatedLobby);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogWarning($"[SessionStore] ❌ Erreur lors du refresh lobby : {e.Message}");
+        }
+    }
+
 }

@@ -9,11 +9,13 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
+using Unity.Services.Matchmaker.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+using LobbyPlayer = Unity.Services.Lobbies.Models.Player;
 using Type = NotificationData.NotificationType;
 
 public class MultiplayerManager : NetworkBehaviour
@@ -80,6 +82,11 @@ public class MultiplayerManager : NetworkBehaviour
 
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        await SessionStore.Instance.RefreshLobbyAsync(updated =>
+        {
+            // Action après mise à jour réussie
+            FindFirstObjectByType<PlayerListUI>()?.RefreshPlayerList();
+        });
     }
 
     private void Update()
@@ -119,20 +126,33 @@ public class MultiplayerManager : NetworkBehaviour
         NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
 
         UpdateReadyUI();
-        FindAnyObjectByType<PlayerListUI>()?.RefreshPlayerList();
+        _ = SessionStore.Instance.RefreshLobbyAsync(updated =>
+        {
+            PlayerListUI playerList = FindObjectOfType<PlayerListUI>();
+            playerList?.RefreshPlayerList();
+        });
+
         FindFirstObjectByType<MultiplayerUI>()?.OnClientConnected();
     }
 
     private void OnClientDisconnected(ulong clientId)
     {
+        string playerId = SessionStore.Instance.GetPlayerId(clientId);
+        FindFirstObjectByType<PlayerListUI>()?.AnimatePlayerLeave(playerId);
+
+        // Retirer le joueur de la liste
         if (playerReadyStates.ContainsKey(clientId))
             playerReadyStates.Remove(clientId);
 
         if (CanWriteNetworkData())
             MultiplayerNetwork.Instance.PlayerCount.Value = playerReadyStates.Count;
 
-        FindAnyObjectByType<PlayerListUI>()?.RefreshPlayerList();
         UpdateReadyUI();
+        _ = SessionStore.Instance.RefreshLobbyAsync(updated =>
+        {
+            FindAnyObjectByType<PlayerListUI>()?.RefreshPlayerList();
+        });
+
     }
 
     [ClientRpc]
@@ -166,6 +186,23 @@ public class MultiplayerManager : NetworkBehaviour
         }
     }
 
+    public async Task RefreshLobbyAsync()
+    {
+        if (SessionStore.Instance.CurrentLobby == null) return;
+
+        string lobbyId = SessionStore.Instance.CurrentLobby.Id;
+
+        try
+        {
+            var updated = await LobbyService.Instance.GetLobbyAsync(lobbyId);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[Lobby] Erreur lors de la mise à jour du lobby : {ex.Message}");
+        }
+    }
+
+
     public async void CreateLobby(string lobbyName)
     {
         if (!AuthenticationService.Instance.IsSignedIn)
@@ -195,7 +232,7 @@ public class MultiplayerManager : NetworkBehaviour
                 return;
             }
 
-            JoinCode = joinCode;
+            
 
             var playerName = "Joueur_" + UnityEngine.Random.Range(1000, 9999);
 
@@ -207,7 +244,7 @@ public class MultiplayerManager : NetworkBehaviour
             var createOptions = new CreateLobbyOptions
             {
                 IsPrivate = false,
-                Player = new Player(id: AuthenticationService.Instance.PlayerId, data: playerData),
+                Player = new LobbyPlayer(id: AuthenticationService.Instance.PlayerId, data: playerData),
                 Data = new Dictionary<string, DataObject>
                 {
                     { "joinCode", new DataObject(DataObject.VisibilityOptions.Public, JoinCode) }
@@ -226,8 +263,17 @@ public class MultiplayerManager : NetworkBehaviour
 
             SessionStore.Instance.SetLobby(CurrentLobby);
             RelayUtils.StartHost(allocation);
+            JoinCode = joinCode;
+            await LobbyService.Instance.UpdateLobbyAsync(CurrentLobby.Id, new UpdateLobbyOptions
+            {
+                Data = new Dictionary<string, DataObject>
+                {
+                    { "joinCode", new DataObject(DataObject.VisibilityOptions.Public, JoinCode) }
+                }
+            });
 
-            Debug.Log("Lobby créé: " + lobbyName + " | Code: " + JoinCode);
+            await Task.Delay(1500); // 1.5s pour laisser le lobby exister réellement sur le service
+            Debug.Log("Lobby créé: " + lobbyName + " | Code: " + CurrentLobby.LobbyCode);
         }
         catch (Exception e)
         {
@@ -236,66 +282,57 @@ public class MultiplayerManager : NetworkBehaviour
             FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
         }
         FindAnyObjectByType<MultiplayerUI>()?.NotifyCreateResult(true);
-        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(CurrentLobby.LobbyCode);
+        Debug.Log($"[LOBBY] Code d'invitation du lobby : {CurrentLobby.LobbyCode}");
+        Debug.Log($"[RELAY] Code de Relay : {JoinCode}");
+
     }
 
-    public async void JoinLobbyByCode(string code)
+    public async void JoinLobbyByCode(string code, MultiplayerUI multiplayerUI)
     {
-        if (!AuthenticationService.Instance.IsSignedIn) return;
-
-        if (!isReady)
-        {
-            Debug.LogWarning("MultiplayerManager pas encore prêt.");
-            return;
-        }
+        Debug.Log($"🔎 Tentative de rejoindre avec code : {code}");
 
         try
         {
-            var playerName = "Joueur_" + UnityEngine.Random.Range(1000, 9999);
-
             var joinOptions = new JoinLobbyByCodeOptions
             {
-                Player = new Player(id: AuthenticationService.Instance.PlayerId, data: new Dictionary<string, PlayerDataObject>
-                {
-                    { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) }
-                })
+                Player = new Unity.Services.Lobbies.Models.Player(
+                    id: AuthenticationService.Instance.PlayerId,
+                    data: new Dictionary<string, PlayerDataObject>
+                    {
+                    { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "Client_" + UnityEngine.Random.Range(0, 9999)) }
+                    }
+                )
             };
 
             CurrentLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(code, joinOptions);
-            if (CurrentLobby == null)
-            {
-                Debug.LogError("JoinLobbyByCodeAsync a retourné null.");
-                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
-                FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
-                return;
-            }
-
             SessionStore.Instance.SetLobby(CurrentLobby);
 
-            string relayCode = CurrentLobby.Data?["joinCode"]?.Value;
-            if (string.IsNullOrEmpty(relayCode))
+            string relayJoinCode = CurrentLobby.Data.ContainsKey("joinCode") ? CurrentLobby.Data["joinCode"].Value : null;
+
+            if (string.IsNullOrEmpty(relayJoinCode))
             {
-                Debug.LogError("JoinCode introuvable dans les données du lobby.");
-                NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
+                Debug.LogError("[JoinLobby] Aucun joinCode de relay trouvé.");
+                NotificationManager.Instance.ShowNotification("Lobby Relay manquant", Type.Important);
+
                 FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
                 return;
             }
 
-            var allocation = await RelayUtils.JoinRelayAsync(relayCode);
+            Debug.Log($"[JoinLobby] Relay join code reçu : {relayJoinCode}");
+
+            var allocation = await RelayUtils.JoinRelayAsync(relayJoinCode);
             RelayUtils.StartClient(allocation);
 
-            Debug.Log("Rejoint lobby avec code: " + code);
-            FindFirstObjectByType<MultiplayerUI>()?.UpdateConnectionUI(true);
             FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(true);
             UIManager.Instance?.HideAllPanels();
         }
-        catch (Exception e)
+        catch (LobbyServiceException e)
         {
             Debug.LogError("Échec join lobby: " + e.Message);
             NotificationManager.Instance.ShowNotification("Join Failed", Type.Important);
             FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
         }
-        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
     }
 
     public async void QuickJoin()
@@ -467,9 +504,40 @@ public class MultiplayerManager : NetworkBehaviour
         NotifyReadyCountClientRpc(ready, total);
     }
 
-    private bool IsHost() => NetworkManager.Singleton.IsHost;
+    private new bool IsHost() => NetworkManager.Singleton.IsHost;
+
+    [ClientRpc]
+    private void KickClientRpc(ulong clientToKick)
+    {
+        if (NetworkManager.Singleton.LocalClientId != clientToKick) return;
+
+        Debug.Log("[Kick] Ce client a été expulsé. Retour au menu...");
+        StartCoroutine(ReturnToMainMenu());
+    }
+
+    private IEnumerator ReturnToMainMenu()
+    {
+        yield return LobbyService.Instance.RemovePlayerAsync(SessionStore.Instance.CurrentLobby.Id, AuthenticationService.Instance.PlayerId);
+        NetworkManager.Singleton.Shutdown();
+        SceneManager.LoadScene("Lobby_Horizontal 1"); // à adapter si nécessaire
+    }
+
+
+    public void KickPlayerById(string lobbyPlayerId)
+    {
+        if (!SessionHelper.IsLocalPlayerHost()) return;
+
+        if (SessionHelper.TryGetClientIdFromPlayerId(lobbyPlayerId, out ulong clientId))
+        {
+            Debug.Log($"[Kick] Expulsion demandée pour {lobbyPlayerId} (clientId {clientId})");
+            KickClientRpc(clientId);
+        }
+    }
 
     #endregion
+
+
+
 
     private bool CanWriteNetworkData()
     {

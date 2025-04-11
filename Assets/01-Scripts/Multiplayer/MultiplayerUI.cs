@@ -126,14 +126,14 @@ public class MultiplayerUI : MonoBehaviour
 
     private void OnJoinClicked()
     {
-        string code = inputJoinCode.text.Trim();
+        string code = inputJoinCode.text.Trim().ToUpperInvariant();
         if (string.IsNullOrEmpty(code))
         {
             NotificationManager.Instance.ShowNotification("Invalid Code", Type.Important);
             return;
         }
-
-        MultiplayerManager.Instance.JoinLobbyByCode(code);
+        Debug.Log($"[Multi-UI] Join code: {code}");
+        MultiplayerManager.Instance.JoinLobbyByCode(code, this);
         NotificationManager.Instance.ShowNotification("Joining : " + code, Type.Info);
     }
 
@@ -180,6 +180,7 @@ public class MultiplayerUI : MonoBehaviour
     {
         if (success)
         {
+            UpdateJoinCode(MultiplayerManager.Instance.JoinCode);
             NotificationManager.Instance.ShowNotification("Join Success", Type.Info);
             UpdateConnectionUI(true);
             UpdateHostUI();
