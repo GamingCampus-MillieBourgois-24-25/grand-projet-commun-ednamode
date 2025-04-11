@@ -850,6 +850,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dependencyStatus: 0
+  jsonConfig: "{\n  \"project_info\": {\n    \"project_number\": \"1064458188877\",\n   
+    \"firebase_url\": \"https://drip-or-drop-default-rtdb.firebaseio.com\",\n   
+    \"project_id\": \"drip-or-drop\",\n    \"storage_bucket\": \"drip-or-drop.firebasestorage.app\"\n 
+    },\n  \"client\": [\n    {\n      \"client_info\": {\n        \"mobilesdk_app_id\":
+    \"1:1064458188877:android:217edb915076140c65c404\",\n        \"android_client_info\":
+    {\n          \"package_name\": \"com.ednamode.DripOrDrop\"\n        }\n     
+    },\n      \"oauth_client\": [],\n      \"api_key\": [\n        {\n          \"current_key\":
+    \"AIzaSyA7x-66cdpmoqLVeGWGM3603rW0MeW12Wg\"\n        }\n      ],\n      \"services\":
+    {\n        \"appinvite_service\": {\n          \"other_platform_oauth_client\":
+    []\n        }\n      }\n    }\n  ],\n  \"configuration_version\": \"1\"\n}"
   emailLoginField: {fileID: 896712346}
   passwordLoginField: {fileID: 1577326456}
   nameRegisterField: {fileID: 1781917333}

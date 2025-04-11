@@ -1,3 +1,4 @@
+using Firebase;
 using Firebase.Extensions;
 using Firebase.RemoteConfig;
 using System;
@@ -9,7 +10,7 @@ using UnityEngine;
 public class remoteConfigScript : MonoBehaviour
 {
     public ConfigData allConfigData;
-    private void Awake()
+    private void Start()
     {
         print("json:" + JsonUtility.ToJson(allConfigData));
         CheckRemoteConfigValues();
@@ -18,7 +19,11 @@ public class remoteConfigScript : MonoBehaviour
     public Task CheckRemoteConfigValues()
     {
         Debug.Log("Fetching data...");
-        Task fetchTask = FirebaseRemoteConfig.DefaultInstance.FetchAsync(TimeSpan.Zero);
+        
+        FirebaseApp app = FirebaseApp.GetInstance("DripOrDrop");
+        FirebaseRemoteConfig config = FirebaseRemoteConfig.GetInstance(app);
+
+        Task fetchTask = config.FetchAsync(TimeSpan.Zero);
         return fetchTask.ContinueWithOnMainThread(FetchComplete);
     }
     private void FetchComplete(Task fetchTask)
@@ -29,7 +34,10 @@ public class remoteConfigScript : MonoBehaviour
             return;
         }
 
-        var remoteConfig = FirebaseRemoteConfig.DefaultInstance;
+        FirebaseApp app = FirebaseApp.GetInstance("DripOrDrop");
+
+
+        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.GetInstance(app);
         var info = remoteConfig.Info;
         if (info.LastFetchStatus != LastFetchStatus.Success)
         {

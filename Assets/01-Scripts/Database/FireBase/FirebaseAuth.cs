@@ -3,16 +3,19 @@ using UnityEngine;
 using UnityEngine.UI;
 using Firebase;
 using Firebase.Auth;
-using Unity.Multiplayer.Center.NetcodeForGameObjectsExample.DistributedAuthority;
-using TMPro;
+using System;
 
 public class FirebaseAuthManager : MonoBehaviour
 {
     // Firebase variable
     [Header("Firebase")]
     public DependencyStatus dependencyStatus;
+    [NonSerialized]
     public FirebaseAuth auth;
+    [NonSerialized]
     public FirebaseUser user;
+    [TextArea]
+    public string jsonConfig;
 
     // Login Variables
     [Space]
@@ -34,6 +37,10 @@ public class FirebaseAuthManager : MonoBehaviour
     [SerializeField]
     private Text errorDisplayText; // Utilisez TMP_Text si vous utilisez TextMeshPro, sinon remplacez par Text
 
+    private void Awake()
+    {
+        InitializeFirebase();
+    }
 
     public void StartGameLoginProcess()
     {
@@ -50,7 +57,6 @@ public class FirebaseAuthManager : MonoBehaviour
 
         if (dependencyStatus == DependencyStatus.Available)
         {
-            InitializeFirebase();
             yield return new WaitForEndOfFrame();
             StartCoroutine(CheckForAutoLogin());
 
@@ -86,8 +92,9 @@ public class FirebaseAuthManager : MonoBehaviour
 
     void InitializeFirebase()
     {
-        //Set the default instance object
-        auth = FirebaseAuth.DefaultInstance;
+        AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
+        FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
+        auth = FirebaseAuth.GetAuth(app);
 
         auth.StateChanged += AuthStateChanged;
         AuthStateChanged(this, null);

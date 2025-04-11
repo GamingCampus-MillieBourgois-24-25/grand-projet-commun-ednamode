@@ -91,7 +91,7 @@ android {
         abortOnError false
     }
 
-    packaging {
+    packagingOptions {
         exclude ('/lib/armeabi/*' + '*')
         exclude ('/lib/armeabi-v7a/*' + '*')
         exclude ('/lib/mips/*' + '*')

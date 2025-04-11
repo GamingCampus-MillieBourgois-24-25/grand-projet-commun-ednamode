@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ShowMessage();
+        //ShowMessage();
     }
 
     private void ShowMessage()
@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
     public void BackToMenu()
     {
         // Load the main menu scene
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameSceneExemple");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GameSceneExample");
     }
 
     public void GoToAccount()

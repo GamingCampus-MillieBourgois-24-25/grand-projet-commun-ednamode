@@ -5,7 +5,8 @@ using System;
 using Firebase.Database;
 using Firebase.Auth;
 using TMPro;
-using UnityEditor; // Import nécessaire pour TextMeshPro
+using UnityEditor;
+using Firebase; // Import nécessaire pour TextMeshPro
 
 public class DataSaver : MonoBehaviour
 {
@@ -14,13 +15,19 @@ public class DataSaver : MonoBehaviour
     private DatabaseReference dbRef;
     private FirebaseAuth auth;
 
+    [TextArea]
+    public string jsonConfig;
+
     [SerializeField]
     private TMP_Text dataDisplayText; // Référence au composant Text pour afficher les données
 
     private void Awake()
     {
-        auth = FirebaseAuth.DefaultInstance;
-        dbRef = FirebaseDatabase.DefaultInstance.RootReference;
+        AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
+        FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
+        auth = FirebaseAuth.GetAuth(app);
+
+        dbRef = FirebaseDatabase.GetInstance(app).RootReference; // Utilise l'instance spécifique de FirebaseApp
 
         if (auth.CurrentUser != null)
         {
