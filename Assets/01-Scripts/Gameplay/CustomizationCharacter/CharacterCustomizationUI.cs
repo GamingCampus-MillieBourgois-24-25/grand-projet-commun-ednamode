@@ -32,6 +32,7 @@ namespace CharacterCustomization
         [Header("Boutons d'action")]
         public Button buttonChangeTexture;
         public Button buttonChangeColor;
+        public Button buttonChangeBaseColor; 
 
         [Header("Panels")]
         public GameObject texturePanel;
@@ -60,6 +61,8 @@ namespace CharacterCustomization
         private Color _initialColor;
         private Texture2D _initialTexture;
 
+
+
         public void Initialize(CharacterCustomization characterCustomization)
         {
             _characterCustomization = characterCustomization;
@@ -77,6 +80,8 @@ namespace CharacterCustomization
 
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
+            if (buttonChangeBaseColor != null) buttonChangeBaseColor.gameObject.SetActive(true);
+
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
 
@@ -92,6 +97,29 @@ namespace CharacterCustomization
             {
                 buttonChangeColor.onClick.RemoveAllListeners();
                 buttonChangeColor.onClick.AddListener(OnChangeColorClicked);
+            }
+            if (buttonChangeBaseColor != null)
+            {
+                buttonChangeBaseColor.onClick.RemoveAllListeners();
+                buttonChangeBaseColor.onClick.AddListener(OnChangeBaseColorClicked);
+            }
+
+            // Vérification initiale du CharacterInstance
+            if (_characterCustomization.CharacterInstance == null)
+            {
+                Debug.LogError("CharacterInstance est null dans _characterCustomization !");
+            }
+            else
+            {
+                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer == null)
+                {
+                    Debug.LogError("Aucun SkinnedMeshRenderer trouvé sur CharacterInstance !");
+                }
+                else
+                {
+                    Debug.Log("CharacterInstance et SkinnedMeshRenderer trouvés avec succès.");
+                }
             }
         }
 
@@ -146,6 +174,7 @@ namespace CharacterCustomization
             EnableUIPanels();
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
+            // Ne pas désactiver buttonChangeBaseColor ici
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
             _selectedInstance = null;
@@ -155,7 +184,6 @@ namespace CharacterCustomization
         {
             if (_selectedInstance != null)
             {
-                // Stocker l’état initial de l’objet
                 SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
@@ -206,24 +234,17 @@ namespace CharacterCustomization
                 SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
-                    // Restaurer l’état initial avant de changer la couleur
                     renderer.material.color = _initialColor;
                     renderer.material.SetTexture("_BaseMap", _initialTexture);
-
-                    // Fermer le texturePanel s’il est ouvert
                     if (texturePanel != null) texturePanel.SetActive(false);
 
                     colorPickerPanel.SetActive(true);
-                    Color currentColor = renderer.material.color; // Doit être après la réinitialisation
+                    Color currentColor = renderer.material.color;
                     bool success = ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
                     if (!success)
                     {
-                        Debug.LogError("Échec de la création du ColorPicker ! Une instance est peut-être déjà active.");
+                        Debug.LogError("Échec de la création du ColorPicker !");
                         colorPickerPanel.SetActive(false);
-                    }
-                    else
-                    {
-                        Debug.Log("ColorPicker activé avec succès.");
                     }
                 }
                 else
@@ -236,7 +257,35 @@ namespace CharacterCustomization
                 Debug.LogError("colorPickerPanel ou _selectedInstance est null !");
             }
         }
+        public void OnChangeBaseColorClicked()
+        {
+            if (_characterCustomization != null && _characterCustomization.CharacterInstance != null && colorPickerPanel != null)
+            {
+                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer != null)
+                {
+                    Debug.Log("Ouverture du ColorPicker pour le personnage de base.");
+                    if (texturePanel != null) texturePanel.SetActive(false);
 
+                    colorPickerPanel.SetActive(true);
+                    Color currentColor = renderer.material.color;
+                    bool success = ColorPicker.Create(currentColor, "Couleur du personnage de base", renderer, OnColorChangedBase, OnBaseColorSelected);
+                    if (!success)
+                    {
+                        Debug.LogError("Échec de la création du ColorPicker pour le personnage de base !");
+                        colorPickerPanel.SetActive(false);
+                    }
+                }
+                else
+                {
+                    Debug.LogError("Aucun SkinnedMeshRenderer trouvé sur CharacterInstance !");
+                }
+            }
+            else
+            {
+                Debug.LogError("_characterCustomization, CharacterInstance ou colorPickerPanel est null !");
+            }
+        }
         public void OnBackFromTextureClicked()
         {
             if (texturePanel != null) texturePanel.SetActive(false);
@@ -247,6 +296,7 @@ namespace CharacterCustomization
         {
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
+            // Ne pas désactiver buttonChangeBaseColor ici
             buttonManager.ShowInitialButtons();
         }
 
@@ -377,7 +427,35 @@ namespace CharacterCustomization
             }
             ResetCamera();
         }
+       
 
+        private void OnColorChangedBase(Color color)
+        {
+            if (_characterCustomization != null && _characterCustomization.CharacterInstance != null)
+            {
+                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer != null)
+                {
+                    renderer.material.color = color;
+                    Debug.Log("Couleur de base mise à jour : " + color);
+                }
+            }
+        }
+
+        private void OnBaseColorSelected(Color color)
+        {
+            if (_characterCustomization != null && _characterCustomization.CharacterInstance != null)
+            {
+                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer != null)
+                {
+                    renderer.material = new Material(renderer.material);
+                    renderer.material.color = color;
+                    Debug.Log("Couleur de base appliquée : " + color);
+                }
+            }
+            ResetCamera();
+        }
         private void InitializeTexturePanel()
         {
             if (textureButtonContainer == null || textureButtonPrefab == null)
