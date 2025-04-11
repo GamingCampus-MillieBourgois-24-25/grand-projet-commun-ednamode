@@ -40,6 +40,20 @@ public class UIManager : MonoBehaviour
         [Header("➕ Options avancées")]
         public bool closeOtherPanelWhenOpened = true;
         public bool hasCloseButton = false;           // ❌ pour affichage croix
+        public bool useSpecialAnimation = false;
+
+        public enum SpecialAnimationType
+        {
+            None,
+            SlideFromTop,
+            SlideFromBottom,
+            SlideFromLeft,
+            SlideFromRight,
+            FlipCard,
+            PopElastic,
+            BounceIn
+        }
+        public SpecialAnimationType specialAnimation = SpecialAnimationType.None;
     }
 
     [Header("🧩 Panels")]
@@ -52,6 +66,9 @@ public class UIManager : MonoBehaviour
     private Dictionary<string, GameObject> _panelDict;
     private Dictionary<Button, string> _buttonToPanel;
     private bool _isAnimating = false;
+
+    public bool useSpecialAnimation = false;
+
     #endregion
 
     #region 🔊 UI Sounds
@@ -264,7 +281,6 @@ public class UIManager : MonoBehaviour
 
         if (panelToShow.activeSelf && _currentPanel == panelToShow)
         {
-            // Le panel est déjà actif → ne rien faire
             return;
         }
 
@@ -281,7 +297,10 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            rect.DOScale(Vector3.one, animationDuration).SetEase(animationEase);
+            if (entry.useSpecialAnimation)
+                AnimateSpecialOpen(panelToShow, entry.specialAnimation);
+            else
+                rect.DOScale(Vector3.one, animationDuration).SetEase(animationEase);
         }
 
         _currentPanel = panelToShow;
@@ -303,17 +322,90 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        rect.DOKill(); // stoppe animations éventuelles
+        rect.DOKill();
 
+        // 🔍 Cherche s’il y a une animation spéciale configurée
+        var entry = panels.Find(p => p.panelObject == panel);
+
+        if (entry != null && entry.useSpecialAnimation)
+        {
+            switch (entry.specialAnimation)
+            {
+                case PanelEntry.SpecialAnimationType.FlipCard:
+                    panel.transform.DORotate(new Vector3(0, -90, 0), 0.3f, RotateMode.Fast)
+                        .SetEase(Ease.InBack)
+                        .OnComplete(() =>
+                        {
+                            panel.SetActive(false);
+                            panel.transform.rotation = Quaternion.identity;
+                            FinalizePanelClose(panel);
+                        });
+                    return;
+
+                case PanelEntry.SpecialAnimationType.SlideFromTop:
+                case PanelEntry.SpecialAnimationType.SlideFromBottom:
+                case PanelEntry.SpecialAnimationType.SlideFromLeft:
+                case PanelEntry.SpecialAnimationType.SlideFromRight:
+                    Vector2 exitDir = GetSlideDirection(entry.specialAnimation);
+                    rect.DOAnchorPos(exitDir, animationDuration)
+                        .SetEase(Ease.InBack)
+                        .OnComplete(() =>
+                        {
+                            panel.SetActive(false);
+                            rect.anchoredPosition = Vector2.zero;
+                            FinalizePanelClose(panel);
+                        });
+                    return;
+
+                case PanelEntry.SpecialAnimationType.PopElastic:
+                case PanelEntry.SpecialAnimationType.BounceIn:
+                    rect.DOScale(Vector3.zero, 0.3f)
+                        .SetEase(Ease.InBack)
+                        .OnComplete(() =>
+                        {
+                            panel.SetActive(false);
+                            rect.localScale = Vector3.one;
+                            FinalizePanelClose(panel);
+                        });
+                    return;
+            }
+        }
+
+        // ✅ Animation par défaut : vers le bas
         rect.DOAnchorPosY(-Screen.height, animationDuration)
             .SetEase(Ease.InBack)
             .OnComplete(() =>
             {
                 panel.SetActive(false);
                 rect.anchoredPosition = Vector2.zero;
-                _isAnimating = false;
-                if (panel == _currentPanel) _currentPanel = null;
+                FinalizePanelClose(panel);
             });
+    }
+
+    // Utilitaire final
+    private void FinalizePanelClose(GameObject panel)
+    {
+        _isAnimating = false;
+        if (panel == _currentPanel)
+            _currentPanel = null;
+    }
+
+    // 🔁 Retourne la direction de fermeture pour les slides
+    private Vector2 GetSlideDirection(PanelEntry.SpecialAnimationType type)
+    {
+        switch (type)
+        {
+            case PanelEntry.SpecialAnimationType.SlideFromTop:
+                return new Vector2(0, Screen.height);
+            case PanelEntry.SpecialAnimationType.SlideFromBottom:
+                return new Vector2(0, -Screen.height);
+            case PanelEntry.SpecialAnimationType.SlideFromLeft:
+                return new Vector2(-Screen.width, 0);
+            case PanelEntry.SpecialAnimationType.SlideFromRight:
+                return new Vector2(Screen.width, 0);
+            default:
+                return Vector2.zero;
+        }
     }
 
     public void HideAllPanels(bool instant = false)
@@ -399,6 +491,8 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region ⏳ Countdown
+    [Header("⏳ Compte à rebours")]
+    [SerializeField] private GameObject countdownPanel;
     [SerializeField] private TMP_Text countdownText;
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color alertColor = Color.red;
@@ -410,6 +504,7 @@ public class UIManager : MonoBehaviour
 
     private IEnumerator CountdownRoutine(System.Action onComplete)
     {
+        countdownPanel.SetActive(true);
         countdownText.gameObject.SetActive(true);
 
         for (int i = 10; i >= 0; i--)
@@ -428,9 +523,49 @@ public class UIManager : MonoBehaviour
             yield return new WaitForSeconds(1f);
         }
 
+        countdownPanel.SetActive(false);
         countdownText.gameObject.SetActive(false);
         onComplete?.Invoke();
     }
     #endregion
 
+    #region 🎨 Animation Spéciale
+    private void AnimateSpecialOpen(GameObject panel, PanelEntry.SpecialAnimationType type)
+    {
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        Vector2 start = Vector2.zero;
+
+        switch (type)
+        {
+            case PanelEntry.SpecialAnimationType.SlideFromTop:
+                start = new Vector2(0, Screen.height);
+                break;
+            case PanelEntry.SpecialAnimationType.SlideFromBottom:
+                start = new Vector2(0, -Screen.height);
+                break;
+            case PanelEntry.SpecialAnimationType.SlideFromLeft:
+                start = new Vector2(-Screen.width, 0);
+                break;
+            case PanelEntry.SpecialAnimationType.SlideFromRight:
+                start = new Vector2(Screen.width, 0);
+                break;
+            case PanelEntry.SpecialAnimationType.FlipCard:
+                panel.transform.localRotation = Quaternion.Euler(0, 90, 0);
+                panel.transform.DORotate(Vector3.zero, 0.5f, RotateMode.Fast).SetEase(Ease.OutBack);
+                return;
+            case PanelEntry.SpecialAnimationType.PopElastic:
+                rect.localScale = Vector3.zero;
+                rect.DOScale(1f, 0.6f).SetEase(Ease.OutElastic);
+                return;
+            case PanelEntry.SpecialAnimationType.BounceIn:
+                rect.localScale = Vector3.one * 1.2f;
+                rect.DOScale(1f, 0.4f).SetEase(Ease.OutBounce);
+                return;
+        }
+
+        rect.anchoredPosition = start;
+        rect.DOAnchorPos(Vector2.zero, animationDuration).SetEase(Ease.OutExpo);
+    }
+
+    #endregion
 }

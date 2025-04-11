@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8325414989190836657}
   - component: {fileID: 5121255541116072372}
   - component: {fileID: 5299365265119900440}
+  - component: {fileID: 8614628362312030586}
   m_Layer: 0
   m_Name: MultiplayerSystem
   m_TagString: Untagged
@@ -59,7 +60,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1778129718
+  GlobalObjectIdHash: 2131078177
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -105,8 +106,8 @@ MonoBehaviour:
   buttonJoin: {fileID: 0}
   buttonQuickJoin: {fileID: 0}
   buttonLeave: {fileID: 0}
-  readyColor: {r: 0.35933605, g: 0.8018868, b: 0.35933605, a: 1}
-  notReadyColor: {r: 0.8113208, g: 0.2793699, b: 0.2793699, a: 1}
+  readyColor: {r: 0.43596473, g: 0.9150943, b: 0.43596473, a: 1}
+  notReadyColor: {r: 0.9528302, g: 0.38203096, b: 0.38203096, a: 1}
   readyText: Ready
   notReadyText: Not Ready
   readyCountText: {fileID: 0}
@@ -123,3 +124,17 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+--- !u!114 &8614628362312030586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6806757712138621631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9248f3579eb3c0647a1a355e08e3d19c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  container: {fileID: 0}
+  playerNamePrefab: {fileID: 2341327212921412798, guid: 2bd1c9396df54db4ba56ab4f4b971ea1, type: 3}

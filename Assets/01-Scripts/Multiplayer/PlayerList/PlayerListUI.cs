@@ -46,7 +46,7 @@ public class PlayerListUI : MonoBehaviour
         foreach (var player in sortedPlayers)
         {
             string playerId = player.Id;
-            string name = player.Data.TryGetValue("name", out var data) ? data.Value : $"Player_{player.Id}";
+            string name = SessionStore.Instance?.GetPlayerName(player.Id) ?? $"Player_{player.Id}";
 
             GameObject entry = Instantiate(playerNamePrefab, container);
 

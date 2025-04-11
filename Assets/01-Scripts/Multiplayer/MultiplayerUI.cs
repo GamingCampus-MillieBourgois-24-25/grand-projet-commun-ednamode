@@ -281,10 +281,44 @@ public class MultiplayerUI : MonoBehaviour
         if (label != null)
             label.text = isReady ? readyText : notReadyText;
 
+        // 🎨 Couleur dynamique
+        Color targetColor = isReady ? readyColor : notReadyColor;
+
+        Image bg = buttonReady.GetComponent<Image>();
+        if (bg != null)
+        {
+            bg.DOKill();
+            bg.DOColor(targetColor, 0.3f).SetEase(Ease.OutQuad);
+        }
+
+        // 🌟 Feedback visuel immédiat (punch)
+        buttonReady.transform.DOKill(); // Arrête tout (pulse ou punch)
+        buttonReady.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 5, 0.5f).OnComplete(() =>
+        {
+            // 🔁 Lance la pulsation idle **après** le punch
+            if (isReady)
+            {
+                buttonReady.transform
+                    .DOScale(1.05f, 0.8f)
+                    .SetEase(Ease.InOutSine)
+                    .SetLoops(-1, LoopType.Yoyo)
+                    .SetId("ReadyPulse");
+            }
+            else
+            {
+                buttonReady.transform
+                    .DOScale(1f, 0.2f)
+                    .SetEase(Ease.OutBack)
+                    .SetId("ReadyPulse");
+            }
+        });
+
+        // ColorBlock UI pour interaction native
         ColorBlock colors = buttonReady.colors;
-        colors.normalColor = isReady ? readyColor : notReadyColor;
-        colors.highlightedColor = colors.normalColor * 1.2f;
-        colors.pressedColor = colors.normalColor * 0.8f;
+        colors.normalColor = targetColor;
+        colors.highlightedColor = targetColor * 1.1f;
+        colors.pressedColor = targetColor * 0.8f;
+        colors.selectedColor = targetColor;
         buttonReady.colors = colors;
     }
 

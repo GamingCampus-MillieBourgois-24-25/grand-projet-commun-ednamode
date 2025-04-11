@@ -63,15 +63,20 @@ public class SessionStore : MonoBehaviour
 
     public string GetPlayerName(string playerId)
     {
-        if (CurrentLobby == null) return null;
+        if (CurrentLobby == null) return playerId;
 
         foreach (var player in CurrentLobby.Players)
         {
             if (player.Id == playerId)
-                return player.Data.TryGetValue("name", out var data) ? data.Value : playerId;
+            {
+                if (player.Data.TryGetValue("name", out var data))
+                    return data.Value;
+            }
         }
+
         return playerId;
     }
+
 
     public string GetLocalPlayerId()
     {
