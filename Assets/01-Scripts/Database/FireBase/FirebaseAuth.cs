@@ -112,7 +112,7 @@ public class FirebaseAuthManager : MonoBehaviour
         }
         else
         {
-            UIManager.Instance.OpenLoginPanel();
+            UIManagerLogin.Instance.OpenLoginPanel();
         }
         yield return null;
     }
@@ -126,7 +126,7 @@ public class FirebaseAuthManager : MonoBehaviour
             {
                 Debug.Log("Auto Login Success");
                 References.userName = user.DisplayName;
-                UIManager.Instance.OpenSignedInPanel();
+                UIManagerLogin.Instance.OpenSignedInPanel();
             }
             else
             {
@@ -135,7 +135,7 @@ public class FirebaseAuthManager : MonoBehaviour
         }
         else
         {
-            UIManager.Instance.OpenLoginPanel();
+            UIManagerLogin.Instance.OpenLoginPanel();
         }
     }
 
@@ -149,7 +149,7 @@ public class FirebaseAuthManager : MonoBehaviour
             if (!signedIn && user != null)
             {
                 Debug.Log("Signed out " + user.UserId);
-                UIManager.Instance.OpenLoginPanel();
+                UIManagerLogin.Instance.OpenLoginPanel();
                 ClearLoginFieldInputText();
             }
 
@@ -242,7 +242,7 @@ public class FirebaseAuthManager : MonoBehaviour
             if (user.IsEmailVerified)
             {
                 References.userName = user.DisplayName;
-                UIManager.Instance.OpenSignedInPanel();
+                UIManagerLogin.Instance.OpenSignedInPanel();
             }
             else
             {
@@ -326,7 +326,7 @@ public class FirebaseAuthManager : MonoBehaviour
                 Debug.Log("Inscription réussie. Bienvenue " + user.DisplayName);
                 if (user.IsEmailVerified)
                 {
-                    UIManager.Instance.OpenLoginPanel();
+                    UIManagerLogin.Instance.OpenLoginPanel();
                 }
                 else
                 {
@@ -376,14 +376,14 @@ public class FirebaseAuthManager : MonoBehaviour
             else
             {
                 Debug.Log("Email de vérification envoyé à " + user.Email);
-                UIManager.Instance.ShowVerificationResponse(true, user.Email, null);
+                UIManagerLogin.Instance.ShowVerificationResponse(true, user.Email, null);
             }
         }
     }
 
     public void OpenGameScene()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameSceneExample");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal 1");
     }
 
 }

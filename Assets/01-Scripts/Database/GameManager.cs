@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
     public void BackToMenu()
     {
         // Load the main menu scene
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameSceneExample");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal 1");
     }
 
     public void GoToAccount()
