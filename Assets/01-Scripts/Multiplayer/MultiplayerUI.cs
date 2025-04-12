@@ -402,7 +402,7 @@ public class MultiplayerUI : MonoBehaviour
 
             // Garde la couleur (r, g, b) intacte, modifie seulement l'alpha
             Color color = backgroundImage.color;
-            color.a = (i == selectedIndex) ? 1f : 0.2f;
+            color.a = (i == selectedIndex) ? 1f : 0.1f;
             backgroundImage.color = color;
         }
     }
