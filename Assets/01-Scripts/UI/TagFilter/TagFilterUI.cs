@@ -17,6 +17,7 @@ namespace CharacterCustomization
 
         private List<string> allTags = new List<string>(); // Liste de tous les tags possibles
         private List<string> selectedTags = new List<string>(); // Tags actuellement sélectionnés
+        private bool _isUpdatingToggles = false; // Pour éviter les boucles
 
         private void Start()
         {
@@ -35,18 +36,26 @@ namespace CharacterCustomization
             HashSet<string> uniqueTags = new HashSet<string>();
 
             // Récupérer les tags directement depuis les Items dans clothingItems
-            foreach (var item in characterUI.clothingItems)
+            if (characterUI != null && characterUI.clothingItems != null)
             {
-                if (item != null && item.tags != null)
+                foreach (var item in characterUI.clothingItems)
                 {
-                    foreach (var tag in item.tags)
+                    if (item != null && item.tags != null)
                     {
-                        uniqueTags.Add(tag);
+                        foreach (var tag in item.tags)
+                        {
+                            uniqueTags.Add(tag);
+                        }
                     }
                 }
             }
+            else
+            {
+                Debug.LogWarning("characterUI ou clothingItems est null lors de PopulateTagList !");
+            }
 
             allTags = new List<string>(uniqueTags);
+            Debug.Log($"Tags trouvés : {string.Join(", ", allTags)}");
 
             // Créer les toggles pour chaque tag
             foreach (var tag in allTags)
@@ -60,9 +69,16 @@ namespace CharacterCustomization
                     {
                         label.text = tag;
                     }
-                    toggle.onValueChanged.AddListener((isOn) => OnTagToggleChanged(tag, isOn));
+                    toggle.onValueChanged.AddListener((isOn) =>
+                    {
+                        if (_isUpdatingToggles) return; // Éviter les appels pendant la mise à jour
+                        OnTagToggleChanged(tag, isOn);
+                    });
                 }
             }
+
+            // Réinitialiser les toggles sans déclencher d'événements
+            ClearFilters();
         }
 
         private void OpenTagPanel()
@@ -87,6 +103,8 @@ namespace CharacterCustomization
                 selectedTags.Remove(tag);
             }
 
+            Debug.Log($"Tag {tag} {(isOn ? "sélectionné" : "désélectionné")}. Tags sélectionnés : {string.Join(", ", selectedTags)}");
+
             if (characterUI != null)
             {
                 characterUI.ApplyTagFilter(selectedTags);
@@ -95,6 +113,7 @@ namespace CharacterCustomization
 
         public void ClearFilters()
         {
+            _isUpdatingToggles = true; // Empêcher les appels à OnTagToggleChanged
             selectedTags.Clear();
             if (tagContent != null)
             {
@@ -103,6 +122,9 @@ namespace CharacterCustomization
                     toggle.isOn = false;
                 }
             }
+            _isUpdatingToggles = false;
+
+            Debug.Log("Filtres réinitialisés.");
             if (characterUI != null)
             {
                 characterUI.ApplyTagFilter(selectedTags);

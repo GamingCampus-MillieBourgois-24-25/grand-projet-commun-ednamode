@@ -13,6 +13,34 @@ namespace CharacterCustomization
             public SlotType slotType;
             public ScrollRect scrollView;
             public Transform content;
+            private List<GameObject> buttonPool = new List<GameObject>();
+            public int currentButtonIndex = 0;
+
+            public void ResetButtonPool()
+            {
+                currentButtonIndex = 0;
+                foreach (var button in buttonPool)
+                {
+                    button.SetActive(false);
+                }
+            }
+
+            public GameObject GetOrCreateButton(GameObject buttonPrefab, Transform parent)
+            {
+                GameObject buttonObj;
+                if (currentButtonIndex < buttonPool.Count)
+                {
+                    buttonObj = buttonPool[currentButtonIndex];
+                    buttonObj.SetActive(true);
+                }
+                else
+                {
+                    buttonObj = Instantiate(buttonPrefab, parent);
+                    buttonPool.Add(buttonObj);
+                }
+                currentButtonIndex++;
+                return buttonObj;
+            }
         }
 
         [System.Serializable]
@@ -24,14 +52,16 @@ namespace CharacterCustomization
         }
 
         [Header("UI Configuration")]
-        public GameObject characterPrefab; // Prefab du personnage de base
+        public GameObject characterPrefab;
         public Camera mainCamera;
         public ButtonScrollViewManager buttonManager;
 
         [Header("Boutons d'action")]
         public Button buttonChangeTexture;
         public Button buttonChangeColor;
-        public Button buttonChangeBaseColor; // Pour la couleur du personnage de base
+        public Button buttonChangeBaseColor;
+        public Button buttonReturnToClothing;
+        public Button buttonReturnToModified;
 
         [Header("Panels")]
         public GameObject texturePanel;
@@ -41,7 +71,7 @@ namespace CharacterCustomization
         public List<SlotUI> slotUIs;
         public GameObject prefabsPanel;
         public GameObject tagsPanel;
-        public GameObject buttonPrefab; // Bouton pour afficher les options de vêtements
+        public GameObject buttonPrefab;
         public Sprite defaultSprite;
 
         [Header("Textures")]
@@ -50,16 +80,24 @@ namespace CharacterCustomization
         public Transform textureButtonContainer;
 
         [Header("Vêtements (Scriptable Objects)")]
-        public List<Item> clothingItems; // Liste des ScriptableObject Item
+        public List<Item> clothingItems;
 
-        private GameObject _characterInstance; // Instance du personnage de base
-        private SlotType _selectedSlotType;
-        private GameObject _selectedInstance; // Instance de vêtement sélectionnée
+        [Header("Équipés - ScrollView")]
+        public ScrollRect equippedItemsScrollView;
+        public Transform equippedItemsContent;
+
+        private GameObject _characterInstance;
         private Vector3 _originalCameraPosition;
         private Quaternion _originalCameraRotation;
         private Dictionary<SlotType, (Item item, GameObject instance)> _equippedClothing = new();
+        private GameObject _lastEquippedInstance;
         private Color _initialColor;
         private Texture2D _initialTexture;
+        private Color _lastModifiedColor;
+        private bool _hasModifiedColor; 
+        private Texture2D _lastModifiedTexture;
+        private List<string> _lastAppliedTags;
+        private string _lastPanelUsed;
 
         public void Initialize()
         {
@@ -76,15 +114,22 @@ namespace CharacterCustomization
                 buttonManager.Initialize(this);
             }
 
-            if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
-            if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
+            if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(true);
+            if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(true);
             if (buttonChangeBaseColor != null) buttonChangeBaseColor.gameObject.SetActive(true);
+            if (buttonReturnToClothing != null) buttonReturnToClothing.gameObject.SetActive(true);
+            if (buttonReturnToModified != null) buttonReturnToModified.gameObject.SetActive(true);
 
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
 
-            PopulateUI();
+            if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(true);
+
+            EnableUIPanels();
+
+            InitializeButtons();
             InitializeTexturePanel();
+            UpdateEquippedItemsUI();
 
             if (buttonChangeTexture != null)
             {
@@ -101,50 +146,42 @@ namespace CharacterCustomization
                 buttonChangeBaseColor.onClick.RemoveAllListeners();
                 buttonChangeBaseColor.onClick.AddListener(OnChangeBaseColorClicked);
             }
+            if (buttonReturnToClothing != null)
+            {
+                buttonReturnToClothing.onClick.RemoveAllListeners();
+                buttonReturnToClothing.onClick.AddListener(OnReturnToClothingClicked);
+            }
+            if (buttonReturnToModified != null)
+            {
+                buttonReturnToModified.onClick.RemoveAllListeners();
+                buttonReturnToModified.onClick.AddListener(OnReturnToModifiedClicked);
+            }
         }
 
-        void Update()
+        private void InitializeButtons()
         {
-            if (Input.touchCount > 0)
+            foreach (var slotUI in slotUIs)
             {
-                Touch touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Began)
+                if (slotUI.content == null)
                 {
-                    HandleTouch(touch.position);
+                    continue;
+                }
+
+                slotUI.ResetButtonPool();
+
+                foreach (var item in clothingItems)
+                {
+                    if (item.category == slotUI.slotType)
+                    {
+                        GameObject buttonObj = slotUI.GetOrCreateButton(buttonPrefab, slotUI.content);
+                        SetupButtonSprite(buttonObj, item);
+                        AddButtonListener(buttonObj, slotUI.slotType, item);
+
+                        RectTransform rect = buttonObj.GetComponent<RectTransform>();
+                        Image buttonImage = buttonObj.GetComponentInChildren<Image>();
+                    }
                 }
             }
-        }
-
-        private void HandleTouch(Vector2 touchPosition)
-        {
-            if ((buttonChangeTexture != null && buttonChangeTexture.gameObject.activeSelf) ||
-                (buttonChangeColor != null && buttonChangeColor.gameObject.activeSelf))
-            {
-                return;
-            }
-
-            Ray ray = mainCamera.ScreenPointToRay(touchPosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, ~LayerMask.GetMask("UI")))
-            {
-                SlotType? clickedSlotType = GetSlotTypeFromInstance(hit.collider.gameObject);
-                if (clickedSlotType.HasValue)
-                {
-                    _selectedSlotType = clickedSlotType.Value;
-                    _selectedInstance = hit.collider.gameObject;
-                    ZoomToObject(_selectedInstance);
-                    buttonManager.ShowInitialButtons();
-                    DisableUIPanels();
-                }
-            }
-        }
-
-        private void ZoomToObject(GameObject target)
-        {
-            SkinnedMeshRenderer renderer = target.GetComponentInChildren<SkinnedMeshRenderer>();
-            Vector3 targetCenter = renderer != null ? renderer.bounds.center : target.transform.position;
-            Vector3 direction = (targetCenter - mainCamera.transform.position).normalized;
-            mainCamera.transform.position = targetCenter - direction * 1f;
-            mainCamera.transform.LookAt(targetCenter);
         }
 
         public void ResetCamera()
@@ -152,43 +189,23 @@ namespace CharacterCustomization
             mainCamera.transform.position = _originalCameraPosition;
             mainCamera.transform.rotation = _originalCameraRotation;
             EnableUIPanels();
-            if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
-            if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
+            if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(true);
+            if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(true);
+            if (buttonReturnToClothing != null) buttonReturnToClothing.gameObject.SetActive(true);
+            if (buttonReturnToModified != null) buttonReturnToModified.gameObject.SetActive(true);
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
-            _selectedInstance = null;
-        }
-
-        public void OnEditClicked()
-        {
-            if (_selectedInstance != null)
-            {
-                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
-                if (renderer != null)
-                {
-                    _initialColor = renderer.material.color;
-                    _initialTexture = renderer.material.GetTexture("_BaseMap") as Texture2D;
-                }
-
-                if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(true);
-                if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(true);
-                buttonManager.ShowEditOptions();
-            }
-        }
-
-        public void OnDeleteClicked()
-        {
-            UnequipClothing(_selectedSlotType);
-            ResetCamera();
         }
 
         public void OnChangeTextureClicked()
         {
-            if (_selectedInstance != null && texturePanel != null)
+            if (_lastEquippedInstance != null && texturePanel != null)
             {
-                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
+                    _initialColor = renderer.material.color;
+                    _initialTexture = renderer.material.GetTexture("_BaseMap") as Texture2D;
                     renderer.material.color = _initialColor;
                     renderer.material.SetTexture("_BaseMap", _initialTexture);
                 }
@@ -196,23 +213,27 @@ namespace CharacterCustomization
                 if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
 
                 texturePanel.SetActive(true);
+                _lastPanelUsed = "Texture";
                 buttonManager.ShowTextureOptions();
             }
         }
 
         public void OnChangeColorClicked()
         {
-            if (_selectedInstance != null && colorPickerPanel != null)
+            if (_lastEquippedInstance != null && colorPickerPanel != null)
             {
-                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
+                    _initialColor = renderer.material.color;
+                    _initialTexture = renderer.material.GetTexture("_BaseMap") as Texture2D;
                     renderer.material.color = _initialColor;
                     renderer.material.SetTexture("_BaseMap", _initialTexture);
 
                     if (texturePanel != null) texturePanel.SetActive(false);
 
                     colorPickerPanel.SetActive(true);
+                    _lastPanelUsed = "Color";
                     Color currentColor = renderer.material.color;
                     bool success = ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
                     if (!success)
@@ -233,6 +254,7 @@ namespace CharacterCustomization
                     if (texturePanel != null) texturePanel.SetActive(false);
 
                     colorPickerPanel.SetActive(true);
+                    _lastPanelUsed = "Color";
                     Color currentColor = renderer.material.color;
                     ColorPicker.Create(currentColor, "Couleur du personnage de base", renderer, OnColorChangedBase, OnBaseColorSelected);
                 }
@@ -242,14 +264,71 @@ namespace CharacterCustomization
         public void OnBackFromTextureClicked()
         {
             if (texturePanel != null) texturePanel.SetActive(false);
-            buttonManager.ShowEditOptions();
+            buttonManager.ReturnToMainView();
         }
 
-        public void OnBackFromEditClicked()
+        public void OnReturnToClothingClicked()
         {
-            if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
-            if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
-            buttonManager.ShowInitialButtons();
+            ResetCamera();
+
+            if (_lastEquippedInstance != null)
+            {
+                SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer != null)
+                {
+                    renderer.material.color = _initialColor;
+                    renderer.material.SetTexture("_BaseMap", _initialTexture);
+                }
+            }
+        }
+
+        public void OnReturnToModifiedClicked()
+        {
+            if (_lastPanelUsed == "Texture" && texturePanel != null)
+            {
+                if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
+                texturePanel.SetActive(true);
+                buttonManager.ShowTextureOptions();
+            }
+            else if (_lastPanelUsed == "Color" && colorPickerPanel != null)
+            {
+                if (texturePanel != null) texturePanel.SetActive(false);
+                colorPickerPanel.SetActive(true);
+                if (_lastEquippedInstance != null)
+                {
+                    SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                    if (renderer != null)
+                    {
+                        Color currentColor = renderer.material.color;
+                        ColorPicker.Create(currentColor, "Choisissez une couleur", renderer, OnColorChanged, OnColorSelected);
+                    }
+                }
+            }
+
+            if (_lastEquippedInstance != null)
+            {
+                SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer != null)
+                {
+                    // Restaurer la dernière couleur modifiée si elle existe
+                    if (_hasModifiedColor)
+                    {
+                        Debug.Log($"Restauration de la couleur modifiée: {_lastModifiedColor}");
+                        renderer.material.color = _lastModifiedColor;
+                    }
+                    else
+                    {
+                        Debug.Log("Aucune couleur modifiée à restaurer.");
+                    }
+
+                    // Restaurer la dernière texture modifiée
+                    if (_lastModifiedTexture != null)
+                    {
+                        Debug.Log($"Restauration de la texture modifiée: {_lastModifiedTexture.name}");
+                        renderer.material.SetTexture("_BaseMap", _lastModifiedTexture);
+                    }
+                }
+            }
         }
 
         public void ShowTagsPanel()
@@ -265,6 +344,7 @@ namespace CharacterCustomization
             }
             if (prefabsPanel != null) prefabsPanel.SetActive(false);
             if (tagsPanel != null) tagsPanel.SetActive(false);
+            if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(false);
         }
 
         private void EnableUIPanels()
@@ -275,25 +355,35 @@ namespace CharacterCustomization
             }
             if (prefabsPanel != null) prefabsPanel.SetActive(true);
             if (tagsPanel != null) tagsPanel.SetActive(true);
-        }
-
-        public void PopulateUI()
-        {
-            ApplyTagFilter(new List<string>());
+            if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(true);
         }
 
         public void ApplyTagFilter(List<string> selectedTags)
         {
+            if (_lastAppliedTags != null && selectedTags.SequenceEqual(_lastAppliedTags))
+            {
+                return;
+            }
+
+            _lastAppliedTags = new List<string>(selectedTags);
+
             foreach (var slotUI in slotUIs)
             {
+                if (slotUI.content == null)
+                {
+                    continue;
+                }
+
+                slotUI.ResetButtonPool();
+
                 foreach (var item in clothingItems)
                 {
                     if (item.category == slotUI.slotType)
                     {
-                        // Vérifier les tags directement depuis l'Item
-                        if (selectedTags.Count == 0 || selectedTags.Any(tag => item.tags.Contains(tag)))
+                        bool matchesTag = selectedTags.Count > 0 && selectedTags.Any(tag => item.tags.Contains(tag));
+                        if (matchesTag)
                         {
-                            GameObject buttonObj = Instantiate(buttonPrefab, slotUI.content);
+                            GameObject buttonObj = slotUI.GetOrCreateButton(buttonPrefab, slotUI.content);
                             SetupButtonSprite(buttonObj, item);
                             AddButtonListener(buttonObj, slotUI.slotType, item);
                         }
@@ -318,6 +408,7 @@ namespace CharacterCustomization
             Button button = buttonObj.GetComponent<Button>();
             if (button != null)
             {
+                button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() => EquipClothing(slotType, item));
             }
         }
@@ -335,6 +426,11 @@ namespace CharacterCustomization
             instance.transform.localScale = Vector3.one;
             instance.SetActive(true);
             _equippedClothing[slotType] = (clothingItem, instance);
+            _lastEquippedInstance = instance;
+            _hasModifiedColor = false; 
+            _lastModifiedColor = Color.white; 
+            _lastModifiedTexture = null; 
+            UpdateEquippedItemsUI();
         }
 
         private void UnequipClothing(SlotType slotType)
@@ -342,28 +438,74 @@ namespace CharacterCustomization
             if (_equippedClothing.ContainsKey(slotType))
             {
                 Destroy(_equippedClothing[slotType].instance);
+                if (_lastEquippedInstance == _equippedClothing[slotType].instance)
+                {
+                    _lastEquippedInstance = null;
+                    _hasModifiedColor = false; 
+                    _lastModifiedColor = Color.white;
+                    _lastModifiedTexture = null;
+                }
                 _equippedClothing.Remove(slotType);
+                UpdateEquippedItemsUI();
+            }
+        }
+
+        private void UpdateEquippedItemsUI()
+        {
+            if (equippedItemsContent == null)
+            {
+                return;
+            }
+
+            foreach (Transform child in equippedItemsContent)
+            {
+                Destroy(child.gameObject);
+            }
+
+            foreach (var equipped in _equippedClothing)
+            {
+                Item item = equipped.Value.item;
+                GameObject buttonObj = Instantiate(buttonPrefab, equippedItemsContent);
+                SetupButtonSprite(buttonObj, item);
+                Button button = buttonObj.GetComponent<Button>();
+                if (button != null)
+                {
+                    button.onClick.AddListener(() =>
+                    {
+                        _lastEquippedInstance = equipped.Value.instance;
+                        UnequipClothing(equipped.Key);
+                    });
+                }
             }
         }
 
         private void OnColorChanged(Color color)
         {
-            if (_selectedInstance != null)
+            if (_lastEquippedInstance != null)
             {
-                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
-                if (renderer != null) renderer.material.color = color;
+                SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer != null)
+                {
+                    renderer.material.color = color;
+                    _lastModifiedColor = color; 
+                    _hasModifiedColor = true; 
+                    Debug.Log($"Couleur modifiée en temps réel: {_lastModifiedColor}");
+                }
             }
         }
 
         private void OnColorSelected(Color color)
         {
-            if (_selectedInstance != null)
+            if (_lastEquippedInstance != null)
             {
-                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
                     renderer.material = new Material(renderer.material);
                     renderer.material.color = color;
+                    _lastModifiedColor = color; 
+                    _hasModifiedColor = true;
+                    Debug.Log($"Couleur confirmée: {_lastModifiedColor}");
                 }
             }
             ResetCamera();
@@ -428,26 +570,19 @@ namespace CharacterCustomization
 
         private void ApplyTexture(int textureIndex)
         {
-            if (_selectedInstance != null)
+            if (_lastEquippedInstance != null)
             {
-                SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null && textureIndex >= 0 && textureIndex < availableTextures.Count)
                 {
                     Texture2D newTexture = availableTextures[textureIndex].texture;
                     Material material = new Material(renderer.material);
                     material.SetTexture("_BaseMap", newTexture);
                     renderer.material = material;
+                    _lastModifiedTexture = newTexture;
+                    Debug.Log($"Texture modifiée: {_lastModifiedTexture.name}");
                 }
             }
-        }
-
-        private SlotType? GetSlotTypeFromInstance(GameObject instance)
-        {
-            foreach (var equipped in _equippedClothing)
-            {
-                if (equipped.Value.instance == instance) return equipped.Key;
-            }
-            return null;
         }
     }
 }
