@@ -497,9 +497,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color alertColor = Color.red;
 
+    private Coroutine countdownRoutine;
+
     public void StartCountdown(System.Action onComplete)
     {
-        StartCoroutine(CountdownRoutine(onComplete));
+        if (countdownRoutine != null)
+        {
+            StopCoroutine(countdownRoutine);
+        }
+        countdownRoutine = StartCoroutine(CountdownRoutine(onComplete));
     }
 
     private IEnumerator CountdownRoutine(System.Action onComplete)
@@ -526,6 +532,19 @@ public class UIManager : MonoBehaviour
         countdownPanel.SetActive(false);
         countdownText.gameObject.SetActive(false);
         onComplete?.Invoke();
+        countdownRoutine = null;
+    }
+
+    public void CancelCountdown()
+    {
+        if (countdownRoutine != null)
+        {
+            StopCoroutine(countdownRoutine);
+            countdownRoutine = null;
+        }
+
+        countdownText.gameObject.SetActive(false);
+        countdownPanel?.SetActive(false);
     }
     #endregion
 

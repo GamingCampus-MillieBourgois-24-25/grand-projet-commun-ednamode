@@ -27,11 +27,18 @@ public class PlayerListUI : MonoBehaviour
     {
         // Supprime tous les anciens
         foreach (Transform child in container)
-            Destroy(child.gameObject);
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
 
         playerEntries.Clear();
 
-        if (SessionStore.Instance.CurrentLobby == null) return;
+        if (SessionStore.Instance.CurrentLobby == null)
+        {
+            Debug.LogWarning("[PlayerListUI] Impossible de rafraîchir la liste des joueurs.");
+            return;
+        }
 
         List<LobbyPlayer> players = new(SessionStore.Instance.CurrentLobby.Players);
 
@@ -122,4 +129,32 @@ public class PlayerListUI : MonoBehaviour
         MultiplayerManager.Instance?.KickPlayerById(playerId);
     }
 
+    public void MarkPlayerReady(string playerId, bool isReady)
+    {
+        if (!playerEntries.TryGetValue(playerId, out var entry))
+        {
+            Debug.LogWarning($"[UI] Aucun entry trouvé pour playerId: {playerId}");
+            return;
+        }
+
+        TMP_Text nameText = entry.GetComponentInChildren<TMP_Text>();
+        if (nameText == null) return;
+
+        if (isReady)
+        {
+            nameText.color = Color.green;
+            nameText.transform.DOKill();
+            nameText.transform
+                .DOScale(1.0f, 0.7f)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetId("ReadyPlayerPulse");
+        }
+        else
+        {
+            nameText.color = Color.white;
+            nameText.transform.DOKill();
+            nameText.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack);
+        }
+    }
 }

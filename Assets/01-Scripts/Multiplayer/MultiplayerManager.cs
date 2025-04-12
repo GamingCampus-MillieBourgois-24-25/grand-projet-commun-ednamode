@@ -133,6 +133,12 @@ public class MultiplayerManager : NetworkBehaviour
         });
 
         FindFirstObjectByType<MultiplayerUI>()?.OnClientConnected();
+        FindAnyObjectByType<PlayerListUI>()?.RefreshPlayerList();
+
+        if (IsHost())
+        {
+            RefreshLobbyClientRpc();
+        }
     }
 
     private void OnClientDisconnected(ulong clientId)
@@ -151,14 +157,36 @@ public class MultiplayerManager : NetworkBehaviour
         _ = SessionStore.Instance.RefreshLobbyAsync(updated =>
         {
             FindAnyObjectByType<PlayerListUI>()?.RefreshPlayerList();
+            UIManager.Instance?.CancelCountdown();
         });
 
+        if (IsHost())
+        {
+            RefreshLobbyClientRpc();
+        }
+
     }
+
+    [ClientRpc]
+    private void RefreshLobbyClientRpc()
+    {
+        _ = SessionStore.Instance.RefreshLobbyAsync(updated =>
+        {
+            FindFirstObjectByType<PlayerListUI>()?.RefreshPlayerList();
+        });
+    }
+
 
     [ClientRpc]
     private void NotifyReadyCountClientRpc(int ready, int total)
     {
         FindFirstObjectByType<MultiplayerUI>()?.UpdateReadyCount(ready, total);
+    }
+
+    [ClientRpc]
+    private void UpdateReadyVisualClientRpc(string targetPlayerId, bool isReady)
+    {
+        FindFirstObjectByType<PlayerListUI>()?.MarkPlayerReady(targetPlayerId, isReady);
     }
     #endregion
 
@@ -379,7 +407,7 @@ public class MultiplayerManager : NetworkBehaviour
                 FindAnyObjectByType<MultiplayerUI>()?.NotifyJoinResult(false);
             }
         }
-        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(JoinCode);
+        FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(CurrentLobby.LobbyCode);
     }
 
     public async void LeaveLobby()
@@ -419,7 +447,15 @@ public class MultiplayerManager : NetworkBehaviour
     public void SetReady(bool isReady)
     {
         if (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost)
+        {
             SubmitReadyServerRpc(isReady);
+            PlayerListUI ui = FindFirstObjectByType<PlayerListUI>();
+            if (ui != null)
+            {
+                string playerId = AuthenticationService.Instance.PlayerId;
+                ui.MarkPlayerReady(playerId, isReady);
+            }
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -429,13 +465,36 @@ public class MultiplayerManager : NetworkBehaviour
         Debug.Log($"[ServerRpc] Client {clientId} isReady = {isReady}");
 
         playerReadyStates[clientId] = isReady;
-        UpdateReadyCount();
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+        string playerId = SessionStore.Instance.GetPlayerId(senderClientId);
 
+        if (string.IsNullOrEmpty(playerId))
+        {
+            Debug.LogWarning($"[⚠️ ServerRpc] Impossible de récupérer playerId pour clientId = {senderClientId}. Fallback sur AuthenticationService.");
+            playerId = AuthenticationService.Instance.PlayerId;
+        }
+        UpdatePlayerReadyVisualClientRpc(playerId, isReady);
+        UpdateReadyVisualClientRpc(playerId, isReady);
+        UpdateReadyCount();
         NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
 
-        if (IsHost() && AllPlayersReady())
+        if (AllPlayersReady())
             StartCountdown();
+        else
+        {
+            Debug.Log($"[ServerRpc] Pas tous les joueurs prêts. {GetReadyCount()}/{playerReadyStates.Count} prêts.");
+            UIManager.Instance?.CancelCountdown();
+        }
+        UpdateReadyVisualClientRpc(playerId, isReady);
+
     }
+
+    [ClientRpc]
+    private void UpdatePlayerReadyVisualClientRpc(string playerId, bool isReady)
+    {
+        FindFirstObjectByType<PlayerListUI>()?.MarkPlayerReady(playerId, isReady);
+    }
+
 
     private void UpdateReadyCount()
     {

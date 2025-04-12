@@ -6,6 +6,7 @@ using DG.Tweening;
 using TMPro;
 
 using Type = NotificationData.NotificationType;
+using UnityEditor.Experimental.GraphView;
 
 /// <summary>
 /// MULTIPLAYER UI – Connecte les boutons à MultiplayerManager
@@ -25,23 +26,34 @@ public class MultiplayerUI : MonoBehaviour
 
     [Header("GameMode")]
     [Header("Style Ready")]
+    [Tooltip("Couleur du bouton quand prêt")]
     [SerializeField] private Color readyColor = Color.green;
+    [Tooltip("Couleur du bouton quand pas prêt")]
     [SerializeField] private Color notReadyColor = Color.red;
-    [SerializeField] private string readyText = "Ready";
-    [SerializeField] private string notReadyText = "Not Ready";
-    [SerializeField] private TMP_Text readyCountText;
+    [Tooltip("Bouton prêt")]
     [SerializeField] private Button buttonReady;
+    [Tooltip("Texte du bouton quand prêt")]
+    [SerializeField] private string readyText = "Ready";
+    [Tooltip("Texte du bouton quand pas prêt")]
+    [SerializeField] private string notReadyText = "Not Ready";
+    [Tooltip("Texte du nombre de joueurs prêts")]
+    [SerializeField] private TMP_Text readyCountText;
+
+    [Tooltip("Bouton pour changer le mode de jeu")]
     [SerializeField] private Button[] gameModeButtons; // 3 boutons
 
-    [Header("Feedback UI")]
+    [Header("Info Session")]
     [Tooltip("Affiche le code de session en cours")]
     [SerializeField] private TMP_Text joinCodeText;
-    [SerializeField] private TMP_Text feedbackText;
+    [Tooltip("Bouton pour copier le code de session")]
+    [SerializeField] private Button copyCodeButton;
 
     [Header("Activer quand connecté")]
+    [Tooltip("Objets à activer quand connecté")]
     [SerializeField] private GameObject[] showOnConnected;
 
     [Header("Masquer quand connecté")]
+    [Tooltip("Objets à masquer quand connecté")]
     [SerializeField] private GameObject[] hideOnConnected;
 
     private bool isReady = false;
@@ -96,19 +108,16 @@ public class MultiplayerUI : MonoBehaviour
         UpdateReadyButtonUI();
     }
 
-    private IEnumerator WaitForMultiplayerReady()
+    #region NETWORKING
+    public void OnClientConnected()
     {
-        while (MultiplayerManager.Instance == null || !MultiplayerManager.Instance.IsReady)
+        if (NetworkManager.Singleton.IsClient && MultiplayerNetwork.Instance != null)
         {
-            yield return new WaitForSeconds(0.2f);
+            UpdateReadyCount(
+                MultiplayerNetwork.Instance.ReadyCount.Value,
+                MultiplayerNetwork.Instance.PlayerCount.Value
+            );
         }
-
-        Debug.Log("MultiplayerUI: MultiplayerManager prêt, activation des boutons.");
-
-        buttonQuickJoin.interactable = true;
-        buttonLeave.interactable = true;
-
-        OnInputChanged("");
     }
 
     private void OnInputChanged(string _)
@@ -119,6 +128,8 @@ public class MultiplayerUI : MonoBehaviour
 
     private void OnCreateClicked()
     {
+        buttonCreate.interactable = false;
+
         string lobbyName = inputLobbyName.text.Trim();
         MultiplayerManager.Instance.CreateLobby(lobbyName);
         NotificationManager.Instance.ShowNotification("Create Lobby...", Type.Normal);
@@ -126,6 +137,7 @@ public class MultiplayerUI : MonoBehaviour
 
     private void OnJoinClicked()
     {
+        buttonJoin.interactable = false;
         string code = inputJoinCode.text.Trim().ToUpperInvariant();
         if (string.IsNullOrEmpty(code))
         {
@@ -149,17 +161,9 @@ public class MultiplayerUI : MonoBehaviour
         NotificationManager.Instance.ShowNotification("Disconnect...", Type.Info);
         UpdateConnectionUI(false);
     }
+    #endregion
 
-    private void ShowFeedback(string message)
-    {
-        if (feedbackText != null)
-        {
-            feedbackText.text = message;
-        }
-
-        Debug.Log("[UI] " + message);
-    }
-
+    #region NOTIFICATIONS
     public void NotifyCreateResult(bool success)
     {
         if (success)
@@ -197,13 +201,58 @@ public class MultiplayerUI : MonoBehaviour
         NotificationManager.Instance.ShowNotification("No Lobby found", Type.Important);
         UpdateConnectionUI(false);
     }
+    #endregion
 
+    #region SESSION
+        #region JOIN CODE
     public void UpdateJoinCode(string code)
     {
         if (joinCodeText != null)
         {
             joinCodeText.text = string.IsNullOrEmpty(code) ? "" : $"Code : {code}";
         }
+    }
+
+    public void OnCopyJoinCode()
+    {
+        if (joinCodeText == null || string.IsNullOrWhiteSpace(joinCodeText.text))
+        {
+            Debug.LogWarning("[MultiplayerUI] Aucun code à copier.");
+            return;
+        }
+        string fullText = joinCodeText.text;
+
+        // 🔎 Supprime le préfixe "Code : "
+        string code = fullText.Replace("Code : ", "").Trim();
+        if (!string.IsNullOrEmpty(code))
+        {
+            GUIUtility.systemCopyBuffer = code;
+            NotificationManager.Instance.ShowNotification("Code copied", Type.Normal);
+            Debug.Log($"[Clipboard] Code copié : {joinCodeText.text}");
+        }
+        else
+        {
+            Debug.LogWarning("[MultiplayerUI] Aucun code à copier.");
+            NotificationManager.Instance.ShowNotification("Failed to copy", Type.Important);
+        }
+    }
+        #endregion
+    #endregion
+
+    #region ANIMATION
+    private IEnumerator WaitForMultiplayerReady()
+    {
+        while (MultiplayerManager.Instance == null || !MultiplayerManager.Instance.IsReady)
+        {
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        Debug.Log("MultiplayerUI: MultiplayerManager prêt, activation des boutons.");
+
+        buttonQuickJoin.interactable = true;
+        buttonLeave.interactable = true;
+
+        OnInputChanged("");
     }
 
     public void UpdateConnectionUI(bool connected)
@@ -355,18 +404,6 @@ public class MultiplayerUI : MonoBehaviour
             Color color = backgroundImage.color;
             color.a = (i == selectedIndex) ? 1f : 0.2f;
             backgroundImage.color = color;
-        }
-    }
-
-    #region NETWORKING
-    public void OnClientConnected()
-    {
-        if (NetworkManager.Singleton.IsClient && MultiplayerNetwork.Instance != null)
-        {
-            UpdateReadyCount(
-                MultiplayerNetwork.Instance.ReadyCount.Value,
-                MultiplayerNetwork.Instance.PlayerCount.Value
-            );
         }
     }
     #endregion
