@@ -24,15 +24,14 @@ namespace CharacterCustomization
         }
 
         [Header("UI Configuration")]
-        public GameObject characterPrefab;
-        public SlotLibrary slotLibrary;
+        public GameObject characterPrefab; // Prefab du personnage de base
         public Camera mainCamera;
         public ButtonScrollViewManager buttonManager;
 
         [Header("Boutons d'action")]
         public Button buttonChangeTexture;
         public Button buttonChangeColor;
-        public Button buttonChangeBaseColor; 
+        public Button buttonChangeBaseColor; // Pour la couleur du personnage de base
 
         [Header("Panels")]
         public GameObject texturePanel;
@@ -42,7 +41,7 @@ namespace CharacterCustomization
         public List<SlotUI> slotUIs;
         public GameObject prefabsPanel;
         public GameObject tagsPanel;
-        public GameObject buttonPrefab;
+        public GameObject buttonPrefab; // Bouton pour afficher les options de vêtements
         public Sprite defaultSprite;
 
         [Header("Textures")]
@@ -50,32 +49,31 @@ namespace CharacterCustomization
         public GameObject textureButtonPrefab;
         public Transform textureButtonContainer;
 
-        private CharacterCustomization _characterCustomization;
+        [Header("Vêtements (Scriptable Objects)")]
+        public List<Item> clothingItems; // Liste des ScriptableObject Item
+
+        private GameObject _characterInstance; // Instance du personnage de base
         private SlotType _selectedSlotType;
-        private GameObject _selectedInstance;
+        private GameObject _selectedInstance; // Instance de vêtement sélectionnée
         private Vector3 _originalCameraPosition;
         private Quaternion _originalCameraRotation;
-        private Dictionary<SlotType, (GameObject prefab, GameObject instance)> _equippedObjects = new();
-
-        // Variables pour stocker l’état initial
+        private Dictionary<SlotType, (Item item, GameObject instance)> _equippedClothing = new();
         private Color _initialColor;
         private Texture2D _initialTexture;
 
-
-
-        public void Initialize(CharacterCustomization characterCustomization)
+        public void Initialize()
         {
-            _characterCustomization = characterCustomization;
             _originalCameraPosition = mainCamera.transform.position;
             _originalCameraRotation = mainCamera.transform.rotation;
+
+            if (_characterInstance == null && characterPrefab != null)
+            {
+                _characterInstance = Instantiate(characterPrefab, Vector3.zero, Quaternion.identity);
+            }
 
             if (buttonManager != null)
             {
                 buttonManager.Initialize(this);
-            }
-            else
-            {
-                Debug.LogError("ButtonScrollViewManager n’est pas assigné dans l’inspecteur !");
             }
 
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
@@ -102,24 +100,6 @@ namespace CharacterCustomization
             {
                 buttonChangeBaseColor.onClick.RemoveAllListeners();
                 buttonChangeBaseColor.onClick.AddListener(OnChangeBaseColorClicked);
-            }
-
-            // Vérification initiale du CharacterInstance
-            if (_characterCustomization.CharacterInstance == null)
-            {
-                Debug.LogError("CharacterInstance est null dans _characterCustomization !");
-            }
-            else
-            {
-                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
-                if (renderer == null)
-                {
-                    Debug.LogError("Aucun SkinnedMeshRenderer trouvé sur CharacterInstance !");
-                }
-                else
-                {
-                    Debug.Log("CharacterInstance et SkinnedMeshRenderer trouvés avec succès.");
-                }
             }
         }
 
@@ -174,7 +154,6 @@ namespace CharacterCustomization
             EnableUIPanels();
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
-            // Ne pas désactiver buttonChangeBaseColor ici
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
             _selectedInstance = null;
@@ -199,7 +178,7 @@ namespace CharacterCustomization
 
         public void OnDeleteClicked()
         {
-            UnequipPrefab(_selectedSlotType);
+            UnequipClothing(_selectedSlotType);
             ResetCamera();
         }
 
@@ -210,20 +189,14 @@ namespace CharacterCustomization
                 SkinnedMeshRenderer renderer = _selectedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
-                    // Restaurer l’état initial avant de changer la texture
                     renderer.material.color = _initialColor;
                     renderer.material.SetTexture("_BaseMap", _initialTexture);
                 }
 
-                // Fermer le colorPickerPanel s’il est ouvert
                 if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
 
                 texturePanel.SetActive(true);
                 buttonManager.ShowTextureOptions();
-            }
-            else
-            {
-                Debug.LogError("texturePanel n’est pas assigné ou _selectedInstance est null !");
             }
         }
 
@@ -236,6 +209,7 @@ namespace CharacterCustomization
                 {
                     renderer.material.color = _initialColor;
                     renderer.material.SetTexture("_BaseMap", _initialTexture);
+
                     if (texturePanel != null) texturePanel.SetActive(false);
 
                     colorPickerPanel.SetActive(true);
@@ -248,25 +222,23 @@ namespace CharacterCustomization
                 }
             }
         }
+
         public void OnChangeBaseColorClicked()
         {
-            if (_characterCustomization != null && _characterCustomization.CharacterInstance != null && colorPickerPanel != null)
+            if (_characterInstance != null && colorPickerPanel != null)
             {
-                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                SkinnedMeshRenderer renderer = _characterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
                     if (texturePanel != null) texturePanel.SetActive(false);
 
                     colorPickerPanel.SetActive(true);
                     Color currentColor = renderer.material.color;
-                    bool success = ColorPicker.Create(currentColor, "Couleur du personnage de base", renderer, OnColorChangedBase, OnBaseColorSelected);
-                    if (!success)
-                    {
-                        colorPickerPanel.SetActive(false);
-                    }
+                    ColorPicker.Create(currentColor, "Couleur du personnage de base", renderer, OnColorChangedBase, OnBaseColorSelected);
                 }
             }
         }
+
         public void OnBackFromTextureClicked()
         {
             if (texturePanel != null) texturePanel.SetActive(false);
@@ -277,7 +249,6 @@ namespace CharacterCustomization
         {
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(false);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(false);
-            // Ne pas désactiver buttonChangeBaseColor ici
             buttonManager.ShowInitialButtons();
         }
 
@@ -315,74 +286,63 @@ namespace CharacterCustomization
         {
             foreach (var slotUI in slotUIs)
             {
-                var slot = _characterCustomization.Slots.FirstOrDefault(s => s.Type == slotUI.slotType);
-                if (slot == null) continue;
-
-                foreach (Transform child in slotUI.content)
+                foreach (var item in clothingItems)
                 {
-                    Destroy(child.gameObject);
-                }
-
-                var prefabs = slot.GetAvailablePrefabs();
-                foreach (var prefab in prefabs)
-                {
-                    ItemsSprite itemSprite = prefab.GetComponent<ItemsSprite>();
-                    if (itemSprite == null || itemSprite.Tags == null) continue;
-
-                    if (selectedTags.Count == 0 || selectedTags.Any(tag => itemSprite.Tags.Contains(tag)))
+                    if (item.category == slotUI.slotType)
                     {
-                        GameObject buttonObj = Instantiate(buttonPrefab, slotUI.content);
-                        var buttonImage = buttonObj.transform.Find("Icon")?.GetComponent<Image>();
-                        var textMesh = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-
-                        if (textMesh != null) textMesh.gameObject.SetActive(false);
-                        if (buttonImage != null)
+                        // Vérifier les tags directement depuis l'Item
+                        if (selectedTags.Count == 0 || selectedTags.Any(tag => item.tags.Contains(tag)))
                         {
-                            buttonImage.sprite = itemSprite.ItemSprite != null ? itemSprite.ItemSprite : defaultSprite;
-                            buttonImage.preserveAspect = true;
-                            buttonImage.color = Color.white;
+                            GameObject buttonObj = Instantiate(buttonPrefab, slotUI.content);
+                            SetupButtonSprite(buttonObj, item);
+                            AddButtonListener(buttonObj, slotUI.slotType, item);
                         }
-
-                        Button button = buttonObj.GetComponent<Button>();
-                        button.onClick.AddListener(() => EquipPrefab(slotUI.slotType, prefab));
                     }
                 }
             }
         }
 
-        private void EquipPrefab(SlotType slotType, GameObject prefab)
+        private void SetupButtonSprite(GameObject buttonObj, Item item)
         {
-            var slot = _characterCustomization.Slots.FirstOrDefault(s => s.Type == slotType);
-            if (slot != null)
+            Image buttonImage = buttonObj.GetComponentInChildren<Image>();
+            if (buttonImage != null)
             {
-                if (_equippedObjects.ContainsKey(slotType))
-                {
-                    Destroy(_equippedObjects[slotType].instance);
-                }
-
-                slot.SetPrefab(prefab);
-                slot.Toggle(true);
-
-                GameObject instance = Instantiate(slot.Preview, _characterCustomization.CharacterInstance.transform);
-                instance.transform.localPosition = Vector3.zero;
-                instance.transform.localRotation = Quaternion.identity;
-                instance.transform.localScale = Vector3.one;
-                instance.SetActive(true);
-                _equippedObjects[slotType] = (prefab, instance);
-
-                _characterCustomization.RefreshCustomization();
+                buttonImage.sprite = item.icon != null ? item.icon : defaultSprite;
+                buttonImage.preserveAspect = true;
+                buttonImage.color = Color.white;
             }
         }
 
-        private void UnequipPrefab(SlotType slotType)
+        private void AddButtonListener(GameObject buttonObj, SlotType slotType, Item item)
         {
-            if (_equippedObjects.ContainsKey(slotType))
+            Button button = buttonObj.GetComponent<Button>();
+            if (button != null)
             {
-                Destroy(_equippedObjects[slotType].instance);
-                _equippedObjects.Remove(slotType);
-                var slot = _characterCustomization.Slots.FirstOrDefault(s => s.Type == slotType);
-                if (slot != null) slot.Toggle(false);
-                _characterCustomization.RefreshCustomization();
+                button.onClick.AddListener(() => EquipClothing(slotType, item));
+            }
+        }
+
+        private void EquipClothing(SlotType slotType, Item clothingItem)
+        {
+            if (_equippedClothing.ContainsKey(slotType))
+            {
+                Destroy(_equippedClothing[slotType].instance);
+            }
+
+            GameObject instance = Instantiate(clothingItem.prefab, _characterInstance.transform);
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+            instance.SetActive(true);
+            _equippedClothing[slotType] = (clothingItem, instance);
+        }
+
+        private void UnequipClothing(SlotType slotType)
+        {
+            if (_equippedClothing.ContainsKey(slotType))
+            {
+                Destroy(_equippedClothing[slotType].instance);
+                _equippedClothing.Remove(slotType);
             }
         }
 
@@ -408,25 +368,21 @@ namespace CharacterCustomization
             }
             ResetCamera();
         }
-       
 
         private void OnColorChangedBase(Color color)
         {
-            if (_characterCustomization != null && _characterCustomization.CharacterInstance != null)
+            if (_characterInstance != null)
             {
-                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
-                if (renderer != null)
-                {
-                    renderer.material.color = color;
-                }
+                SkinnedMeshRenderer renderer = _characterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (renderer != null) renderer.material.color = color;
             }
         }
 
         private void OnBaseColorSelected(Color color)
         {
-            if (_characterCustomization != null && _characterCustomization.CharacterInstance != null)
+            if (_characterInstance != null)
             {
-                SkinnedMeshRenderer renderer = _characterCustomization.CharacterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
+                SkinnedMeshRenderer renderer = _characterInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
                     renderer.material = new Material(renderer.material);
@@ -435,12 +391,10 @@ namespace CharacterCustomization
             }
             ResetCamera();
         }
+
         private void InitializeTexturePanel()
         {
-            if (textureButtonContainer == null || textureButtonPrefab == null)
-            {
-                return;
-            }
+            if (textureButtonContainer == null || textureButtonPrefab == null) return;
 
             foreach (Transform child in textureButtonContainer)
             {
@@ -457,22 +411,16 @@ namespace CharacterCustomization
                 Button button = buttonObj.GetComponent<Button>();
                 if (button != null)
                 {
-                    button.enabled = true;
-                    button.interactable = true;
-                    button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => ApplyTexture(index));
                 }
-           
 
                 Image buttonImage = buttonObj.GetComponent<Image>();
                 if (buttonImage != null && option.preview != null)
                 {
-                    buttonImage.enabled = true;
                     buttonImage.sprite = option.preview;
                     buttonImage.preserveAspect = true;
                     buttonImage.color = Color.white;
                 }
-            
             }
 
             if (texturePanel != null) texturePanel.SetActive(false);
@@ -495,7 +443,7 @@ namespace CharacterCustomization
 
         private SlotType? GetSlotTypeFromInstance(GameObject instance)
         {
-            foreach (var equipped in _equippedObjects)
+            foreach (var equipped in _equippedClothing)
             {
                 if (equipped.Value.instance == instance) return equipped.Key;
             }

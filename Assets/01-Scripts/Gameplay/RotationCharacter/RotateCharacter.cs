@@ -2,26 +2,26 @@ using UnityEngine;
 
 public class Rotatable : MonoBehaviour
 {
-    [SerializeField] private float speed = 300f; // Vitesse de rotation (ajustable dans l’inspecteur)
-    [SerializeField] private bool inverted = false; // Inversion de la direction
+    [SerializeField] private float speed = 300f; 
+    [SerializeField] private bool inverted = false; 
 
     private bool isRotating = false;
     private Vector2 lastPosition;
 
     void Update()
     {
-        // Gestion de la souris (PC)
-        if (Input.GetMouseButtonDown(0)) // Clic gauche pressé
+        // Gestion de la souris 
+        if (Input.GetMouseButtonDown(0)) 
         {
             isRotating = true;
             lastPosition = Input.mousePosition;
         }
-        else if (Input.GetMouseButtonUp(0)) // Clic gauche relâché
+        else if (Input.GetMouseButtonUp(0)) 
         {
             isRotating = false;
         }
 
-        // Gestion du toucher (mobile)
+        // Gestion du toucher 
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
@@ -36,7 +36,6 @@ public class Rotatable : MonoBehaviour
             }
         }
 
-        // Rotation si en cours
         if (isRotating)
         {
             Vector2 currentPosition = Vector2.zero;
@@ -52,14 +51,11 @@ public class Rotatable : MonoBehaviour
                 currentPosition = Input.GetTouch(0).position;
             }
 
-            // Calculer le déplacement horizontal
             float deltaX = currentPosition.x - lastPosition.x;
             float rotationAmount = deltaX * speed * Time.deltaTime;
 
-            // Appliquer la rotation autour de l’axe Y (Vector3.up)
             transform.Rotate(Vector3.up, inverted ? rotationAmount : -rotationAmount, Space.World);
 
-            // Mettre à jour la dernière position
             lastPosition = currentPosition;
         }
     }

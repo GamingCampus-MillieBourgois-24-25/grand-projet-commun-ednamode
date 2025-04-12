@@ -54,10 +54,20 @@ public class ButtonScrollViewManager : MonoBehaviour
         SetButtonActive(buttonBackFromTexture, false);
         SetButtonActive(buttonBackFromEdit, false);
         SetButtonActive(backButton, false);
-        SetButtonActive(buttonBackFromInitial, false); // Désactiver au démarrage
+        SetButtonActive(buttonBackFromInitial, false);
 
         // Assigner les événements
         AssignButtonEvents();
+
+        // Réactiver tous les ScrollView après l’initialisation (pour s’assurer qu’ils sont visibles)
+        foreach (var pair in buttonScrollViewPairs)
+        {
+            if (pair.scrollView != null)
+            {
+                pair.scrollView.gameObject.SetActive(true);
+                Debug.Log($"ScrollView {pair.scrollView.name} réactivé après initialisation");
+            }
+        }
     }
 
     private void SetButtonActive(Button button, bool active)

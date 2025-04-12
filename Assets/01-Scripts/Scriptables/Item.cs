@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 namespace CharacterCustomization
 {
@@ -10,6 +11,6 @@ namespace CharacterCustomization
         public GameObject prefab;
         public int price;
         public SlotType category;
-
+        public List<string> tags = new List<string>();
     }
 }
