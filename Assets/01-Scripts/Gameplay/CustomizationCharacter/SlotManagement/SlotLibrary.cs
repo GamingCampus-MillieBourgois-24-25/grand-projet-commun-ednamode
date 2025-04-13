@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CharacterCustomization
 {
-    [CreateAssetMenu(menuName = "Character Customization /Slot Library", fileName = "SlotLibrary")]
+    [CreateAssetMenu(menuName = "Character Customization/Slot Library", fileName = "SlotLibrary")]
     public class SlotLibrary : ScriptableObject
     {
         public FullBodyEntry[] FullBodyCostumes;
@@ -21,7 +21,7 @@ namespace CharacterCustomization
     public class FullBodySlotEntry
     {
         public SlotType Type;
-        public GameObject GameObject;
+        public Item Item;
     }
 
     [Serializable]
@@ -30,15 +30,13 @@ namespace CharacterCustomization
         public SlotType Type;
         public SlotGroupEntry[] Groups;
 
-        public GameObject[] Prefabs => Groups.SelectMany(group => group.Variants).ToArray();
+        public Item[] Items => Groups.SelectMany(group => group.Items).ToArray();
     }
 
     [Serializable]
     public class SlotGroupEntry
     {
         public GroupType Type;
-        public GameObject[] Variants;
+        public Item[] Items; 
     }
-
-
 }

@@ -9,7 +9,6 @@ namespace CharacterCustomization
     /// </summary>
     public class CharacterCustomization
     {
-
         private static readonly SlotType[] AlwaysEnabledParts = { SlotType.Body, SlotType.Faces };
         private readonly List<List<SavedSlot>> _savedCombinations = new();
         private readonly SlotLibrary _slotLibrary;
@@ -120,7 +119,6 @@ namespace CharacterCustomization
             return Slots.FirstOrDefault(s => s.Type == slotType);
         }
 
-
         /// <summary>
         /// Crée les slots de personnalisation à partir de la bibliothèque de slots.
         /// </summary>
@@ -132,7 +130,11 @@ namespace CharacterCustomization
 
             foreach (var slotEntry in slotLibrary.Slots)
             {
-                list.Add(new Slot(slotEntry.Type, slotEntry.Prefabs));
+                var prefabs = slotEntry.Items
+                    .Where(item => item != null)
+                    .Select(item => item.prefab)
+                    .ToArray();
+                list.Add(new Slot(slotEntry.Type, prefabs));
             }
 
             return list.ToArray();

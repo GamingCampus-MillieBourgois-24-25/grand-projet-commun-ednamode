@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro; // Ajout pour TextMeshProUGUI
 
 namespace CharacterCustomization
 {
@@ -79,8 +80,8 @@ namespace CharacterCustomization
         public GameObject textureButtonPrefab;
         public Transform textureButtonContainer;
 
-        [Header("Vêtements (Scriptable Objects)")]
-        public List<Item> clothingItems;
+        [Header("Slot Library (contient les Items)")]
+        public SlotLibrary slotLibrary;
 
         [Header("Équipés - ScrollView")]
         public ScrollRect equippedItemsScrollView;
@@ -113,10 +114,6 @@ namespace CharacterCustomization
             {
                 buttonManager.Initialize(this);
             }
-            else
-            {
-                Debug.LogWarning("ButtonManager n'est pas assigné dans l'inspecteur !");
-            }
 
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(true);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(true);
@@ -128,8 +125,7 @@ namespace CharacterCustomization
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
             if (tagsPanel != null)
             {
-                tagsPanel.SetActive(false); // Désactiver tagsPanel au démarrage
-                Debug.Log("TagsPanel désactivé au démarrage.");
+                tagsPanel.SetActive(false);
             }
 
             if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(true);
@@ -169,6 +165,8 @@ namespace CharacterCustomization
 
         private void InitializeButtons()
         {
+            if (slotLibrary == null) return;
+
             foreach (var slotUI in slotUIs)
             {
                 if (slotUI.content == null)
@@ -178,16 +176,20 @@ namespace CharacterCustomization
 
                 slotUI.ResetButtonPool();
 
-                foreach (var item in clothingItems)
+                var slotEntry = slotLibrary.Slots.FirstOrDefault(slot => slot.Type == slotUI.slotType);
+                if (slotEntry == null) continue;
+
+                foreach (var group in slotEntry.Groups)
                 {
-                    if (item.category == slotUI.slotType)
+                    foreach (var item in group.Items)
                     {
+                        if (item == null) continue;
+
+                        if (item.category != slotUI.slotType) continue;
+
                         GameObject buttonObj = slotUI.GetOrCreateButton(buttonPrefab, slotUI.content);
                         SetupButtonSprite(buttonObj, item);
                         AddButtonListener(buttonObj, slotUI.slotType, item);
-
-                        RectTransform rect = buttonObj.GetComponent<RectTransform>();
-                        Image buttonImage = buttonObj.GetComponentInChildren<Image>();
                     }
                 }
             }
@@ -204,7 +206,6 @@ namespace CharacterCustomization
             if (buttonReturnToModified != null) buttonReturnToModified.gameObject.SetActive(true);
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
-            Debug.Log("ResetCamera appelé - état des panneaux réinitialisé.");
         }
 
         public void OnChangeTextureClicked()
@@ -322,17 +323,11 @@ namespace CharacterCustomization
                 {
                     if (_hasModifiedColor)
                     {
-                        Debug.Log($"Restauration de la couleur modifiée: {_lastModifiedColor}");
                         renderer.material.color = _lastModifiedColor;
-                    }
-                    else
-                    {
-                        Debug.Log("Aucune couleur modifiée à restaurer.");
                     }
 
                     if (_lastModifiedTexture != null)
                     {
-                        Debug.Log($"Restauration de la texture modifiée: {_lastModifiedTexture.name}");
                         renderer.material.SetTexture("_BaseMap", _lastModifiedTexture);
                     }
                 }
@@ -343,30 +338,9 @@ namespace CharacterCustomization
         {
             if (tagsPanel != null)
             {
-                // Toggle : si le panel est actif, le désactiver ; sinon, l'activer
                 bool newState = !tagsPanel.activeSelf;
                 tagsPanel.SetActive(newState);
-                Debug.Log($"TagsPanel défini à l'état: {newState}");
             }
-            else
-            {
-                Debug.LogWarning("TagsPanel n'est pas assigné dans l'inspecteur !");
-            }
-        }
-
-        private void DisableUIPanels()
-        {
-            foreach (var slotUI in slotUIs)
-            {
-                if (slotUI.scrollView != null) slotUI.scrollView.gameObject.SetActive(false);
-            }
-            if (prefabsPanel != null) prefabsPanel.SetActive(false);
-            if (tagsPanel != null)
-            {
-                tagsPanel.SetActive(false);
-                Debug.Log("TagsPanel désactivé dans DisableUIPanels.");
-            }
-            if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(false);
         }
 
         private void EnableUIPanels()
@@ -374,23 +348,25 @@ namespace CharacterCustomization
             if (prefabsPanel != null)
             {
                 prefabsPanel.SetActive(true);
-                Debug.Log("PrefabsPanel activé.");
             }
-            // Ne pas activer tagsPanel ici, car on veut qu'il soit désactivé au démarrage
-            // if (tagsPanel != null)
-            // {
-            //     tagsPanel.SetActive(true);
-            //     Debug.Log("TagsPanel activé dans EnableUIPanels.");
-            // }
             if (equippedItemsScrollView != null)
             {
                 equippedItemsScrollView.gameObject.SetActive(true);
-                Debug.Log("EquippedItemsScrollView activée.");
             }
         }
 
         public void ApplyTagFilter(List<string> selectedTags)
         {
+            if (slotLibrary == null)
+            {
+                return;
+            }
+
+            if (slotLibrary.Slots == null)
+            {
+                return;
+            }
+
             if (_lastAppliedTags != null && selectedTags.SequenceEqual(_lastAppliedTags))
             {
                 return;
@@ -400,17 +376,24 @@ namespace CharacterCustomization
 
             foreach (var slotUI in slotUIs)
             {
-                if (slotUI.content == null)
+                if (slotUI == null || slotUI.content == null)
                 {
                     continue;
                 }
 
                 slotUI.ResetButtonPool();
 
-                foreach (var item in clothingItems)
+                var slotEntry = slotLibrary.Slots.FirstOrDefault(slot => slot.Type == slotUI.slotType);
+                if (slotEntry == null) continue;
+
+                foreach (var group in slotEntry.Groups)
                 {
-                    if (item.category == slotUI.slotType)
+                    if (group == null || group.Items == null) continue;
+
+                    foreach (var item in group.Items)
                     {
+                        if (item == null || item.category != slotUI.slotType || item.tags == null) continue;
+
                         bool matchesTag = selectedTags.Count > 0 && selectedTags.Any(tag => item.tags.Contains(tag));
                         if (matchesTag)
                         {
@@ -444,19 +427,19 @@ namespace CharacterCustomization
             }
         }
 
-        private void EquipClothing(SlotType slotType, Item clothingItem)
+        private void EquipClothing(SlotType slotType, Item item)
         {
             if (_equippedClothing.ContainsKey(slotType))
             {
                 Destroy(_equippedClothing[slotType].instance);
             }
 
-            GameObject instance = Instantiate(clothingItem.prefab, _characterInstance.transform);
+            GameObject instance = Instantiate(item.prefab, _characterInstance.transform);
             instance.transform.localPosition = Vector3.zero;
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
             instance.SetActive(true);
-            _equippedClothing[slotType] = (clothingItem, instance);
+            _equippedClothing[slotType] = (item, instance);
             _lastEquippedInstance = instance;
             _hasModifiedColor = false;
             _lastModifiedColor = Color.white;
@@ -520,7 +503,6 @@ namespace CharacterCustomization
                     renderer.material.color = color;
                     _lastModifiedColor = color;
                     _hasModifiedColor = true;
-                    Debug.Log($"Couleur modifiée en temps réel: {_lastModifiedColor}");
                 }
             }
         }
@@ -536,7 +518,6 @@ namespace CharacterCustomization
                     renderer.material.color = color;
                     _lastModifiedColor = color;
                     _hasModifiedColor = true;
-                    Debug.Log($"Couleur confirmée: {_lastModifiedColor}");
                 }
             }
             ResetCamera();
@@ -567,7 +548,10 @@ namespace CharacterCustomization
 
         private void InitializeTexturePanel()
         {
-            if (textureButtonContainer == null || textureButtonPrefab == null) return;
+            if (textureButtonContainer == null || textureButtonPrefab == null)
+            {
+                return;
+            }
 
             foreach (Transform child in textureButtonContainer)
             {
@@ -584,15 +568,38 @@ namespace CharacterCustomization
                 Button button = buttonObj.GetComponent<Button>();
                 if (button != null)
                 {
+                    button.enabled = true; 
+                    button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => ApplyTexture(index));
                 }
+                
 
                 Image buttonImage = buttonObj.GetComponent<Image>();
-                if (buttonImage != null && option.preview != null)
+                if (buttonImage != null)
                 {
-                    buttonImage.sprite = option.preview;
-                    buttonImage.preserveAspect = true;
-                    buttonImage.color = Color.white;
+                    buttonImage.enabled = true; 
+                    if (option.preview != null)
+                    {
+                        buttonImage.sprite = option.preview;
+                        buttonImage.preserveAspect = true;
+                        buttonImage.color = Color.white;
+                    }
+                  
+                }
+             
+
+                TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
+                if (buttonText != null)
+                {
+                    buttonText.enabled = true;
+                    buttonText.text = option.name; 
+                }
+
+                Text legacyText = buttonObj.GetComponentInChildren<Text>();
+                if (legacyText != null)
+                {
+                    legacyText.enabled = true; 
+                    legacyText.text = option.name; 
                 }
             }
 
@@ -611,7 +618,6 @@ namespace CharacterCustomization
                     material.SetTexture("_BaseMap", newTexture);
                     renderer.material = material;
                     _lastModifiedTexture = newTexture;
-                    Debug.Log($"Texture modifiée: {_lastModifiedTexture.name}");
                 }
             }
         }

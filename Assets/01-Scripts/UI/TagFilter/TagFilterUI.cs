@@ -35,23 +35,29 @@ namespace CharacterCustomization
         {
             HashSet<string> uniqueTags = new HashSet<string>();
 
-            // Récupérer les tags directement depuis les Items dans clothingItems
-            if (characterUI != null && characterUI.clothingItems != null)
+            // Récupérer les tags directement depuis les Items dans SlotLibrary
+            if (characterUI != null && characterUI.slotLibrary != null)
             {
-                foreach (var item in characterUI.clothingItems)
+                foreach (var slotEntry in characterUI.slotLibrary.Slots)
                 {
-                    if (item != null && item.tags != null)
+                    foreach (var group in slotEntry.Groups)
                     {
-                        foreach (var tag in item.tags)
+                        foreach (var item in group.Items)
                         {
-                            uniqueTags.Add(tag);
+                            if (item != null && item.tags != null)
+                            {
+                                foreach (var tag in item.tags)
+                                {
+                                    uniqueTags.Add(tag);
+                                }
+                            }
                         }
                     }
                 }
             }
             else
             {
-                Debug.LogWarning("characterUI ou clothingItems est null lors de PopulateTagList !");
+                Debug.LogWarning("characterUI ou slotLibrary est null lors de PopulateTagList !");
             }
 
             allTags = new List<string>(uniqueTags);
