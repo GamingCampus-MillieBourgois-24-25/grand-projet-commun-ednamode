@@ -32,28 +32,36 @@ public class ButtonScrollViewManager : MonoBehaviour
             if (pair.scrollView != null)
             {
                 pair.scrollView.gameObject.SetActive(false);
+                Debug.Log($"ScrollView {pair.scrollView.name} désactivée au démarrage.");
             }
         }
 
-        if (mainScrollView != null) mainScrollView.gameObject.SetActive(true);
+        if (mainScrollView != null)
+        {
+            mainScrollView.gameObject.SetActive(true);
+            Debug.Log($"Main ScrollView {mainScrollView.name} activée au démarrage.");
+        }
+
         if (buttonTags != null)
         {
             buttonTags.gameObject.SetActive(true);
-            buttonTags.onClick.AddListener(() => _characterUI.ShowTagsPanel());
+            buttonTags.onClick.RemoveAllListeners();
+            buttonTags.onClick.AddListener(() =>
+            {
+                Debug.Log("Bouton Tags cliqué - appel de ShowTagsPanel.");
+                _characterUI.ShowTagsPanel();
+            });
+            Debug.Log("Bouton Tags configuré et activé.");
+        }
+        else
+        {
+            Debug.LogWarning("ButtonTags n'est pas assigné dans l'inspecteur !");
         }
 
         SetButtonActive(buttonBackFromTexture, false);
         SetButtonActive(backButton, false);
 
         AssignButtonEvents();
-
-        foreach (var pair in buttonScrollViewPairs)
-        {
-            if (pair.scrollView != null)
-            {
-                pair.scrollView.gameObject.SetActive(true);
-            }
-        }
     }
 
     private void SetButtonActive(Button button, bool active)
@@ -61,17 +69,27 @@ public class ButtonScrollViewManager : MonoBehaviour
         if (button != null)
         {
             button.gameObject.SetActive(active);
+            Debug.Log($"Bouton {button.name} défini à l'état: {active}");
         }
     }
 
     private void AssignButtonEvents()
     {
-        if (buttonBackFromTexture != null) buttonBackFromTexture.onClick.AddListener(() => _characterUI.OnBackFromTextureClicked());
-        if (backButton != null) backButton.onClick.AddListener(OnBackButtonClicked);
+        if (buttonBackFromTexture != null)
+        {
+            buttonBackFromTexture.onClick.RemoveAllListeners();
+            buttonBackFromTexture.onClick.AddListener(() => _characterUI.OnBackFromTextureClicked());
+        }
+        if (backButton != null)
+        {
+            backButton.onClick.RemoveAllListeners();
+            backButton.onClick.AddListener(OnBackButtonClicked);
+        }
         foreach (var pair in buttonScrollViewPairs)
         {
             if (pair.button != null)
             {
+                pair.button.onClick.RemoveAllListeners();
                 pair.button.onClick.AddListener(() => OnButtonClicked(pair));
             }
         }
@@ -96,15 +114,20 @@ public class ButtonScrollViewManager : MonoBehaviour
     private void OnButtonClicked(ButtonScrollViewPair clickedPair)
     {
         if (mainScrollView != null) mainScrollView.gameObject.SetActive(false);
+
         foreach (var pair in buttonScrollViewPairs)
         {
             if (pair.scrollView != null)
             {
-                pair.scrollView.gameObject.SetActive(pair == clickedPair);
+                bool shouldBeActive = (pair == clickedPair);
+                pair.scrollView.gameObject.SetActive(shouldBeActive);
+                Debug.Log($"ScrollView {pair.scrollView.name} définie à l'état: {shouldBeActive}");
             }
         }
+
         if (backButton != null) backButton.gameObject.SetActive(true);
-        if (buttonTags != null) buttonTags.gameObject.SetActive(false);
+        // Ne pas désactiver buttonTags ici
+        // if (buttonTags != null) buttonTags.gameObject.SetActive(false);
     }
 
     private void OnBackButtonClicked()
@@ -114,12 +137,14 @@ public class ButtonScrollViewManager : MonoBehaviour
             if (pair.scrollView != null)
             {
                 pair.scrollView.gameObject.SetActive(false);
+                Debug.Log($"ScrollView {pair.scrollView.name} désactivée lors du retour.");
             }
         }
 
         if (mainScrollView != null)
         {
             mainScrollView.gameObject.SetActive(true);
+            Debug.Log($"Main ScrollView {mainScrollView.name} activée lors du retour.");
         }
 
         if (backButton != null)

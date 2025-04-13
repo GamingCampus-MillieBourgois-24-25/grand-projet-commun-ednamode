@@ -94,7 +94,7 @@ namespace CharacterCustomization
         private Color _initialColor;
         private Texture2D _initialTexture;
         private Color _lastModifiedColor;
-        private bool _hasModifiedColor; 
+        private bool _hasModifiedColor;
         private Texture2D _lastModifiedTexture;
         private List<string> _lastAppliedTags;
         private string _lastPanelUsed;
@@ -113,6 +113,10 @@ namespace CharacterCustomization
             {
                 buttonManager.Initialize(this);
             }
+            else
+            {
+                Debug.LogWarning("ButtonManager n'est pas assigné dans l'inspecteur !");
+            }
 
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(true);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(true);
@@ -122,6 +126,11 @@ namespace CharacterCustomization
 
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
+            if (tagsPanel != null)
+            {
+                tagsPanel.SetActive(false); // Désactiver tagsPanel au démarrage
+                Debug.Log("TagsPanel désactivé au démarrage.");
+            }
 
             if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(true);
 
@@ -195,6 +204,7 @@ namespace CharacterCustomization
             if (buttonReturnToModified != null) buttonReturnToModified.gameObject.SetActive(true);
             if (texturePanel != null) texturePanel.SetActive(false);
             if (colorPickerPanel != null) colorPickerPanel.SetActive(false);
+            Debug.Log("ResetCamera appelé - état des panneaux réinitialisé.");
         }
 
         public void OnChangeTextureClicked()
@@ -310,7 +320,6 @@ namespace CharacterCustomization
                 SkinnedMeshRenderer renderer = _lastEquippedInstance.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (renderer != null)
                 {
-                    // Restaurer la dernière couleur modifiée si elle existe
                     if (_hasModifiedColor)
                     {
                         Debug.Log($"Restauration de la couleur modifiée: {_lastModifiedColor}");
@@ -321,7 +330,6 @@ namespace CharacterCustomization
                         Debug.Log("Aucune couleur modifiée à restaurer.");
                     }
 
-                    // Restaurer la dernière texture modifiée
                     if (_lastModifiedTexture != null)
                     {
                         Debug.Log($"Restauration de la texture modifiée: {_lastModifiedTexture.name}");
@@ -333,7 +341,17 @@ namespace CharacterCustomization
 
         public void ShowTagsPanel()
         {
-            if (tagsPanel != null) tagsPanel.SetActive(true);
+            if (tagsPanel != null)
+            {
+                // Toggle : si le panel est actif, le désactiver ; sinon, l'activer
+                bool newState = !tagsPanel.activeSelf;
+                tagsPanel.SetActive(newState);
+                Debug.Log($"TagsPanel défini à l'état: {newState}");
+            }
+            else
+            {
+                Debug.LogWarning("TagsPanel n'est pas assigné dans l'inspecteur !");
+            }
         }
 
         private void DisableUIPanels()
@@ -343,19 +361,32 @@ namespace CharacterCustomization
                 if (slotUI.scrollView != null) slotUI.scrollView.gameObject.SetActive(false);
             }
             if (prefabsPanel != null) prefabsPanel.SetActive(false);
-            if (tagsPanel != null) tagsPanel.SetActive(false);
+            if (tagsPanel != null)
+            {
+                tagsPanel.SetActive(false);
+                Debug.Log("TagsPanel désactivé dans DisableUIPanels.");
+            }
             if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(false);
         }
 
         private void EnableUIPanels()
         {
-            foreach (var slotUI in slotUIs)
+            if (prefabsPanel != null)
             {
-                if (slotUI.scrollView != null) slotUI.scrollView.gameObject.SetActive(true);
+                prefabsPanel.SetActive(true);
+                Debug.Log("PrefabsPanel activé.");
             }
-            if (prefabsPanel != null) prefabsPanel.SetActive(true);
-            if (tagsPanel != null) tagsPanel.SetActive(true);
-            if (equippedItemsScrollView != null) equippedItemsScrollView.gameObject.SetActive(true);
+            // Ne pas activer tagsPanel ici, car on veut qu'il soit désactivé au démarrage
+            // if (tagsPanel != null)
+            // {
+            //     tagsPanel.SetActive(true);
+            //     Debug.Log("TagsPanel activé dans EnableUIPanels.");
+            // }
+            if (equippedItemsScrollView != null)
+            {
+                equippedItemsScrollView.gameObject.SetActive(true);
+                Debug.Log("EquippedItemsScrollView activée.");
+            }
         }
 
         public void ApplyTagFilter(List<string> selectedTags)
@@ -427,9 +458,9 @@ namespace CharacterCustomization
             instance.SetActive(true);
             _equippedClothing[slotType] = (clothingItem, instance);
             _lastEquippedInstance = instance;
-            _hasModifiedColor = false; 
-            _lastModifiedColor = Color.white; 
-            _lastModifiedTexture = null; 
+            _hasModifiedColor = false;
+            _lastModifiedColor = Color.white;
+            _lastModifiedTexture = null;
             UpdateEquippedItemsUI();
         }
 
@@ -441,7 +472,7 @@ namespace CharacterCustomization
                 if (_lastEquippedInstance == _equippedClothing[slotType].instance)
                 {
                     _lastEquippedInstance = null;
-                    _hasModifiedColor = false; 
+                    _hasModifiedColor = false;
                     _lastModifiedColor = Color.white;
                     _lastModifiedTexture = null;
                 }
@@ -487,8 +518,8 @@ namespace CharacterCustomization
                 if (renderer != null)
                 {
                     renderer.material.color = color;
-                    _lastModifiedColor = color; 
-                    _hasModifiedColor = true; 
+                    _lastModifiedColor = color;
+                    _hasModifiedColor = true;
                     Debug.Log($"Couleur modifiée en temps réel: {_lastModifiedColor}");
                 }
             }
@@ -503,7 +534,7 @@ namespace CharacterCustomization
                 {
                     renderer.material = new Material(renderer.material);
                     renderer.material.color = color;
-                    _lastModifiedColor = color; 
+                    _lastModifiedColor = color;
                     _hasModifiedColor = true;
                     Debug.Log($"Couleur confirmée: {_lastModifiedColor}");
                 }
