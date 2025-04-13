@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6b218e6cee9cf6428d49de89d5705d6, type: 3}
+  m_Name: Gloves_GreenGloves
+  m_EditorClassIdentifier: 
+  itemName: Green Gloves
+  icon: {fileID: 21300028, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  prefab: {fileID: 3641532560445071877, guid: 7f8db76a1fcaa484190470b5c4c30342, type: 3}
+  price: 0
+  category: 5
+  tags:
+  - Casual

@@ -14,6 +14,6 @@ namespace CharacterCustomization
         Outerwear,
         Pants,
         Shoes,
-        TShirt,
+       
     }
 }

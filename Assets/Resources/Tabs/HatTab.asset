@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2525337e2dc59934c9197f9b94b9fa33, type: 3}
   m_Name: HatTab
   m_EditorClassIdentifier: 
+  tabIcon: {fileID: 21300000, guid: fc02a8d3a3eee4ad2ae20f9ca2c10c43, type: 3}
   category: 7
-  items:
-  - {fileID: 11400000, guid: b4cdbb738c4b4e04980970ba36a43f49, type: 2}
+  items: []
