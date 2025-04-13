@@ -22,7 +22,9 @@ namespace CharacterCustomization
         /// </summary>
         public CharacterCustomization(GameObject characterPrefab, SlotLibrary slotLibrary)
         {
-            CharacterInstance = Object.Instantiate(characterPrefab, Vector3.zero, Quaternion.identity);
+            Vector3 spawnPosition = new Vector3(9.64f, 5.03f, -4f);
+            Quaternion spawnRotation = Quaternion.Euler(0f, 150f, 0f);
+            CharacterInstance = Object.Instantiate(characterPrefab, spawnPosition, spawnRotation);
             CharacterInstance.name = "BaseCharacter";
 
             _slotLibrary = slotLibrary;

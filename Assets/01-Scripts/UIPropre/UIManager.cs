@@ -382,6 +382,20 @@ public class UIManager : MonoBehaviour
             });
     }
 
+    // Utilitaire pour masquer un panel par son nom
+    public void HidePanelByName(string panelName, bool instant = false)
+    {
+        if (_panelDict.TryGetValue(panelName, out var panel))
+        {
+            HidePanel(panel, instant);
+        }
+        else
+        {
+            Debug.LogWarning($"[UIManager] Aucun panel trouvé pour le nom : {panelName}");
+        }
+    }
+
+
     // Utilitaire final
     private void FinalizePanelClose(GameObject panel)
     {
@@ -587,4 +601,5 @@ public class UIManager : MonoBehaviour
     }
 
     #endregion
+
 }
