@@ -330,8 +330,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayDuration: 3
-  startOffset: {x: 0, y: 300}
-  verticalSpacing: 160
+  startOffset: {x: 0, y: 150}
+  verticalSpacing: 100
 --- !u!114 &4277494087125057925
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -345,5 +345,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.047169805, g: 0.047169805, b: 0.047169805, a: 0.7372549}
-  m_EffectDistance: {x: -30, y: -50}
+  m_EffectDistance: {x: -20, y: -20}
   m_UseGraphicAlpha: 1

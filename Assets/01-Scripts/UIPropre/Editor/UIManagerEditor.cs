@@ -53,6 +53,7 @@ public class UIManagerEditor : Editor
         {
             "⏳ Countdown", new[]
             {
+                "countdownPanel",
                 "countdownText",
                 "normalColor",
                 "alertColor"

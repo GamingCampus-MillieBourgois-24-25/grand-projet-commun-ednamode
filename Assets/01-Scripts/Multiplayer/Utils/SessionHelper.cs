@@ -44,4 +44,23 @@ public static class SessionHelper
     {
         return SessionStore.Instance?.CurrentLobby;
     }
+
+    /// <summary>
+    /// Retourne l'ID Client depuis l'ID Joueur.
+    /// </summary>
+    public static bool TryGetClientIdFromPlayerId(string playerId, out ulong clientId)
+    {
+        foreach (var kvp in SessionStore.Instance.clientIdToPlayerId)
+        {
+            if (kvp.Value == playerId)
+            {
+                clientId = kvp.Key;
+                return true;
+            }
+        }
+
+        clientId = default;
+        return false;
+    }
+
 }
