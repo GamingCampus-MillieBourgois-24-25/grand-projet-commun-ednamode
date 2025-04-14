@@ -42,7 +42,7 @@ EditorBuildSettings:
     path: Assets/03-Scenes/Lobby/Lobby_Horizontal.unity
     guid: 0ac13300046e37343a94211ae8457fbe
   m_configObjects:
-    com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 217b9a160693b5c4780e0e854ab4e27c, type: 2}
+    com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: b7236eb4ebea37547935f7109273cb01, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 0948e78a5ee48474788809ed23970033, type: 2}
     com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000, guid: 3ae6f4307b80a3f48a5456686ccdb641, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 04b203ae0c150614fa491c3a30b24b05, type: 2}
