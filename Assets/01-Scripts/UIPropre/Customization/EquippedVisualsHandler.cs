@@ -7,6 +7,23 @@ public class EquippedVisualsHandler : MonoBehaviour
     private readonly Dictionary<SlotType, GameObject> equippedVisuals = new();
     [SerializeField] private bool copyAnimatorFromParent = true;
 
+    private Transform bodyRoot;
+    private Animator referenceAnimator;
+
+    private void Awake()
+    {
+        referenceAnimator = GetComponentInParent<Animator>();
+
+        if (referenceAnimator == null)
+        {
+            Debug.LogError("[EquippedVisualsHandler] Aucun Animator trouvé dans le parent !");
+            return;
+        }
+
+        bodyRoot = referenceAnimator.transform;
+    }
+
+
     public void Equip(SlotType slotType, GameObject prefab)
     {
         Unequip(slotType);
@@ -17,19 +34,17 @@ public class EquippedVisualsHandler : MonoBehaviour
             return;
         }
 
-        GameObject instance = Instantiate(prefab, transform);
+        GameObject instance = Instantiate(prefab, bodyRoot);
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.identity;
         instance.transform.localScale = Vector3.one;
 
-        if (copyAnimatorFromParent)
+        if (copyAnimatorFromParent && referenceAnimator != null)
         {
-            var parentAnimator = GetComponent<Animator>();
             var instanceAnimator = instance.GetComponent<Animator>();
-            if (parentAnimator != null && instanceAnimator != null)
+            if (instanceAnimator != null)
             {
-                instanceAnimator.runtimeAnimatorController = parentAnimator.runtimeAnimatorController;
-                instanceAnimator.avatar = parentAnimator.avatar;
+                instanceAnimator.runtimeAnimatorController = referenceAnimator.runtimeAnimatorController;
             }
         }
 

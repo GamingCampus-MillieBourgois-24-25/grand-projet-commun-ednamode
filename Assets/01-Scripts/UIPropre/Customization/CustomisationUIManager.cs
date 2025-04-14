@@ -18,10 +18,6 @@ public class CustomisationUIManager : MonoBehaviour
     [Header("🔧 Références")]
     private PlayerCustomizationData customizationData;
 
-    [Header("✨ Configuration Personnage")]
-    [SerializeField] private GameObject characterPrefab;
-    [SerializeField] private SlotLibrary slotLibrary;
-
     [Header("⚖️ Catégories et onglets")]
     [SerializeField] private Transform categoryButtonContainer;
     [SerializeField] private GameObject categoryButtonPrefab;
@@ -163,9 +159,10 @@ public class CustomisationUIManager : MonoBehaviour
     {
         redirectedGroups = new();
 
-        foreach (var entry in slotLibrary.Slots)
+        foreach (var entry in character.SlotEntries)
         {
             if (entry.Groups == null) continue;
+
             foreach (var group in entry.Groups)
             {
                 if (!redirectedGroups.ContainsKey(group.Type))
@@ -173,6 +170,7 @@ public class CustomisationUIManager : MonoBehaviour
             }
         }
     }
+
 
     /// <summary>
     /// Charge tous les items depuis Resources/Items et les catégorise par SlotType + GroupType

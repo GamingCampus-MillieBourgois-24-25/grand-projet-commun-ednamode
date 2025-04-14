@@ -12,6 +12,7 @@ namespace CharacterCustomization
         private static readonly SlotType[] AlwaysEnabledParts = { SlotType.Body, SlotType.Faces };
         private readonly List<List<SavedSlot>> _savedCombinations = new();
         private readonly SlotLibrary _slotLibrary;
+        public SlotEntry[] SlotEntries => _slotLibrary.Slots;
 
         public GameObject CharacterInstance { get; private set; }
         public SlotBase[] Slots { get; private set; }

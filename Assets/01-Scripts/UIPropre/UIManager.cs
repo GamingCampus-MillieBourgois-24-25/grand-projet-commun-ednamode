@@ -289,7 +289,7 @@ public class UIManager : MonoBehaviour
 
         RectTransform rect = panelToShow.GetComponent<RectTransform>();
         rect.localScale = hiddenScale;
-        //rect.anchoredPosition = Vector2.zero;
+        rect.anchoredPosition = Vector2.zero;
 
         if (instant)
         {
