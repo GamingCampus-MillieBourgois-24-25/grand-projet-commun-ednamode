@@ -29,7 +29,6 @@ namespace CharacterCustomization
     { SlotType.Outerwear, ChooseCamPoint.CamPointType.Torso },
     { SlotType.Pants, ChooseCamPoint.CamPointType.Legs },
     { SlotType.Shoes, ChooseCamPoint.CamPointType.Shoe },
-    { SlotType.TShirt, ChooseCamPoint.CamPointType.Torso }
 };
 
             itemSorter = Object.FindFirstObjectByType<ItemSorter>();
