@@ -1,3 +1,4 @@
+using System.Linq;
 
 namespace CharacterCustomization
 {
@@ -6,10 +7,10 @@ namespace CharacterCustomization
         public readonly GroupType Type;
         public readonly SlotVariant[] Variants;
 
-        public SlotGroup(GroupType type, SlotVariant[] variants)
+        public SlotGroup(GroupType type, Item[] items)
         {
             Type = type;
-            Variants = variants;
+            Variants = items.Select(item => new SlotVariant(item)).ToArray();
         }
     }
 }

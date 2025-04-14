@@ -5,8 +5,35 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 0
+    path: Assets/03-Scenes/Sandbox/SampleScene.unity
+    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 0
+    path: Assets/Plugins/DA_Minimal_Setup/DA_Setup.unity
+    guid: 76eab1e267b69f747bba890e2875d674
+  - enabled: 0
+    path: Assets/Widgets/Scenes/WidgetsQuickstart.unity
+    guid: 4c4d6e789e258834e91184588cb0e0eb
+  - enabled: 0
+    path: Assets/Plugins/NGO_Minimal_Setup/NGO_Setup.unity
+    guid: 1cbc40856b460984897b4643ac529f71
+  - enabled: 0
+    path: Assets/03-Scenes/Lobby/Lobby_DripOrDrop.unity
+    guid: dabd245b1066a8b4d920b88c92ed33c9
+  - enabled: 0
+    path: Assets/03-Scenes/Sandbox/Mato-Lobby_DripOrDrop.unity
+    guid: b27077153d6761d47abb035f59cdbad7
   - enabled: 1
-    path: Assets/03-Scenes/Sandbox/Lobby_Horizontal 1.unity
+    path: Assets/03-Scenes/Authentification/FirebaseLogin.unity
+    guid: 07020c8fc917ce448bfb264687aa7ede
+  - enabled: 1
+    path: Assets/03-Scenes/Authentification/GameSceneExample.unity
+    guid: 63da3480631d4784d9f4cc73b920c1b8
+  - enabled: 1
+    path: Assets/03-Scenes/Account/AccountScene.unity
+    guid: 37b53452a556d3149aafe8799fd81b82
+  - enabled: 1
+    path: Assets/03-Scenes/Sandbox/Lobby_Horizontal v2.unity
     guid: 8229dce35f0d0ca49b79f229705c51aa
   - enabled: 1
     path: Assets/03-Scenes/Sandbox/Lucie_BasicGameplay.unity
@@ -16,9 +43,9 @@ EditorBuildSettings:
     guid: 0ac13300046e37343a94211ae8457fbe
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 217b9a160693b5c4780e0e854ab4e27c, type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 0948e78a5ee48474788809ed23970033, type: 2}
+    com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000, guid: 3ae6f4307b80a3f48a5456686ccdb641, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 04b203ae0c150614fa491c3a30b24b05, type: 2}
-    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 84b22ac815dc1f34b857c3d73e369e80, type: 2}
     com.unity.addressableassets: {fileID: 11400000, guid: 136ba11cf0620eb4ca7de3769fbe1377, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-
   m_UseUCBPForAssetBundles: 0

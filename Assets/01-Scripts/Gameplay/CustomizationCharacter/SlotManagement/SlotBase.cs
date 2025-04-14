@@ -5,15 +5,14 @@ namespace CharacterCustomization
 {
     public abstract class SlotBase
     {
+        public SlotType Type { get; protected set; }
+        public bool IsEnabled { get; protected set; } = true; 
 
         public abstract string Name { get; }
-        public abstract GameObject Preview { get; } 
+        public abstract GameObject Preview { get; }
         public abstract int SelectedIndex { get; }
         public abstract int VariantsCount { get; }
-        public abstract (SlotType, GameObject)[] Prefabs { get; } 
-
-        public SlotType Type { get; }
-        public bool IsEnabled { get; private set; } = true;
+        public abstract (SlotType, GameObject)[] Prefabs { get; }
 
         protected SlotBase(SlotType type)
         {
@@ -26,9 +25,8 @@ namespace CharacterCustomization
         public abstract bool TryGetVariantsCountInGroup(GroupType groupType, out int count);
         public abstract bool TryPickInGroup(GroupType groupType, int index, bool isEnabled);
 
-        public abstract List<GameObject> GetAvailablePrefabs(); 
-        public abstract void SetPrefab(GameObject newPrefab); 
-
+        public abstract List<GameObject> GetAvailablePrefabs();
+        public abstract void SetPrefab(GameObject newPrefab);
 
         public void Draw(Material material, int previewLayer, Camera camera, int submeshIndex)
         {
@@ -57,7 +55,6 @@ namespace CharacterCustomization
             {
                 targetIndex = 0;
             }
-
             return targetIndex;
         }
 
@@ -73,12 +70,10 @@ namespace CharacterCustomization
 
         protected static void DrawPrefab(GameObject prefab, Material material, int previewLayer, Camera camera, int submeshIndex)
         {
-            // Instancier le prefab pour la prévisualisation
             GameObject previewObject = Object.Instantiate(prefab);
             previewObject.transform.position = new Vector3(0, -.01f, 0);
             previewObject.transform.rotation = Quaternion.identity;
 
-            // Appliquer le matériau au prefab
             var renderers = previewObject.GetComponentsInChildren<Renderer>();
             foreach (var renderer in renderers)
             {
@@ -91,12 +86,12 @@ namespace CharacterCustomization
                 renderer.gameObject.layer = previewLayer;
             }
 
-            Object.Destroy(previewObject, 0.1f); 
+            Object.Destroy(previewObject, 0.1f);
         }
 
         public virtual bool HasPrefab()
         {
-            return false; 
+            return false;
         }
     }
 }

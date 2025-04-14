@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
 
 namespace CharacterCustomization
 {
@@ -18,110 +17,82 @@ namespace CharacterCustomization
 
         private List<string> allTags = new List<string>(); // Liste de tous les tags possibles
         private List<string> selectedTags = new List<string>(); // Tags actuellement sélectionnés
+        private bool _isUpdatingToggles = false; // Pour éviter les boucles
 
         private void Start()
         {
-            // Désactiver le panneau au démarrage
-            tagPanel.SetActive(false);
+            if (tagPanel != null) tagPanel.SetActive(false);
 
-            // Ajouter l’action au bouton de filtre
-            filterButton.onClick.AddListener(OpenTagPanel);
+            if (filterButton != null)
+            {
+                filterButton.onClick.AddListener(OpenTagPanel);
+            }
 
-            // Remplir la liste des tags disponibles
             PopulateTagList();
         }
 
         private void PopulateTagList()
         {
-            if (characterUI == null)
-            {
-                Debug.LogError("characterUI est null dans TagFilterUI !");
-                return;
-            }
-            if (characterUI.slotLibrary == null)
-            {
-                Debug.LogError("slotLibrary est null dans characterUI !");
-                return;
-            }
-            if (tagTogglePrefab == null)
-            {
-                Debug.LogError("tagTogglePrefab est null dans TagFilterUI !");
-                return;
-            }
-            if (tagContent == null)
-            {
-                Debug.LogError("tagContent est null dans TagFilterUI !");
-                return;
-            }
-
             HashSet<string> uniqueTags = new HashSet<string>();
 
-            foreach (var slotEntry in characterUI.slotLibrary.Slots)
+            // Récupérer les tags directement depuis les Items dans SlotLibrary
+            if (characterUI != null && characterUI.slotLibrary != null)
             {
-                foreach (var prefab in slotEntry.Prefabs)
+                foreach (var slotEntry in characterUI.slotLibrary.Slots)
                 {
-                    ItemsSprite itemSprite = prefab.GetComponent<ItemsSprite>();
-                    if (itemSprite != null && itemSprite.Tags != null)
+                    foreach (var group in slotEntry.Groups)
                     {
-                        foreach (var tag in itemSprite.Tags)
+                        foreach (var item in group.Items)
                         {
-                            uniqueTags.Add(tag);
+                            if (item != null && item.tags != null)
+                            {
+                                foreach (var tag in item.tags)
+                                {
+                                    uniqueTags.Add(tag);
+                                }
+                            }
                         }
                     }
                 }
             }
-
-            foreach (var fullBodyEntry in characterUI.slotLibrary.FullBodyCostumes)
+            else
             {
-                foreach (var slot in fullBodyEntry.Slots)
-                {
-                    ItemsSprite itemSprite = slot.GameObject.GetComponent<ItemsSprite>();
-                    if (itemSprite != null && itemSprite.Tags != null)
-                    {
-                        foreach (var tag in itemSprite.Tags)
-                        {
-                            uniqueTags.Add(tag);
-                        }
-                    }
-                }
+                Debug.LogWarning("characterUI ou slotLibrary est null lors de PopulateTagList !");
             }
 
-            allTags = uniqueTags.ToList();
-            Debug.Log($"Nombre de tags trouvés : {allTags.Count}");
+            allTags = new List<string>(uniqueTags);
+            Debug.Log($"Tags trouvés : {string.Join(", ", allTags)}");
 
+            // Créer les toggles pour chaque tag
             foreach (var tag in allTags)
             {
                 GameObject toggleObj = Instantiate(tagTogglePrefab, tagContent);
-                if (toggleObj == null)
-                {
-                    Debug.LogError("Échec de l’instanciation de tagTogglePrefab !");
-                    continue;
-                }
-
                 Toggle toggle = toggleObj.GetComponent<Toggle>();
-                if (toggle == null)
+                if (toggle != null)
                 {
-                    Debug.LogError($"toggleObj {toggleObj.name} n’a pas de composant Toggle !");
-                    continue;
+                    TMPro.TextMeshProUGUI label = toggleObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                    if (label != null)
+                    {
+                        label.text = tag;
+                    }
+                    toggle.onValueChanged.AddListener((isOn) =>
+                    {
+                        if (_isUpdatingToggles) return; // Éviter les appels pendant la mise à jour
+                        OnTagToggleChanged(tag, isOn);
+                    });
                 }
-
-                TMPro.TextMeshProUGUI label = toggleObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-                if (label != null)
-                {
-                    label.text = tag;
-                }
-                else
-                {
-                    Debug.LogWarning($"Aucun TextMeshProUGUI trouvé dans {toggleObj.name}");
-                }
-
-                toggle.onValueChanged.AddListener((isOn) => OnTagToggleChanged(tag, isOn));
             }
+
+            // Réinitialiser les toggles sans déclencher d'événements
+            ClearFilters();
         }
 
         private void OpenTagPanel()
         {
-            tagPanel.SetActive(!tagPanel.activeSelf); // Ouvre ou ferme le panneau
+            if (tagPanel != null)
+            {
+                tagPanel.SetActive(!tagPanel.activeSelf);
+            }
         }
 
         private void OnTagToggleChanged(string tag, bool isOn)
@@ -138,18 +109,32 @@ namespace CharacterCustomization
                 selectedTags.Remove(tag);
             }
 
-            // Mettre à jour l’UI avec le filtre
-            characterUI.ApplyTagFilter(selectedTags);
+            Debug.Log($"Tag {tag} {(isOn ? "sélectionné" : "désélectionné")}. Tags sélectionnés : {string.Join(", ", selectedTags)}");
+
+            if (characterUI != null)
+            {
+                characterUI.ApplyTagFilter(selectedTags);
+            }
         }
 
         public void ClearFilters()
         {
+            _isUpdatingToggles = true; // Empêcher les appels à OnTagToggleChanged
             selectedTags.Clear();
-            foreach (Toggle toggle in tagContent.GetComponentsInChildren<Toggle>())
+            if (tagContent != null)
             {
-                toggle.isOn = false;
+                foreach (Toggle toggle in tagContent.GetComponentsInChildren<Toggle>())
+                {
+                    toggle.isOn = false;
+                }
             }
-            characterUI.ApplyTagFilter(selectedTags);
+            _isUpdatingToggles = false;
+
+            Debug.Log("Filtres réinitialisés.");
+            if (characterUI != null)
+            {
+                characterUI.ApplyTagFilter(selectedTags);
+            }
         }
     }
 }

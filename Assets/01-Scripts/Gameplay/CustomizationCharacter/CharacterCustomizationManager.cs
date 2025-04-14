@@ -4,22 +4,27 @@ namespace CharacterCustomization
 {
     public class CharacterCustomizationManager : MonoBehaviour
     {
-        public SlotLibrary slotLibrary; 
-        public GameObject characterPrefab; 
-
-        private CharacterCustomization _characterCustomization;
-
-        public CustomizableCharacterUI customizableCharacterUI;
+        [Header("References")]
+        public GameObject characterPrefab; // Prefab du personnage de base
+        public CustomizableCharacterUI customizableCharacterUI; // Référence à l’UI
 
         void Start()
         {
-            _characterCustomization = new CharacterCustomization(characterPrefab, slotLibrary);
-            customizableCharacterUI.Initialize(_characterCustomization);
-
-            if (customizableCharacterUI != null)
+            // Vérifier que les références sont assignées
+            if (characterPrefab == null)
             {
-                customizableCharacterUI.Initialize(_characterCustomization);
+                Debug.LogError("characterPrefab n’est pas assigné dans CharacterCustomizationManager !");
+                return;
             }
+
+            if (customizableCharacterUI == null)
+            {
+                Debug.LogError("customizableCharacterUI n’est pas assigné dans CharacterCustomizationManager !");
+                return;
+            }
+
+            // Initialiser l’UI sans passer de CharacterCustomization
+            customizableCharacterUI.Initialize();
         }
     }
 }

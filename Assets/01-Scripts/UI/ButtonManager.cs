@@ -19,11 +19,7 @@ public class ButtonScrollViewManager : MonoBehaviour
     public Button buttonTags;
 
     [Header("Customization UI Buttons")]
-    public Button buttonEdit;
-    public Button buttonDelete;
     public Button buttonBackFromTexture;
-    public Button buttonBackFromEdit;
-    public Button buttonBackFromInitial; // Nouveau bouton
 
     private CustomizableCharacterUI _characterUI;
 
@@ -31,32 +27,40 @@ public class ButtonScrollViewManager : MonoBehaviour
     {
         _characterUI = characterUI;
 
-        // Désactiver tous les ScrollView au démarrage
         foreach (var pair in buttonScrollViewPairs)
         {
             if (pair.scrollView != null)
             {
                 pair.scrollView.gameObject.SetActive(false);
+                Debug.Log($"ScrollView {pair.scrollView.name} désactivée au démarrage.");
             }
         }
 
-        // Activer mainScrollView et buttonTags au démarrage
-        if (mainScrollView != null) mainScrollView.gameObject.SetActive(true);
+        if (mainScrollView != null)
+        {
+            mainScrollView.gameObject.SetActive(true);
+            Debug.Log($"Main ScrollView {mainScrollView.name} activée au démarrage.");
+        }
+
         if (buttonTags != null)
         {
             buttonTags.gameObject.SetActive(true);
-            buttonTags.onClick.AddListener(() => _characterUI.ShowTagsPanel());
+            buttonTags.onClick.RemoveAllListeners();
+            buttonTags.onClick.AddListener(() =>
+            {
+                Debug.Log("Bouton Tags cliqué - appel de ShowTagsPanel.");
+                _characterUI.ShowTagsPanel();
+            });
+            Debug.Log("Bouton Tags configuré et activé.");
+        }
+        else
+        {
+            Debug.LogWarning("ButtonTags n'est pas assigné dans l'inspecteur !");
         }
 
-        // Désactiver les boutons au démarrage
-        SetButtonActive(buttonEdit, false);
-        SetButtonActive(buttonDelete, false);
         SetButtonActive(buttonBackFromTexture, false);
-        SetButtonActive(buttonBackFromEdit, false);
         SetButtonActive(backButton, false);
-        SetButtonActive(buttonBackFromInitial, false); // Désactiver au démarrage
 
-        // Assigner les événements
         AssignButtonEvents();
     }
 
@@ -65,132 +69,89 @@ public class ButtonScrollViewManager : MonoBehaviour
         if (button != null)
         {
             button.gameObject.SetActive(active);
+            Debug.Log($"Bouton {button.name} défini à l'état: {active}");
         }
     }
 
     private void AssignButtonEvents()
     {
-        if (buttonEdit != null) buttonEdit.onClick.AddListener(() => _characterUI.OnEditClicked());
-        if (buttonDelete != null) buttonDelete.onClick.AddListener(() => _characterUI.OnDeleteClicked());
-        if (buttonBackFromTexture != null) buttonBackFromTexture.onClick.AddListener(() => _characterUI.OnBackFromTextureClicked());
-        if (buttonBackFromEdit != null) buttonBackFromEdit.onClick.AddListener(() => _characterUI.OnBackFromEditClicked());
-        if (backButton != null) backButton.onClick.AddListener(OnBackButtonClicked);
-        if (buttonBackFromInitial != null)
+        if (buttonBackFromTexture != null)
         {
-            buttonBackFromInitial.onClick.AddListener(OnBackFromInitialClicked);
-            Debug.Log("buttonBackFromInitial assigné"); // Vérifie si le bouton est détecté
+            buttonBackFromTexture.onClick.RemoveAllListeners();
+            buttonBackFromTexture.onClick.AddListener(() => _characterUI.OnBackFromTextureClicked());
+        }
+        if (backButton != null)
+        {
+            backButton.onClick.RemoveAllListeners();
+            backButton.onClick.AddListener(OnBackButtonClicked);
         }
         foreach (var pair in buttonScrollViewPairs)
         {
             if (pair.button != null)
             {
+                pair.button.onClick.RemoveAllListeners();
                 pair.button.onClick.AddListener(() => OnButtonClicked(pair));
             }
         }
     }
 
-    public void ShowInitialButtons()
+    public void ShowTextureOptions()
     {
-        SetButtonActive(buttonEdit, true);
-        SetButtonActive(buttonDelete, true);
-        SetButtonActive(buttonBackFromTexture, false);
-        SetButtonActive(buttonBackFromEdit, false);
-        SetButtonActive(backButton, true); // Garde le comportement initial
-        SetButtonActive(buttonBackFromInitial, true); // Affiche le nouveau bouton
+        SetButtonActive(buttonBackFromTexture, true);
+        SetButtonActive(backButton, false);
         if (mainScrollView != null) mainScrollView.gameObject.SetActive(false);
         if (buttonTags != null) buttonTags.gameObject.SetActive(false);
     }
 
-    public void ShowEditOptions()
+    public void ReturnToMainView()
     {
-        SetButtonActive(buttonEdit, false);
-        SetButtonActive(buttonDelete, false);
         SetButtonActive(buttonBackFromTexture, false);
-        SetButtonActive(buttonBackFromEdit, true);
         SetButtonActive(backButton, false);
-        SetButtonActive(buttonBackFromInitial, false); // Désactive dans ce mode
-        // Les boutons ChangeTexture et ChangeColor sont gérés par CustomizableCharacterUI
-    }
-
-    public void ShowTextureOptions()
-    {
-        SetButtonActive(buttonEdit, false);
-        SetButtonActive(buttonDelete, false);
-        SetButtonActive(buttonBackFromTexture, true);
-        SetButtonActive(buttonBackFromEdit, false);
-        SetButtonActive(backButton, false);
-        SetButtonActive(buttonBackFromInitial, false); // Désactive dans ce mode
+        if (mainScrollView != null) mainScrollView.gameObject.SetActive(true);
+        if (buttonTags != null) buttonTags.gameObject.SetActive(true);
     }
 
     private void OnButtonClicked(ButtonScrollViewPair clickedPair)
     {
         if (mainScrollView != null) mainScrollView.gameObject.SetActive(false);
+
         foreach (var pair in buttonScrollViewPairs)
         {
             if (pair.scrollView != null)
             {
-                pair.scrollView.gameObject.SetActive(pair == clickedPair);
+                bool shouldBeActive = (pair == clickedPair);
+                pair.scrollView.gameObject.SetActive(shouldBeActive);
+                Debug.Log($"ScrollView {pair.scrollView.name} définie à l'état: {shouldBeActive}");
             }
         }
+
         if (backButton != null) backButton.gameObject.SetActive(true);
-        if (buttonTags != null) buttonTags.gameObject.SetActive(false);
+        // Ne pas désactiver buttonTags ici
+        // if (buttonTags != null) buttonTags.gameObject.SetActive(false);
     }
 
     private void OnBackButtonClicked()
     {
-        // Désactiver tous les ScrollView
         foreach (var pair in buttonScrollViewPairs)
         {
             if (pair.scrollView != null)
             {
                 pair.scrollView.gameObject.SetActive(false);
+                Debug.Log($"ScrollView {pair.scrollView.name} désactivée lors du retour.");
             }
         }
 
-        // Réactiver le ScrollView principal
         if (mainScrollView != null)
         {
             mainScrollView.gameObject.SetActive(true);
+            Debug.Log($"Main ScrollView {mainScrollView.name} activée lors du retour.");
         }
 
-        // Désactiver le bouton "Retour"
         if (backButton != null)
         {
             backButton.gameObject.SetActive(false);
         }
-    }
 
-    private void OnBackFromInitialClicked()
-    {
-        Debug.Log("OnBackFromInitialClicked appelé"); // Doit apparaître au clic
-                                                      // Désactiver tous les ScrollView dans buttonScrollViewPairs
-        foreach (var pair in buttonScrollViewPairs)
-        {
-            if (pair.scrollView != null)
-            {
-                pair.scrollView.gameObject.SetActive(false);
-            }
-        }
-
-        // Désactiver tous les ScrollRect dans la scène
-        ScrollRect[] allScrollViews = FindObjectsOfType<ScrollRect>();
-        foreach (var scrollView in allScrollViews)
-        {
-            scrollView.gameObject.SetActive(false);
-        }
-
-        // Désactiver tous les boutons
-        SetButtonActive(buttonEdit, false);
-        SetButtonActive(buttonDelete, false);
-        SetButtonActive(buttonBackFromTexture, false);
-        SetButtonActive(buttonBackFromEdit, false);
-        SetButtonActive(backButton, false);
-        SetButtonActive(buttonBackFromInitial, false);
-
-        // Réactiver l’état initial
-        if (mainScrollView != null) mainScrollView.gameObject.SetActive(true);
         if (buttonTags != null) buttonTags.gameObject.SetActive(true);
-
-        _characterUI.ResetCamera();
     }
 }
