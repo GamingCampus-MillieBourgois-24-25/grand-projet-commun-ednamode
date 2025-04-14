@@ -37,8 +37,21 @@ public class FirebaseAuthManager : MonoBehaviour
     [SerializeField]
     private Text errorDisplayText; // Utilisez TMP_Text si vous utilisez TextMeshPro, sinon remplacez par Text
 
+    public static FirebaseAuthManager Instance; // Singleton
+
+
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Rend l'objet persistant entre les scènes
+        }
+        else
+        {
+            Destroy(gameObject); // Détruit les doublons
+        }
+
         InitializeFirebase();
     }
 
@@ -383,7 +396,7 @@ public class FirebaseAuthManager : MonoBehaviour
 
     public void OpenGameScene()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal 1");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal v2");
     }
 
 }

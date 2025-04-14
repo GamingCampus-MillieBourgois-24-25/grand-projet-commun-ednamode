@@ -166,6 +166,4 @@ QualitySettings:
     excludedTargetPlatforms:
     - iPhone
   m_TextureMipmapLimitGroupNames: []
-  m_PerPlatformDefaultQuality:
-    Android: 0
-    Standalone: 0
+  m_PerPlatformDefaultQuality: {}

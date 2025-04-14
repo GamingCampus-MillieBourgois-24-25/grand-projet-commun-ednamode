@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -9,10 +10,32 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject AreYouSurePanel;
 
-    // Start is called before the first frame update
+    public TMP_Text userNameText;
+    public TMP_Text userIdText;
+    public TMP_Text levelText;
+    public TMP_Text progressText;
+    public Slider progressSlider;
+    public TMP_Text coinsText;
+    public TMP_Text jewelsText;
+
     void Start()
     {
-        //ShowMessage();
+        FillAccountData();
+    }
+
+    void FillAccountData()
+    {
+        var dts = DataSaver.Instance.dts;
+
+        userNameText.text = dts.GetUserName();
+        userIdText.text = DataSaver.Instance.GetUserId();
+
+        levelText.text = $"Niveau : {dts.GetCrrLevel()}";
+        progressText.text = $"Progression : {dts.GetCrrLevelProgress()}/{dts.GetTotalLevelProgress()}";
+        progressSlider.value = (float)dts.GetCrrLevelProgress() / dts.GetTotalLevelProgress();
+
+        coinsText.text = dts.GetTotalCoins().ToString();
+        jewelsText.text = dts.GetTotalJewels().ToString();
     }
 
     private void ShowMessage()
@@ -36,7 +59,7 @@ public class GameManager : MonoBehaviour
     public void BackToMenu()
     {
         // Load the main menu scene
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal 1");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal v2");
     }
 
     public void GoToAccount()
