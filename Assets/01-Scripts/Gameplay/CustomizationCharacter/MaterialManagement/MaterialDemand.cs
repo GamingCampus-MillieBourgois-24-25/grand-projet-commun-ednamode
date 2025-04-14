@@ -19,22 +19,22 @@ namespace CharacterCustomization
         {
             foreach (var path in _paths)
             {
-                Debug.Log($"Tentative de chargement du matériau à : {path}");
+                Debug.Log($"Tentative de chargement du matï¿½riau ï¿½ : {path}");
                 string cleanPath = path.EndsWith(".mat") ? path.Substring(0, path.Length - 4) : path;
                 var loadedMaterial = Resources.Load<Material>(cleanPath);
                 if (loadedMaterial != null)
                 {
                     _value = loadedMaterial;
-                    Debug.Log($"Matériau chargé : {loadedMaterial.name}");
+                    Debug.Log($"Matï¿½riau chargï¿½ : {loadedMaterial.name}");
                     return _value;
                 }
                 else
                 {
-                    Debug.LogWarning($"Échec du chargement du matériau à : {cleanPath}");
+                    Debug.LogWarning($"ï¿½chec du chargement du matï¿½riau ï¿½ : {cleanPath}");
                 }
             }
 
-            throw new Exception("MaterialOnDemand: aucun matériau défini !");
+            throw new Exception("MaterialOnDemand: aucun matï¿½riau dï¿½fini !");
         }
     }
 }
