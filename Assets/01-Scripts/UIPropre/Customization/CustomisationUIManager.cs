@@ -16,6 +16,7 @@ public class CustomisationUIManager : MonoBehaviour
     #region ✨ Data & References
 
     [Header("🔧 Références")]
+    [SerializeField] private SlotLibrary slotLibrary;
     private PlayerCustomizationData customizationData;
 
     [Header("⚖️ Catégories et onglets")]
@@ -73,48 +74,80 @@ public class CustomisationUIManager : MonoBehaviour
     /// <summary>
     /// Attends que le NetworkPlayer local soit prêt avant de lancer l'initialisation
     /// </summary>
+    /// <summary>
+    /// Coroutine d'initialisation du système de customisation une fois le joueur local prêt.
+    /// </summary>
     private IEnumerator WaitForLocalPlayerThenInit()
     {
-        Debug.Log("[CustomisationUI] Attente du NetworkPlayer local...");
-        // 🔁 Attente du NetworkPlayer local
-        while (localPlayer == null)
-        {
-            // On cherche le NetworkPlayer local
-            localPlayer = FindObjectsOfType<NetworkPlayer>().FirstOrDefault(p => p.IsOwner);
-            if (localPlayer == null)
-                yield return null;
-        }
+        Debug.Log("[CustomisationUI] ⏳ Attente du NetworkPlayer...");
 
-        // 🔁 Attente que le CharacterInstance soit prêt aussi
-        while (localPlayer.CharacterInstance == null)
+        // 🔁 Attente de l'instance du manager NetworkPlayer dans la scène
+        while (NetworkPlayerManager.Instance == null)
             yield return null;
 
-        // ✅ Cache tous les panels
+        Debug.Log("[CustomisationUI] ✅ NetworkPlayer.Instance trouvé.");
+
+        // 🔁 Attente que le joueur local (NetworkObject + PlayerCustomizationData) soit dispo
+        while (NetworkPlayerManager.Instance.LocalPlayerData == null)
+        {
+            Debug.Log("[CustomisationUI] 🔁 En attente de LocalPlayerData (joueur local)...");
+            yield return null;
+        }
+
+        Debug.Log("[CustomisationUI] ✅ Joueur local prêt.");
+
+        // ✅ Activation propre de l'interface
         UIManager.Instance.HideAllPanels();
+        UIManager.Instance.ShowPanel(gameObject.name);
 
-        // ✅ Affiche ce panel si enregistré dans le UIManager
-        UIManager.Instance.ShowPanel(gameObject.name); // important : le nom du GameObject doit correspondre au panel dans UIManager
-
-        customizationData = localPlayer.GetComponent<PlayerCustomizationData>();
+        // 📦 Récupération du PlayerCustomizationData
+        customizationData = NetworkPlayerManager.Instance.LocalPlayerData;
         if (customizationData == null)
         {
-            Debug.LogError("[CustomisationUI] ⚠️ Aucun PlayerCustomizationData trouvé sur le joueur.");
+            Debug.LogError("[CustomisationUI] ❌ PlayerCustomizationData introuvable !");
             yield break;
         }
 
-        character = localPlayer.CharacterLogic;
-        if (character == null)
+        // 🔁 Attente que le body (visuel joueur) soit prêt
+        GameObject characterBody = null;
+        while (characterBody == null)
         {
-            Debug.LogWarning("[CustomisationUI] ⚠️ CharacterLogic est null !");
+            characterBody = NetworkPlayerManager.Instance.GetBodyRoot()?.gameObject;
+            if (characterBody == null)
+            {
+                Debug.Log("[CustomisationUI] ⏳ En attente du corps du joueur...");
+                yield return null;
+            }
+        }
+        Debug.Log("[CustomisationUI] ✅ Corps du joueur trouvé : " + characterBody.name);
+
+        // 📚 Vérification du slotLibrary
+        if (slotLibrary == null)
+        {
+            Debug.LogError("[CustomisationUI] ❌ slotLibrary non assigné dans l’inspecteur !");
             yield break;
         }
-        // character.CharacterInstance.SetActive(true);
-        visualsHandler = localPlayer.CharacterInstance.GetComponent<EquippedVisualsHandler>();
-        if (visualsHandler == null)
-            visualsHandler = localPlayer.CharacterInstance.AddComponent<EquippedVisualsHandler>();
 
+        // 🧠 Création de la logique de customisation
+        character = new CharacterCustomization.CharacterCustomization(characterBody, slotLibrary);
+        if (character == null || character.Slots == null)
+        {
+            Debug.LogError("[CustomisationUI] ❌ character ou Slots est null !");
+            yield break;
+        }
+
+        Debug.Log($"[CustomisationUI] ✅ CharacterCustomization créée avec {character.Slots.Length} slot(s).");
+
+        // 🎨 Récupération du visuel équipé
+        visualsHandler = NetworkPlayerManager.Instance.GetLocalVisuals();
+        if (visualsHandler == null)
+            Debug.LogWarning("[CustomisationUI] ⚠️ Aucun EquippedVisualsHandler trouvé sur le joueur.");
+
+        // 📦 Détection des SlotTypes disponibles
         availableSlotTypes = character.Slots.Select(s => s.Type).ToHashSet();
-        
+        Debug.Log($"[CustomisationUI] ✅ SlotTypes détectés : {availableSlotTypes.Count}");
+
+        // 🔄 Mapping des GroupType → SlotType
         try
         {
             BuildRedirectMap();
@@ -124,6 +157,7 @@ public class CustomisationUIManager : MonoBehaviour
             Debug.LogWarning($"[CustomisationUI] ❌ Exception dans BuildRedirectMap : {ex.Message}\n{ex.StackTrace}");
         }
 
+        // 📦 Chargement des items
         try
         {
             LoadItems();
@@ -132,9 +166,13 @@ public class CustomisationUIManager : MonoBehaviour
         {
             Debug.LogWarning($"[CustomisationUI] ❌ Exception dans LoadItems : {ex.Message}\n{ex.StackTrace}");
         }
-        Debug.Log($"[CustomisationUI] {categorizedItems.Count} catégories trouvées.");
+
+        Debug.Log($"[CustomisationUI] ✅ {categorizedItems.Count} catégories chargées depuis Resources/Items");
+
+        // 🧭 Génération des boutons de catégories
         PopulateCategoryButtons();
 
+        // 🔘 Affichage initial si au moins une catégorie existe
         if (categorizedItems.Count > 0)
         {
             currentCategory = categorizedItems.Keys.First();
@@ -142,14 +180,15 @@ public class CustomisationUIManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[CustomisationUI] Aucun item trouvé dans Resources/Items.");
+            Debug.LogWarning("[CustomisationUI] ⚠️ Aucun item trouvé — vérifie Resources/Items.");
         }
 
+        // 📌 Bind des boutons UI
         tabItemButton.onClick.AddListener(() => SelectTab(TabType.Item));
         tabTextureButton.onClick.AddListener(() => SelectTab(TabType.Texture));
         tabColorButton.onClick.AddListener(() => SelectTab(TabType.Color));
 
-        Debug.Log("[CustomisationUI] Initialisation complète.");
+        Debug.Log("[CustomisationUI] ✅ Initialisation complète du CustomisationUIManager.");
     }
 
     /// <summary>
@@ -159,18 +198,20 @@ public class CustomisationUIManager : MonoBehaviour
     {
         redirectedGroups = new();
 
-        foreach (var entry in character.SlotEntries)
+        foreach (var entry in slotLibrary.Slots)
         {
+            Debug.Log($"[CustomisationUI] SlotEntry : {entry.Type}, Groups : {entry.Groups?.Length}");
+
             if (entry.Groups == null) continue;
 
             foreach (var group in entry.Groups)
             {
+                Debug.Log($"[CustomisationUI]   ↳ Redirige {group.Type} vers {entry.Type}");
                 if (!redirectedGroups.ContainsKey(group.Type))
                     redirectedGroups[group.Type] = entry.Type;
             }
         }
     }
-
 
     /// <summary>
     /// Charge tous les items depuis Resources/Items et les catégorise par SlotType + GroupType
@@ -180,7 +221,7 @@ public class CustomisationUIManager : MonoBehaviour
         Debug.Log("[CustomisationUI] Chargement des items depuis Resources/Items...");
         categorizedItems = new();
         var allItems = Resources.LoadAll<Item>("Items");
-        Debug.Log($"[CustomisationUI] {allItems.Length} items chargés depuis Resources/Items.");
+        Debug.Log($"[CustomisationUI] → categorizedItems.Count = {categorizedItems.Count}");
 
         foreach (var item in allItems)
         {
@@ -191,6 +232,7 @@ public class CustomisationUIManager : MonoBehaviour
             }
 
             var key = (item.category, null as GroupType?);
+
             foreach (var tag in item.tags)
             {
                 if (System.Enum.TryParse(tag, out GroupType parsedGroup))
@@ -204,7 +246,6 @@ public class CustomisationUIManager : MonoBehaviour
                 categorizedItems[key] = new List<Item>();
 
             categorizedItems[key].Add(item);
-            Debug.Log($"[CustomisationUI] Catégories disponibles : {string.Join(", ", categorizedItems.Keys)}");
         }
     }
 
@@ -213,6 +254,13 @@ public class CustomisationUIManager : MonoBehaviour
     /// </summary>
     private void PopulateCategoryButtons()
     {
+        Debug.Log($"[CustomisationUI] 📌 PopulateCategoryButtons() appelé");
+
+        foreach (var kvp in categorizedItems)
+        {
+            Debug.Log($"[CustomisationUI] Catégorie ajoutée : SlotType = {kvp.Key.Item1}, GroupType = {kvp.Key.Item2}, {kvp.Value.Count} item(s)");
+        }
+
         foreach (var category in categorizedItems.Keys)
         {
             var btnObj = Instantiate(categoryButtonPrefab, categoryButtonContainer);
@@ -305,7 +353,7 @@ public class CustomisationUIManager : MonoBehaviour
 
         slot.SetPrefab(item.prefab);
         slot.Toggle(true);
-        character.RefreshCustomization();
+        //character.RefreshCustomization();
         visualsHandler.Equip(slotType, item.prefab);
 
         // 🔄 Enregistre les choix locaux dans le struct

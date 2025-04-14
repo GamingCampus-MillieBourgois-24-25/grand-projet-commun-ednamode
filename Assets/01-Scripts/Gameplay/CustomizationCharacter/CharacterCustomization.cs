@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -21,19 +21,18 @@ namespace CharacterCustomization
         /// <summary>
         /// Constructeur de la personnalisation du personnage.
         /// </summary>
-        public CharacterCustomization(GameObject characterPrefab, SlotLibrary slotLibrary)
+        public CharacterCustomization(GameObject characterInstance, SlotLibrary slotLibrary)
         {
-            Vector3 spawnPosition = new Vector3(9.64f, 5.03f, -4f);
-            Quaternion spawnRotation = Quaternion.Euler(0f, 150f, 0f);
-            CharacterInstance = Object.Instantiate(characterPrefab, spawnPosition, spawnRotation);
+            CharacterInstance = characterInstance; // ‚Üê ne pas instancier
             CharacterInstance.name = "BaseCharacter";
 
             _slotLibrary = slotLibrary;
             Slots = CreateSlots(slotLibrary);
         }
 
+
         /// <summary>
-        /// SÈlectionne l'objet prÈcÈdent pour un slot donnÈ.
+        /// S√©lectionne l'objet pr√©c√©dent pour un slot donn√©.
         /// </summary>
         public void SelectPrevious(SlotType slotType)
         {
@@ -41,7 +40,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// SÈlectionne l'objet suivant pour un slot donnÈ.
+        /// S√©lectionne l'objet suivant pour un slot donn√©.
         /// </summary>
         public void SelectNext(SlotType slotType)
         {
@@ -49,7 +48,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// VÈrifie si un slot est activÈ.
+        /// V√©rifie si un slot est activ√©.
         /// </summary>
         public bool IsToggled(SlotType slotType)
         {
@@ -57,7 +56,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// Active ou dÈsactive un slot donnÈ.
+        /// Active ou d√©sactive un slot donn√©.
         /// </summary>
         public void Toggle(SlotType type, bool isToggled)
         {
@@ -72,7 +71,7 @@ namespace CharacterCustomization
             var savedCombinations = Slots.Select(slot => new SavedSlot(slot.Type, slot.IsEnabled, slot.SelectedIndex)).ToList();
             _savedCombinations.Add(savedCombinations);
 
-            // Limite le nombre de sauvegardes ‡ 4
+            // Limite le nombre de sauvegardes √† 4
             while (_savedCombinations.Count > 4)
             {
                 _savedCombinations.RemoveAt(0);
@@ -80,7 +79,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// Charge la derniËre combinaison sauvegardÈe.
+        /// Charge la derni√®re combinaison sauvegard√©e.
         /// </summary>
         public void LastCombination()
         {
@@ -101,7 +100,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// RÈinitialise la personnalisation aux valeurs par dÈfaut.
+        /// R√©initialise la personnalisation aux valeurs par d√©faut.
         /// </summary>
         public void ToDefault()
         {
@@ -115,7 +114,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// RÈcupËre un slot en fonction de son type.
+        /// R√©cup√®re un slot en fonction de son type.
         /// </summary>
         private SlotBase GetSlotBy(SlotType slotType)
         {
@@ -123,7 +122,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// CrÈe les slots de personnalisation ‡ partir de la bibliothËque de slots.
+        /// Cr√©e les slots de personnalisation √† partir de la biblioth√®que de slots.
         /// </summary>
         private static SlotBase[] CreateSlots(SlotLibrary slotLibrary)
         {
@@ -133,10 +132,10 @@ namespace CharacterCustomization
 
             foreach (var slotEntry in slotLibrary.Slots)
             {
-                var prefabs = slotEntry.Items
-                    .Where(item => item != null)
-                    .Select(item => item.prefab)
-                    .ToArray();
+                var prefabs = slotEntry.Items != null
+                    ? slotEntry.Items.Where(item => item != null).Select(item => item.prefab).ToArray()
+                    : new GameObject[0];
+
                 list.Add(new Slot(slotEntry.Type, prefabs));
             }
 
@@ -144,7 +143,7 @@ namespace CharacterCustomization
         }
 
         /// <summary>
-        /// RafraÓchit l'affichage de la personnalisation.
+        /// Rafra√Æchit l'affichage de la personnalisation.
         /// </summary>
         public void RefreshCustomization()
         {
