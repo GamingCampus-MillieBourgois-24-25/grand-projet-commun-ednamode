@@ -35,6 +35,8 @@ public class MultiplayerManager : NetworkBehaviour
 
     public bool IsReady { get; private set; } = false;
 
+    private SceneManager sceneManager;
+
     private async void Awake()
     {
         if (Instance != null && Instance != this)
@@ -51,6 +53,7 @@ public class MultiplayerManager : NetworkBehaviour
 
     private async void Start()
     {
+        sceneManager = SceneManager.Instance;
         isReady = false;
         await AuthGuard.EnsureSignedInAsync();
         isReady = AuthenticationService.Instance.IsSignedIn;
@@ -581,7 +584,7 @@ public class MultiplayerManager : NetworkBehaviour
     {
         yield return LobbyService.Instance.RemovePlayerAsync(SessionStore.Instance.CurrentLobby.Id, AuthenticationService.Instance.PlayerId);
         NetworkManager.Singleton.Shutdown();
-        SceneManager.LoadScene("Lobby_Horizontal 1"); // à adapter si nécessaire
+        sceneManager.LoadScene("Lobby_Horizontal v2"); // à adapter si nécessaire
     }
 
 

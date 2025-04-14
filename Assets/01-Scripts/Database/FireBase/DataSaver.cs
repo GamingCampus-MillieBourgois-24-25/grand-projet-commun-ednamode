@@ -5,11 +5,13 @@ using System;
 using Firebase.Database;
 using Firebase.Auth;
 using TMPro;
-using UnityEditor;
-using Firebase; // Import nécessaire pour TextMeshPro
+using Firebase;
+using CharacterCustomization;
 
 public class DataSaver : MonoBehaviour
 {
+    public static DataSaver Instance { get; private set; } // Singleton Instance
+
     public dataToSave dts;
     public string userId;
     private DatabaseReference dbRef;
@@ -23,11 +25,22 @@ public class DataSaver : MonoBehaviour
 
     private void Awake()
     {
+        // Singleton logic
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // Détruire les doublons
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // Persiste entre les scènes
+
+        // Initialisation Firebase
         AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
         FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
         auth = FirebaseAuth.GetAuth(app);
 
-        dbRef = FirebaseDatabase.GetInstance(app).RootReference; // Utilise l'instance spécifique de FirebaseApp
+        dbRef = FirebaseDatabase.GetInstance(app).RootReference;
 
         if (auth.CurrentUser != null)
         {
@@ -118,7 +131,7 @@ public class DataSaver : MonoBehaviour
         SaveDataFn();
         UpdateDataDisplay();
     }
-
+    public int GetCoins() { return dts.totalCoins; }
     public void addJewels(int jewels)
     {
         dts.totalJewels += jewels;
@@ -132,7 +145,7 @@ public class DataSaver : MonoBehaviour
         SaveDataFn();
         UpdateDataDisplay();
     }
-
+    public int GetJewels() { return dts.totalJewels; }
     public void addLevelProgress(int levelProgress)
     {
         dts.totalLevelProgress += levelProgress;
@@ -169,6 +182,11 @@ public class DataSaver : MonoBehaviour
     {
         LoadDataFn();
     }
+    public void AddItem(CustomizationItem item)
+    {
+        dts.ownedItems.Add(item);
+        SaveDataFn();
+    }
 }
 
 [Serializable]
@@ -180,6 +198,6 @@ public class dataToSave
     public int crrLevel;
     public int crrLevelProgress;
     public int totalLevelProgress;
+    public List<CustomizationItem> ownedItems;
+    public List<Character> customCharacters;
 }
-
-
