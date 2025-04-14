@@ -527,7 +527,9 @@ public class MultiplayerManager : NetworkBehaviour
             if (IsHost())
             {
                 int selectedGameMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
-                string sceneToLoad = selectedGameMode switch
+                GamePhaseManager.Instance?.StartCustomizationPhase(); // Début du flow logique
+                
+                /* string sceneToLoad = selectedGameMode switch
                 {
                     0 => "Scene_PassMode",
                     1 => "Scene_Sabotage",
@@ -536,6 +538,7 @@ public class MultiplayerManager : NetworkBehaviour
                 };
 
                 NetworkManager.Singleton.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Single);
+            */
             }
         });
     }

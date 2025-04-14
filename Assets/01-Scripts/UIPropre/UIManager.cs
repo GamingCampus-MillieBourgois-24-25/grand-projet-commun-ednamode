@@ -289,7 +289,7 @@ public class UIManager : MonoBehaviour
 
         RectTransform rect = panelToShow.GetComponent<RectTransform>();
         rect.localScale = hiddenScale;
-        rect.anchoredPosition = Vector2.zero;
+        //rect.anchoredPosition = Vector2.zero;
 
         if (instant)
         {
@@ -304,6 +304,10 @@ public class UIManager : MonoBehaviour
         }
 
         _currentPanel = panelToShow;
+    }
+    public void ShowPanelDirect(GameObject panel)
+    {
+        panel.SetActive(true);
     }
 
     public void HidePanel(GameObject panel, bool instant = false)
@@ -506,13 +510,21 @@ public class UIManager : MonoBehaviour
 
     #region ⏳ Countdown
     [Header("⏳ Compte à rebours")]
+    [Tooltip("Panel de compte à rebours à afficher.")]
     [SerializeField] private GameObject countdownPanel;
+    [Tooltip("Texte du compte à rebours à mettre à jour.")]
     [SerializeField] private TMP_Text countdownText;
+    [Tooltip("Durée du compte à rebours en secondes.")]
+    [Range(1, 30)]
+    [SerializeField] private int countdownDuration = 10;
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color alertColor = Color.red;
 
     private Coroutine countdownRoutine;
 
+    /// <summary>
+    /// Lance le compte à rebours et exécute l'action à la fin.
+    /// </summary>
     public void StartCountdown(System.Action onComplete)
     {
         if (countdownRoutine != null)
@@ -527,7 +539,7 @@ public class UIManager : MonoBehaviour
         countdownPanel.SetActive(true);
         countdownText.gameObject.SetActive(true);
 
-        for (int i = 10; i >= 0; i--)
+        for (int i = countdownDuration; i >= 0; i--)
         {
             countdownText.text = i.ToString();
             countdownText.fontSize = (i <= 3) ? 160 : 100;
@@ -549,6 +561,9 @@ public class UIManager : MonoBehaviour
         countdownRoutine = null;
     }
 
+    /// <summary>
+    /// Annule le compte à rebours en cours.
+    /// </summary>
     public void CancelCountdown()
     {
         if (countdownRoutine != null)

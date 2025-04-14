@@ -16,7 +16,10 @@ public class NetworkPlayer : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
+        {            
+            Debug.Log("[NetworkPlayer] Start → Instanciation du personnage local");
             SpawnCharacterInstance(); // centralisé
+        }
     }
 
     private Vector3 GetSpawnPosition(ulong clientId)

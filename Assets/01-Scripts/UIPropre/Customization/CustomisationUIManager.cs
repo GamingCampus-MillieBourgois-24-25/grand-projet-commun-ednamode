@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using CharacterCustomization;
 using CharacterCustomizationNamespace = CharacterCustomization;
+using System.Collections;
 
 /// <summary>
 /// UI de personnalisation d’un personnage local, avec gestion des catégories SlotType et GroupType,
@@ -61,31 +62,82 @@ public class CustomisationUIManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        localPlayer = FindObjectsOfType<NetworkPlayer>().FirstOrDefault(p => p.IsOwner);
-        if (localPlayer == null)
+        Debug.Log("[CustomisationUI] Start appelé !");
+        StartCoroutine(WaitForLocalPlayerThenInit());
+    }
+
+    /// <summary>
+    /// Force l'initialisation du système de customisation, utile pour les tests
+    /// </summary>
+    public void ForceInit()
+    {
+        StartCoroutine(WaitForLocalPlayerThenInit());
+    }
+
+    /// <summary>
+    /// Attends que le NetworkPlayer local soit prêt avant de lancer l'initialisation
+    /// </summary>
+    private IEnumerator WaitForLocalPlayerThenInit()
+    {
+        Debug.Log("[CustomisationUI] Attente du NetworkPlayer local...");
+        // 🔁 Attente du NetworkPlayer local
+        while (localPlayer == null)
         {
-            Debug.LogError("[CustomisationUI] Aucun NetworkPlayer local trouvé.");
-            return;
+            // On cherche le NetworkPlayer local
+            localPlayer = FindObjectsOfType<NetworkPlayer>().FirstOrDefault(p => p.IsOwner);
+            if (localPlayer == null)
+                yield return null;
         }
+
+        // 🔁 Attente que le CharacterInstance soit prêt aussi
+        while (localPlayer.CharacterInstance == null)
+            yield return null;
+
+        // ✅ Cache tous les panels
+        UIManager.Instance.HideAllPanels();
+
+        // ✅ Affiche ce panel si enregistré dans le UIManager
+        UIManager.Instance.ShowPanel(gameObject.name); // important : le nom du GameObject doit correspondre au panel dans UIManager
 
         customizationData = localPlayer.GetComponent<PlayerCustomizationData>();
         if (customizationData == null)
         {
-            Debug.LogError("[CustomisationUI] Aucun PlayerCustomizationData trouvé sur le joueur.");
-            return;
+            Debug.LogError("[CustomisationUI] ⚠️ Aucun PlayerCustomizationData trouvé sur le joueur.");
+            yield break;
         }
 
         character = localPlayer.CharacterLogic;
+        if (character == null)
+        {
+            Debug.LogWarning("[CustomisationUI] ⚠️ CharacterLogic est null !");
+            yield break;
+        }
+        // character.CharacterInstance.SetActive(true);
         visualsHandler = localPlayer.CharacterInstance.GetComponent<EquippedVisualsHandler>();
         if (visualsHandler == null)
-            visualsHandler = character.CharacterInstance.AddComponent<EquippedVisualsHandler>();
+            visualsHandler = localPlayer.CharacterInstance.AddComponent<EquippedVisualsHandler>();
 
         availableSlotTypes = character.Slots.Select(s => s.Type).ToHashSet();
-        BuildRedirectMap();
+        
+        try
+        {
+            BuildRedirectMap();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Exception dans BuildRedirectMap : {ex.Message}\n{ex.StackTrace}");
+        }
 
-        LoadItems();
+        try
+        {
+            LoadItems();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Exception dans LoadItems : {ex.Message}\n{ex.StackTrace}");
+        }
+        Debug.Log($"[CustomisationUI] {categorizedItems.Count} catégories trouvées.");
         PopulateCategoryButtons();
-        Debug.Log($"[CustomisationUI] {categorizedItems.Count} catégories chargées.");
 
         if (categorizedItems.Count > 0)
         {
@@ -100,6 +152,8 @@ public class CustomisationUIManager : MonoBehaviour
         tabItemButton.onClick.AddListener(() => SelectTab(TabType.Item));
         tabTextureButton.onClick.AddListener(() => SelectTab(TabType.Texture));
         tabColorButton.onClick.AddListener(() => SelectTab(TabType.Color));
+
+        Debug.Log("[CustomisationUI] Initialisation complète.");
     }
 
     /// <summary>
@@ -125,6 +179,7 @@ public class CustomisationUIManager : MonoBehaviour
     /// </summary>
     private void LoadItems()
     {
+        Debug.Log("[CustomisationUI] Chargement des items depuis Resources/Items...");
         categorizedItems = new();
         var allItems = Resources.LoadAll<Item>("Items");
         Debug.Log($"[CustomisationUI] {allItems.Length} items chargés depuis Resources/Items.");
