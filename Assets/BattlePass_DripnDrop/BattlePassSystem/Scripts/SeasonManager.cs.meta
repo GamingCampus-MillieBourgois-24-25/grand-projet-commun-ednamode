@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: b4854efc940725c4d8c29a1e503e6f0e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243822
+  packageName: Easy Battle Pass System
+  packageVersion: 1.22
+  assetPath: Assets/Vauxland/EasyBattlePassSystem/Scripts/SeasonManager.cs
+  uploadId: 671064

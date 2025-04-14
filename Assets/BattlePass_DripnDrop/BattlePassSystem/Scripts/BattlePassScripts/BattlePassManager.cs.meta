@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 07698b6c6c69ffe4e94228e649a70276
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243822
+  packageName: Easy Battle Pass System
+  packageVersion: 1.22
+  assetPath: Assets/Vauxland/EasyBattlePassSystem/Scripts/BattlePassScripts/BattlePassManager.cs
+  uploadId: 671064

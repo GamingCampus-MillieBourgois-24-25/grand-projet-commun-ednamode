@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e50598748f72c8e47be28d674593aa52
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243822
+  packageName: Easy Battle Pass System
+  packageVersion: 1.22
+  assetPath: Assets/Vauxland/EasyBattlePassSystem/BattlePassPrefabs/BattlePassHorizontal.prefab
+  uploadId: 671064
