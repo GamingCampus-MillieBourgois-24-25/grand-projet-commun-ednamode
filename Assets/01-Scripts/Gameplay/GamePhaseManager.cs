@@ -76,6 +76,8 @@ public class GamePhaseManager : NetworkBehaviour
     {
         if (IsServer)
             CurrentPhase.Value = GamePhase.Waiting;
+
+        CurrentPhase.OnValueChanged += OnPhaseChanged;
     }
 
     #endregion
@@ -113,19 +115,38 @@ public class GamePhaseManager : NetworkBehaviour
     #region 🎨 PHASES DU JEU
 
     /// <summary>
+    /// Gère le changement de phase du jeu.
+    /// </summary>
+    private void OnPhaseChanged(GamePhase previous, GamePhase current)
+    {
+
+        if (current == GamePhase.Customization)
+        {
+            Debug.Log("[GamePhaseManager] 📢 Phase Customisation détectée (client local)");
+
+            var allUIs = FindObjectsOfType<CustomisationUIManager>(true);
+            foreach (var ui in allUIs)
+            {
+                if (ui.isActiveAndEnabled || !ui.gameObject.activeSelf)
+                    continue;
+
+                UIManager.Instance.ShowPanelDirect(ui.gameObject);
+                ui.ForceInit();
+            }
+        }
+    }
+
+    /// <summary>
     /// Démarre la phase de customisation.
     /// </summary>
     public void StartCustomizationPhase()
     {
-        if (!IsServer) return;
         CurrentPhase.Value = GamePhase.Customization;
+        ShowCustomizationPanelClientRpc();
 
         var mapping = GetActivePanelMapping();
         if (mapping != null)
             Transition(mapping.customizationPanelToHide, mapping.customizationPanel);
-
-        if (mapping.customizationPanel.TryGetComponent(out CustomisationUIManager ui))
-            ui.ForceInit();
 
         StartCoroutine(CustomizationRoutine());
     }
@@ -201,5 +222,47 @@ public class GamePhaseManager : NetworkBehaviour
         UIManager.Instance.ShowPanel("Online");
     }
 
+    #endregion
+
+    #region 🛠️ NETWORK
+    [ClientRpc]
+    private void ShowCustomizationPanelClientRpc()
+    {
+        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de customisation");
+
+        var uis = FindObjectsOfType<CustomisationUIManager>(true);
+        foreach (var ui in uis)
+        {
+            UIManager.Instance.ShowPanelDirect(ui.gameObject);
+            ui.ForceInit();
+        }
+    }
+
+    [ClientRpc]
+    private void ShowRunwayPanelClientRpc()
+    {
+        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de défilé");
+        var mapping = GetActivePanelMapping();
+        if (mapping != null)
+            Transition(mapping.runwayPanelToHide, mapping.runwayPanel);
+    }
+
+    [ClientRpc]
+    private void ShowPodiumPanelClientRpc()
+    {
+        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de podium");
+        var mapping = GetActivePanelMapping();
+        if (mapping != null)
+            Transition(mapping.podiumPanelToHide, mapping.podiumPanel);
+    }
+
+    [ClientRpc]
+    private void ShowVotingPanelClientRpc()
+    {
+        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de vote");
+        var mapping = GetActivePanelMapping();
+        if (mapping != null)
+            Transition(mapping.votingPanelToHide, mapping.votingPanel);
+    }
     #endregion
 }

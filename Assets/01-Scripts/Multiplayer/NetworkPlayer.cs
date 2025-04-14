@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Unity.Netcode;
+using System.Collections;
 
 /// <summary>
 /// Gère le joueur réseau instancié automatiquement par Netcode.
@@ -18,6 +19,14 @@ public class NetworkPlayer : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        StartCoroutine(DelayedSpawnAndCamera());
+    }
+
+    private IEnumerator DelayedSpawnAndCamera()
+    {
+        // Attends que NetworkPlayerManager.Instance existe et que spawnPoints soient prêts
+        yield return new WaitUntil(() => NetworkPlayerManager.Instance != null && NetworkPlayerManager.Instance.spawnPoints.Count > 0);
+
         ApplySpawnPoint();
         ActivateAndPositionCamera();
     }
@@ -27,15 +36,15 @@ public class NetworkPlayer : NetworkBehaviour
     /// </summary>
     private void ApplySpawnPoint()
     {
-        var point = NetworkPlayerManager.Instance?.GetSpawnPoint(OwnerClientId);
-        if (point != null)
+        var spawnPoint = NetworkPlayerManager.Instance?.GetSpawnPoint(OwnerClientId);
+        if (spawnPoint != null)
         {
-            transform.SetPositionAndRotation(point.position, point.rotation);
-            Debug.Log($"[NetworkPlayer] 🧍 Positionné au point de spawn pour ClientId {OwnerClientId}");
+            transform.SetPositionAndRotation(spawnPoint.position, spawnPoint.rotation);
+            Debug.Log($"[NetworkPlayer] 🧍 Téléporté au spawn point {spawnPoint.name}");
         }
         else
         {
-            Debug.LogWarning("[NetworkPlayer] ⚠ Aucun point de spawn trouvé.");
+            Debug.LogWarning("[NetworkPlayer] ⚠ Aucun point de spawn trouvé !");
         }
     }
 
