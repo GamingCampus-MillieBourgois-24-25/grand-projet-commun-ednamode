@@ -25,10 +25,10 @@ public class SettingsUI : MonoBehaviour
             return;
         }
 
-        if (settingsPanel != null)
+   /*     if (settingsPanel != null)
         {
             settingsPanel.SetActive(true);
-        }
+        }*/
 
         if (highQualityButton != null)
         {
