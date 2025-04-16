@@ -23,12 +23,12 @@ public class SettingsManager : MonoBehaviour
     public Slider musicVolumeSlider;
 
     [Header("Boutons de mute")]
-    public Button masterMuteButton; // Bouton pour couper/activer le volume Master
-    public TextMeshProUGUI masterMuteButtonText; // Texte du bouton Master
-    public Button sfxMuteButton; // Bouton pour couper/activer le volume SFX
-    public TextMeshProUGUI sfxMuteButtonText; // Texte du bouton SFX
-    public Button musicMuteButton; // Bouton pour couper/activer le volume Music
-    public TextMeshProUGUI musicMuteButtonText; // Texte du bouton Music
+    public Button masterMuteButton;
+    public TextMeshProUGUI masterMuteButtonText;
+    public Button sfxMuteButton;
+    public TextMeshProUGUI sfxMuteButtonText;
+    public Button musicMuteButton;
+    public TextMeshProUGUI musicMuteButtonText;
 
     [Header("Feedback visuel (TextMeshPro)")]
     public TextMeshProUGUI qualityFeedbackText;
@@ -68,7 +68,7 @@ public class SettingsManager : MonoBehaviour
             return;
         }
 
-       
+      
 
         if (highQualityButton != null)
         {
@@ -83,7 +83,6 @@ public class SettingsManager : MonoBehaviour
             lowQualityButton.onClick.AddListener(() => SetQuality(QualityLevel.Low));
         }
 
-        // Initialiser les sliders et charger les volumes sauvegardés
         if (masterVolumeSlider != null)
         {
             masterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
@@ -109,7 +108,6 @@ public class SettingsManager : MonoBehaviour
             SetMusicVolume(savedMusicVolume);
         }
 
-        // Charger les états de mute et appliquer
         isMasterMuted = PlayerPrefs.GetInt(MASTER_MUTE_KEY, 0) == 1;
         if (isMasterMuted)
         {
@@ -134,10 +132,8 @@ public class SettingsManager : MonoBehaviour
             musicVolumeSlider.value = 0f;
         }
 
-        // Mettre à jour l'état des boutons de mute
         UpdateMuteButtonStates();
 
-        // Ajouter les listeners pour les boutons de mute
         if (masterMuteButton != null)
         {
             masterMuteButton.onClick.AddListener(ToggleMasterMute);
@@ -160,7 +156,6 @@ public class SettingsManager : MonoBehaviour
         {
             bool newState = !settingsPanel.activeSelf;
             settingsPanel.SetActive(newState);
-            Debug.Log($"SettingsPanel défini à l'état : {newState}");
         }
     }
 
@@ -170,16 +165,13 @@ public class SettingsManager : MonoBehaviour
         switch (level)
         {
             case QualityLevel.Low:
-                QualitySettings.SetQualityLevel(0, true);
-                Debug.Log("Qualité définie sur : Low (optimisé pour mobile)");
+                QualitySettings.SetQualityLevel(2, true);
                 break;
             case QualityLevel.Medium:
                 QualitySettings.SetQualityLevel(1, true);
-                Debug.Log("Qualité définie sur : Medium (optimisé pour mobile)");
                 break;
             case QualityLevel.High:
-                QualitySettings.SetQualityLevel(2, true);
-                Debug.Log("Qualité définie sur : High (optimisé pour mobile)");
+                QualitySettings.SetQualityLevel(0, true);
                 break;
         }
 
@@ -207,7 +199,7 @@ public class SettingsManager : MonoBehaviour
         }
         else
         {
-            SetQuality(QualityLevel.Low);
+            SetQuality(QualityLevel.Medium); 
         }
     }
 
@@ -216,10 +208,10 @@ public class SettingsManager : MonoBehaviour
         int currentLevel = QualitySettings.GetQualityLevel();
         switch (currentLevel)
         {
-            case 0: return QualityLevel.Low;
+            case 0: return QualityLevel.High;
             case 1: return QualityLevel.Medium;
-            case 2: return QualityLevel.High;
-            default: return QualityLevel.Low;
+            case 2: return QualityLevel.Low;
+            default: return QualityLevel.Medium; 
         }
     }
 
@@ -257,7 +249,6 @@ public class SettingsManager : MonoBehaviour
                 break;
         }
 
-        Debug.Log($"Optimisations appliquées pour le niveau : {level}");
     }
 
     private void ClearFeedbackText()
@@ -297,7 +288,6 @@ public class SettingsManager : MonoBehaviour
         }
         PlayerPrefs.SetFloat("MasterVolume", volume);
         PlayerPrefs.Save();
-        Debug.Log($"Master Volume défini à : {volume} (db: {dbVolume})");
     }
 
     private void SetSFXVolume(float volume)
@@ -311,7 +301,6 @@ public class SettingsManager : MonoBehaviour
         }
         PlayerPrefs.SetFloat("SFXVolume", volume);
         PlayerPrefs.Save();
-        Debug.Log($"SFX Volume défini à : {volume} (db: {dbVolume})");
     }
 
     private void SetMusicVolume(float volume)
@@ -325,7 +314,6 @@ public class SettingsManager : MonoBehaviour
         }
         PlayerPrefs.SetFloat("MusicVolume", volume);
         PlayerPrefs.Save();
-        Debug.Log($"Music Volume défini à : {volume} (db: {dbVolume})");
     }
 
     private void ToggleMasterMute()
@@ -347,7 +335,6 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt(MASTER_MUTE_KEY, isMasterMuted ? 1 : 0);
         PlayerPrefs.Save();
         UpdateMuteButtonStates();
-        Debug.Log($"Master Volume : {(isMasterMuted ? "Muté" : "Réactivé")}");
     }
 
     private void ToggleSFXMute()
@@ -369,7 +356,6 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt(SFX_MUTE_KEY, isSFXMuted ? 1 : 0);
         PlayerPrefs.Save();
         UpdateMuteButtonStates();
-        Debug.Log($"SFX Volume : {(isSFXMuted ? "Muté" : "Réactivé")}");
     }
 
     private void ToggleMusicMute()
@@ -391,7 +377,6 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt(MUSIC_MUTE_KEY, isMusicMuted ? 1 : 0);
         PlayerPrefs.Save();
         UpdateMuteButtonStates();
-        Debug.Log($"Music Volume : {(isMusicMuted ? "Muté" : "Réactivé")}");
     }
 
     private void UpdateMuteButtonStates()
