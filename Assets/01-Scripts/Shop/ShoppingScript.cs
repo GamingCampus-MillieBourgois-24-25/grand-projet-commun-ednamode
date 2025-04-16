@@ -28,6 +28,20 @@ public class ShoppingScript : MonoBehaviour
     }
 
 
+    private void ProcessPurchase(int currentBalance, int price, System.Action<int> removeCurrency)
+    {
+        if (currentBalance >= price)
+        {
+            removeCurrency(price);
+            _dataSaver.AddItem(selectedItem);
+            _dataSaver.ShowItems();
+        }
+        else
+        {
+            Debug.Log($"Not enough to buy the item.");
+        }
+    }
+
     public void Buy()
     {
         if (selectedItem == null)
@@ -35,18 +49,23 @@ public class ShoppingScript : MonoBehaviour
             Debug.LogError("Item is null");
             return;
         }
-        if (_dataSaver.GetCoins() >= selectedItem.price)
+
+        if (selectedItem.tags.Contains("premium"))
         {
-            _dataSaver.removeCoins(selectedItem.price);
-            coinsText.text = "Coins: " + _dataSaver.GetCoins().ToString();
-            _dataSaver.AddItem(selectedItem);
-            Debug.Log("Item bought: " + selectedItem.itemName);
-            Debug.Log("Coins left: " + _dataSaver.GetCoins());
-            _dataSaver.ShowItems();
+            ProcessPurchase(
+                _dataSaver.GetJewels(),
+                selectedItem.price,
+                _dataSaver.removeJewels
+            );
         }
         else
         {
-            Debug.Log("Not enough coins to buy the item.");
+            ProcessPurchase(
+                _dataSaver.GetCoins(),
+                selectedItem.price,
+                _dataSaver.removeCoins
+            );
         }
     }
+
 }
