@@ -87,6 +87,9 @@ namespace CharacterCustomization
         public ScrollRect equippedItemsScrollView;
         public Transform equippedItemsContent;
 
+        [Header("Défilement du personnage")]
+        public CharacterParadeController paradeController; // Référence au script de défilement
+
         private GameObject _characterInstance;
         private Vector3 _originalCameraPosition;
         private Quaternion _originalCameraRotation;
@@ -100,6 +103,7 @@ namespace CharacterCustomization
         private List<string> _lastAppliedTags;
         private string _lastPanelUsed;
 
+        private GameObject characterInstance; // L'instance du personnage
         public void Initialize()
         {
             _originalCameraPosition = mainCamera.transform.position;
@@ -114,7 +118,18 @@ namespace CharacterCustomization
             {
                 buttonManager.Initialize(this);
             }
+            // Instancier le personnage
+            characterInstance = Instantiate(characterPrefab, Vector3.zero, Quaternion.identity);
 
+            // Assigner characterInstance au CharacterParadeController en utilisant la propriété publique
+           /* if (paradeController != null)
+            {
+                paradeController.CharacterInstance = characterInstance; // Utiliser la propriété publique
+            }
+            else
+            {
+                Debug.LogError("[CharacterCustomizationUI] paradeController n'est pas assigné !");
+            }*/
             if (buttonChangeTexture != null) buttonChangeTexture.gameObject.SetActive(true);
             if (buttonChangeColor != null) buttonChangeColor.gameObject.SetActive(true);
             if (buttonChangeBaseColor != null) buttonChangeBaseColor.gameObject.SetActive(true);
