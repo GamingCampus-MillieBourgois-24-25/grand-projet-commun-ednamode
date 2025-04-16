@@ -17,3 +17,5 @@ MonoBehaviour:
   prefab: {fileID: 7447399822274565913, guid: bc6466d27e0478a48a2f220fcc6f87a7, type: 3}
   price: 100
   category: 8
+  tags:
+  - Fun

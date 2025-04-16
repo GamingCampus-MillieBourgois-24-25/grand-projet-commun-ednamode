@@ -182,10 +182,18 @@ public class DataSaver : MonoBehaviour
     {
         LoadDataFn();
     }
-    public void AddItem(CustomizationItem item)
+    public void AddItem(Item item)
     {
         dts.ownedItems.Add(item);
         SaveDataFn();
+    }
+
+    public void ShowItems()
+    {
+        foreach (Item item in dts.ownedItems)
+        {
+            Debug.Log($"Item: {item.itemName}, Price: {item.price}");
+        }
     }
 }
 
@@ -198,6 +206,6 @@ public class dataToSave
     public int crrLevel;
     public int crrLevelProgress;
     public int totalLevelProgress;
-    public List<CustomizationItem> ownedItems;
+    public List<Item> ownedItems;
     public List<Character> customCharacters;
 }
