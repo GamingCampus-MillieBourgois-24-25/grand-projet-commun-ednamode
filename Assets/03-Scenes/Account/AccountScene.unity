@@ -1230,62 +1230,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &757772517
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 757772519}
-  - component: {fileID: 757772518}
-  m_Layer: 0
-  m_Name: DataSaver_Realtime
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &757772518
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 757772517}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63b4b8d4afab8524a806d695c3c0f850, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  userId: 
-  jsonConfig: "{\n  \"project_info\": {\n    \"project_number\": \"1064458188877\",\n   
-    \"firebase_url\": \"https://drip-or-drop-default-rtdb.firebaseio.com\",\n   
-    \"project_id\": \"drip-or-drop\",\n    \"storage_bucket\": \"drip-or-drop.firebasestorage.app\"\n 
-    },\n  \"client\": [\n    {\n      \"client_info\": {\n        \"mobilesdk_app_id\":
-    \"1:1064458188877:android:217edb915076140c65c404\",\n        \"android_client_info\":
-    {\n          \"package_name\": \"com.ednamode.DripOrDrop\"\n        }\n     
-    },\n      \"oauth_client\": [],\n      \"api_key\": [\n        {\n          \"current_key\":
-    \"AIzaSyA7x-66cdpmoqLVeGWGM3603rW0MeW12Wg\"\n        }\n      ],\n      \"services\":
-    {\n        \"appinvite_service\": {\n          \"other_platform_oauth_client\":
-    []\n        }\n      }\n    }\n  ],\n  \"configuration_version\": \"1\"\n}"
-  dataDisplayText: {fileID: 997629905}
---- !u!4 &757772519
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 757772517}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 551, y: 253, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &829107158
 GameObject:
   m_ObjectHideFlags: 0
@@ -1885,4 +1829,3 @@ SceneRoots:
   - {fileID: 2107489345}
   - {fileID: 236213903}
   - {fileID: 1967867540}
-  - {fileID: 757772519}
