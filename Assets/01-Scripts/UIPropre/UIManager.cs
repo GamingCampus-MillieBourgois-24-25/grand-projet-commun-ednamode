@@ -587,4 +587,11 @@ public class UIManager : MonoBehaviour
     }
 
     #endregion
+
+    #region SceneManagement
+    public void loadAccount()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("AccountScene");
+    }
+    #endregion
 }

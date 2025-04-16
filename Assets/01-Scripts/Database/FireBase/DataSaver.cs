@@ -23,7 +23,7 @@ public class DataSaver : MonoBehaviour
 
     [SerializeField]
     private TMP_Text dataDisplayText; // Référence au composant Text pour afficher les données
-    
+
     #region UserId Management
     public string GetUserId()
     {
@@ -34,35 +34,43 @@ public class DataSaver : MonoBehaviour
     {
         userId = newUserId;
     }
-    #endregion
-
     private void Awake()
     {
-        // Implémentation du Singleton
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Rend l'objet persistant entre les scènes
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            Destroy(gameObject); // Détruit les doublons
+            Destroy(gameObject);
             return;
         }
 
-        // Initialisation Firebase
-        AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
-        FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
-        auth = FirebaseAuth.GetAuth(app);
+        if (dts == null)
+        {
+            dts = new dataToSave(); // Initialisation de l'objet
+        }
 
-        dbRef = FirebaseDatabase.GetInstance(app).RootReference; // Utilise l'instance spécifique de FirebaseApp
+        try
+        {
+            AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
+            FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
+            auth = FirebaseAuth.GetAuth(app);
+            dbRef = FirebaseDatabase.GetInstance(app).RootReference;
+            Debug.Log("Firebase initialisé avec succès.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Erreur lors de l'initialisation de Firebase : {ex.Message}");
+        }
 
         if (auth.CurrentUser != null)
         {
             userId = auth.CurrentUser.UserId;
             Debug.Log($"Utilisateur connecté avec UID : {userId}");
 
-            LoadDataFn(); // Charge les données à l'initialisation
+            LoadDataFn();
         }
         else
         {
@@ -94,110 +102,107 @@ public class DataSaver : MonoBehaviour
         StartCoroutine(LoadDataEnum());
     }
 
-    IEnumerator LoadDataEnum()
+    private IEnumerator LoadDataEnum()
     {
+        Debug.Log("Tentative de récupération des données depuis Firebase...");
         var serverData = dbRef.Child("users").Child(userId).GetValueAsync();
-        yield return new WaitUntil(predicate: () => serverData.IsCompleted);
+        yield return new WaitUntil(() => serverData.IsCompleted);
 
-        print("process is complete");
+        if (serverData.Exception != null)
+        {
+            Debug.LogError($"Erreur lors de la récupération des données : {serverData.Exception.Message}");
+            yield break;
+        }
 
         DataSnapshot snapshot = serverData.Result;
         string jsonData = snapshot.GetRawJsonValue();
 
-        if (jsonData != null)
+        if (!string.IsNullOrEmpty(jsonData))
         {
-            print("server data found");
+            Debug.Log($"Données récupérées : {jsonData}");
+            dataToSave loadedData = JsonUtility.FromJson<dataToSave>(jsonData);
 
-            dts = JsonUtility.FromJson<dataToSave>(jsonData);
+            // Remplacement des setters par des accès directs aux propriétés
+            dts.userName = loadedData.userName;
+            dts.totalCoins = loadedData.totalCoins;
+            dts.totalJewels = loadedData.totalJewels;
+            dts.crrLevel = loadedData.crrLevel;
+            dts.crrLevelProgress = loadedData.crrLevelProgress;
+            dts.totalLevelProgress = loadedData.totalLevelProgress;
+            dts.unlockedClothes = loadedData.unlockedClothes;
 
-            if (dataDisplayText != null)
-            {
-                UpdateAccountDataDisplay(); // Met à jour l'affichage des données
-            }
+            Debug.Log("Données appliquées avec succès.");
         }
         else
         {
-            print("no data found");
+            Debug.LogWarning("Aucune donnée trouvée pour cet utilisateur.");
         }
     }
     #endregion
 
-    public void UpdateAccountDataDisplay()
-    {
-        if (dataDisplayText != null)
-        {
-            dataDisplayText.text = $"Nom d'utilisateur : {dts.GetUserName()}\n" +
-                                   $"Total de pièces : {dts.GetTotalCoins()}\n" +
-                                   $"Total de bijoux : {dts.GetTotalJewels()}\n" +
-                                   $"Niveau actuel : {dts.GetCrrLevel()}\n" +
-                                   $"Progression du niveau actuel : {dts.GetCrrLevelProgress()}/{dts.GetTotalLevelProgress()}";
-        }
-        else
-        {
-            Debug.LogError("Le composant Text pour afficher les données n'est pas assigné.");
-        }
-    }
 
-#region To Use Functions
+    #region To Use Functions
     public void addCoins(int coins)
     {
-        int currentCoins = dts.GetTotalCoins();
-        dts.SetTotalCoins(currentCoins + coins);
+        int currentCoins = dts.totalCoins; // Accès direct à la propriété
+        dts.totalCoins = currentCoins + coins; // Modification directe
         SaveDataFn();
     }
 
     public void removeCoins(int coins)
     {
-        int currentCoins = dts.GetTotalCoins();
-        dts.SetTotalCoins(currentCoins - coins);
+        int currentCoins = dts.totalCoins;
+        dts.totalCoins = currentCoins - coins;
         SaveDataFn();
     }
 
     public void addJewels(int jewels)
     {
-        int currentJewels = dts.GetTotalJewels();
-        dts.SetTotalJewels(currentJewels + jewels);
+        int currentJewels = dts.totalJewels;
+        dts.totalJewels = currentJewels + jewels;
         SaveDataFn();
     }
 
     public void removeJewels(int jewels)
     {
-        int currentJewels = dts.GetTotalJewels();
-        dts.SetTotalJewels(currentJewels - jewels);
+        int currentJewels = dts.totalJewels;
+        dts.totalJewels = currentJewels - jewels;
         SaveDataFn();
     }
 
     public void addLevelProgress(int levelProgress)
     {
-        int currentTotalProgress = dts.GetTotalLevelProgress();
-        dts.SetTotalLevelProgress(currentTotalProgress + levelProgress);
+        int currentTotalProgress = dts.totalLevelProgress;
+        dts.totalLevelProgress = currentTotalProgress + levelProgress;
         CheckForLevelUp(levelProgress);
         SaveDataFn();
     }
 
     public void CheckForLevelUp(int levelProgress)
     {
-        int currentLevelProgress = dts.GetCrrLevelProgress();
-        dts.SetCrrLevelProgress(currentLevelProgress + levelProgress);
+        int currentLevelProgress = dts.crrLevelProgress;
+        dts.crrLevelProgress = currentLevelProgress + levelProgress;
 
-        if (dts.GetCrrLevelProgress() > dts.GetTotalLevelProgress())
+        if (dts.crrLevelProgress > dts.totalLevelProgress)
         {
-            int currentLevel = dts.GetCrrLevel();
-            dts.SetCrrLevel(currentLevel + 1);
+            int currentLevel = dts.crrLevel;
+            dts.crrLevel = currentLevel + 1;
 
-            int overflowProgress = dts.GetCrrLevelProgress() - dts.GetTotalLevelProgress();
-            dts.SetCrrLevelProgress(overflowProgress);
+            int overflowProgress = dts.crrLevelProgress - dts.totalLevelProgress;
+            dts.crrLevelProgress = overflowProgress;
         }
 
-        if (dts.GetCrrLevelProgress() == dts.GetTotalLevelProgress())
+        if (dts.crrLevelProgress == dts.totalLevelProgress)
         {
-            int currentLevel = dts.GetCrrLevel();
-            dts.SetCrrLevel(currentLevel + 1);
-            dts.SetCrrLevelProgress(0);
+            int currentLevel = dts.crrLevel;
+            dts.crrLevel = currentLevel + 1;
+            dts.crrLevelProgress = 0;
         }
 
         SaveDataFn();
     }
+
+
 
     [ContextMenu("Save")]
     public void Save()
@@ -215,9 +220,9 @@ public class DataSaver : MonoBehaviour
     #region Clothing Management
     public void UnlockClothingItem(string itemId)
     {
-        if (!dts.GetUnlockedClothes().Contains(itemId))
+        if (!dts.unlockedClothes.Contains(itemId))
         {
-            dts.GetUnlockedClothes().Add(itemId);
+            dts.unlockedClothes.Add(itemId);
             SaveDataFn();
             Debug.Log($"Item débloqué : {itemId}");
         }
@@ -229,7 +234,7 @@ public class DataSaver : MonoBehaviour
 
     public bool IsItemUnlocked(string itemId)
     {
-        return dts.GetUnlockedClothes().Contains(itemId);
+        return dts.unlockedClothes.Contains(itemId);
     }
     #endregion
 }
@@ -237,85 +242,14 @@ public class DataSaver : MonoBehaviour
 [Serializable]
 public class dataToSave
 {
-    private string _userName;
-    private int _totalCoins;
-    private int _totalJewels;
-    private int _crrLevel;
-    private int _crrLevelProgress;
-    private int _totalLevelProgress;
-    private List<string> _unlockedClothes = new List<string>();
-
-    #region Get Data
-    public string GetUserName()
-    {
-        return _userName;
-    }
-
-    public void SetUserName(string userName)
-    {
-        _userName = userName;
-    }
-
-    public int GetTotalCoins()
-    {
-        return _totalCoins;
-    }
-
-    public void SetTotalCoins(int totalCoins)
-    {
-        _totalCoins = totalCoins;
-    }
-
-    public int GetTotalJewels()
-    {
-        return _totalJewels;
-    }
-
-    public void SetTotalJewels(int totalJewels)
-    {
-        _totalJewels = totalJewels;
-    }
-
-    public int GetCrrLevel()
-    {
-        return _crrLevel;
-    }
-
-    public void SetCrrLevel(int crrLevel)
-    {
-        _crrLevel = crrLevel;
-    }
-
-    public int GetCrrLevelProgress()
-    {
-        return _crrLevelProgress;
-    }
-
-    public void SetCrrLevelProgress(int crrLevelProgress)
-    {
-        _crrLevelProgress = crrLevelProgress;
-    }
-
-    public int GetTotalLevelProgress()
-    {
-        return _totalLevelProgress;
-    }
-
-    public void SetTotalLevelProgress(int totalLevelProgress)
-    {
-        _totalLevelProgress = totalLevelProgress;
-    }
-
-    public List<string> GetUnlockedClothes()
-    {
-        return _unlockedClothes;
-    }
-
-    public void SetUnlockedClothes(List<string> unlockedClothes)
-    {
-        _unlockedClothes = unlockedClothes;
-    }
-
-
-    #endregion
+    public string userName;
+    public int totalCoins;
+    public int totalJewels;
+    public int crrLevel;
+    public int crrLevelProgress;
+    public int totalLevelProgress;
+    public List<string> unlockedClothes = new List<string>();
 }
+
+
+#endregion

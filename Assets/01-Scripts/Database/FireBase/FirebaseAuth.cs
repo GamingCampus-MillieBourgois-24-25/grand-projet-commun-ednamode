@@ -140,6 +140,11 @@ public class FirebaseAuthManager : MonoBehaviour
                 Debug.Log("Auto Login Success");
                 References.userName = user.DisplayName;
                 UIManagerLogin.Instance.OpenSignedInPanel();
+
+                // Chargez les données après la connexion
+                DataSaver.Instance.LoadDataFn();
+                Debug.Log("Données utilisateur chargées.");
+
             }
             else
             {
@@ -161,6 +166,7 @@ public class FirebaseAuthManager : MonoBehaviour
 
             if (!signedIn && user != null)
             {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("FirebaseLogin");
                 Debug.Log("Signed out " + user.UserId);
                 UIManagerLogin.Instance.OpenLoginPanel();
                 ClearLoginFieldInputText();
@@ -185,6 +191,7 @@ public class FirebaseAuthManager : MonoBehaviour
     {
         if (user != null && auth != null)
         {
+
             auth.SignOut();
 
         }
@@ -256,6 +263,9 @@ public class FirebaseAuthManager : MonoBehaviour
             {
                 References.userName = user.DisplayName;
                 UIManagerLogin.Instance.OpenSignedInPanel();
+                // Load Data
+                DataSaver.Instance.LoadDataFn();
+                Debug.LogError("Load Data Done");
             }
             else
             {
