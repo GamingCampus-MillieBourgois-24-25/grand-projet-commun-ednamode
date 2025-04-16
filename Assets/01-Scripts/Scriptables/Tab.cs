@@ -7,11 +7,10 @@ namespace CharacterCustomization
 public class Tab : ScriptableObject
 {
     private const string _path = "Resources/Tabs/";
-
+    
     [Header("Tab Properties")]
     public SlotType category; 
-
-    [Header("Items in Tab")]
+        [Header("Items in Tab")]
     public List<Item> items = new List<Item>();
 }
 }

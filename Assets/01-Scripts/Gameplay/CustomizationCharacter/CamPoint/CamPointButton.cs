@@ -22,8 +22,6 @@ public class CamPointButton : MonoBehaviour
 
         if (camPoint != null)
         {
-            // Appeler la méthode pour changer le point de caméra
-            chooseCamPoint.SwitchToCamPoint(camPointName);
             Debug.Log($"Changement de la caméra vers le point : {camPointName}");
         }
         else
