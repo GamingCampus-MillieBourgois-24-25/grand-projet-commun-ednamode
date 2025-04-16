@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Outwear_004
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: e79b799a85000cd4ea6d2332153cbd7b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: d16a1e98254f09443afa6295c1c9948e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -63,6 +67,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e79b799a85000cd4ea6d2332153cbd7b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2505938001162648438}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e79b799a85000cd4ea6d2332153cbd7b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -566761268523095475}
   m_SourcePrefab: {fileID: 100100000, guid: e79b799a85000cd4ea6d2332153cbd7b, type: 3}
 --- !u!1 &3426716223700996053 stripped
 GameObject:
@@ -90,3 +97,15 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.76, y: 0.72, z: 0}
   m_Center: {x: 0, y: 1.12, z: 0}
+--- !u!114 &-566761268523095475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3426716223700996053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d3e25cfc9d912459b7bda9e2339d0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

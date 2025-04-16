@@ -439,6 +439,14 @@ namespace CharacterCustomization
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
             instance.SetActive(true);
+
+            AnimationSync animationSync = instance.GetComponent<AnimationSync>();
+            if (animationSync != null)
+            {
+                animationSync.Initialize(_characterInstance);
+            }
+           
+
             _equippedClothing[slotType] = (item, instance);
             _lastEquippedInstance = instance;
             _hasModifiedColor = false;

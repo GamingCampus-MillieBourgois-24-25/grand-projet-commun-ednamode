@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shoe_Slippers_002
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 20384ecd8466c804eb14b502b62acc3b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: d16a1e98254f09443afa6295c1c9948e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -65,7 +69,7 @@ PrefabInstance:
       addedObject: {fileID: 3631843727176800324}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 20384ecd8466c804eb14b502b62acc3b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8335737269416075734}
+      addedObject: {fileID: 1703485569353251993}
   m_SourcePrefab: {fileID: 100100000, guid: 20384ecd8466c804eb14b502b62acc3b, type: 3}
 --- !u!1 &2442062568381488477 stripped
 GameObject:
@@ -93,7 +97,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.43, y: 0.19, z: 1}
   m_Center: {x: 0, y: 0.06, z: 0}
---- !u!114 &8335737269416075734
+--- !u!114 &1703485569353251993
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,9 +106,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2442062568381488477}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ffe43418e87ce34681d1e90f652f674, type: 3}
+  m_Script: {fileID: 11500000, guid: e5d3e25cfc9d912459b7bda9e2339d0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemsprite: {fileID: 21300000, guid: f7ebe390691f34925a99a5e23b338396, type: 3}
-  tags:
-  - Pyjama
