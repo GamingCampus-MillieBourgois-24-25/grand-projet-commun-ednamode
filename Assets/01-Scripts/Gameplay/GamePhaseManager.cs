@@ -51,9 +51,10 @@ public class GamePhaseManager : NetworkBehaviour
 
     [Tooltip("Durée de la phase de customisation avant le défilé.")]
     [SerializeField] private float customizationDuration = 60f;
+    public float CustomizationDuration => customizationDuration;
 
     [Tooltip("Référence vers le gestionnaire de transitions synchronisées.")]
-    [SerializeField] private PhaseTransitionController transitionController;
+    [SerializeField] private GamePhaseTransitionController transitionController;
 
     [Tooltip("Liste des mappings UI pour chaque mode de jeu.")]
     [SerializeField] private List<GameModePanelMapping> panelMappings;
@@ -76,8 +77,6 @@ public class GamePhaseManager : NetworkBehaviour
     {
         if (IsServer)
             CurrentPhase.Value = GamePhase.Waiting;
-
-        CurrentPhase.OnValueChanged += OnPhaseChanged;
     }
 
     #endregion
@@ -87,7 +86,7 @@ public class GamePhaseManager : NetworkBehaviour
     /// <summary>
     /// Récupère le mapping de panels pour le mode de jeu actuellement sélectionné.
     /// </summary>
-    private GameModePanelMapping GetActivePanelMapping()
+    public GameModePanelMapping GetActivePanelMapping()
     {
         int selected = MultiplayerNetwork.Instance.SelectedGameMode.Value;
         if (selected >= 0 && selected < panelMappings.Count)
@@ -109,160 +108,6 @@ public class GamePhaseManager : NetworkBehaviour
             UIManager.Instance.ShowPanelDirect(toShow);
     }
 
-
     #endregion
 
-    #region 🎨 PHASES DU JEU
-
-    /// <summary>
-    /// Gère le changement de phase du jeu.
-    /// </summary>
-    private void OnPhaseChanged(GamePhase previous, GamePhase current)
-    {
-
-        if (current == GamePhase.Customization)
-        {
-            Debug.Log("[GamePhaseManager] 📢 Phase Customisation détectée (client local)");
-
-            var allUIs = FindObjectsOfType<CustomisationUIManager>(true);
-            foreach (var ui in allUIs)
-            {
-                if (ui.isActiveAndEnabled || !ui.gameObject.activeSelf)
-                    continue;
-
-                UIManager.Instance.ShowPanelDirect(ui.gameObject);
-                ui.ForceInit();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Démarre la phase de customisation.
-    /// </summary>
-    public void StartCustomizationPhase()
-    {
-        CurrentPhase.Value = GamePhase.Customization;
-        ShowCustomizationPanelClientRpc();
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.customizationPanelToHide, mapping.customizationPanel);
-
-        StartCoroutine(CustomizationRoutine());
-    }
-
-    /// <summary>
-    /// Attente de fin de customisation avant le défilé.
-    /// </summary>
-    private IEnumerator CustomizationRoutine()
-    {
-        yield return new WaitForSeconds(customizationDuration);
-        StartRunwayPhase();
-    }
-
-    /// <summary>
-    /// Démarre la phase de défilé synchronisé.
-    /// </summary>
-    public void StartRunwayPhase()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.Runway;
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.runwayPanelToHide, mapping.runwayPanel);
-
-        var allItems = Resources.LoadAll<Item>("Items").ToList();
-        foreach (var player in FindObjectsOfType<PlayerCustomizationData>())
-        {
-            var visuals = player.GetComponentInChildren<EquippedVisualsHandler>();
-            if (visuals != null)
-            {
-                visuals.ClearAll();
-                player.ApplyToVisuals(visuals, allItems);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Démarre la phase de vote.
-    /// </summary>
-    public void StartVotingPhase()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.Voting;
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.votingPanelToHide, mapping.votingPanel);
-    }
-
-    /// <summary>
-    /// Affiche le podium final avec les résultats.
-    /// </summary>
-    public void ShowPodium()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.Podium;
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.votingPanelToHide, mapping.podiumPanel);
-    }
-
-    /// <summary>
-    /// Retourne tous les joueurs dans le lobby.
-    /// </summary>
-    public void ReturnToLobby()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.ReturnToLobby;
-
-        UIManager.Instance.HideAllPanels();
-        UIManager.Instance.ShowPanel("Online");
-    }
-
-    #endregion
-
-    #region 🛠️ NETWORK
-    [ClientRpc]
-    private void ShowCustomizationPanelClientRpc()
-    {
-        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de customisation");
-
-        var uis = FindObjectsOfType<CustomisationUIManager>(true);
-        foreach (var ui in uis)
-        {
-            UIManager.Instance.ShowPanelDirect(ui.gameObject);
-            ui.ForceInit();
-        }
-    }
-
-    [ClientRpc]
-    private void ShowRunwayPanelClientRpc()
-    {
-        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de défilé");
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.runwayPanelToHide, mapping.runwayPanel);
-    }
-
-    [ClientRpc]
-    private void ShowPodiumPanelClientRpc()
-    {
-        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de podium");
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.podiumPanelToHide, mapping.podiumPanel);
-    }
-
-    [ClientRpc]
-    private void ShowVotingPanelClientRpc()
-    {
-        Debug.Log("[GamePhaseManager] 🔁 ClientRpc reçu : affichage du panneau de vote");
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.votingPanelToHide, mapping.votingPanel);
-    }
-    #endregion
 }

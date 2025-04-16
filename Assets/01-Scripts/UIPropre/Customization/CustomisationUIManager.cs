@@ -6,12 +6,13 @@ using TMPro;
 using CharacterCustomization;
 using CharacterCustomizationNamespace = CharacterCustomization;
 using System.Collections;
+using Unity.Netcode;
 
 /// <summary>
 /// UI de personnalisation d’un personnage local, avec gestion des catégories SlotType et GroupType,
 /// ainsi que les textures et couleurs. Basé sur SlotLibrary + CharacterCustomization.
 /// </summary>
-public class CustomisationUIManager : MonoBehaviour
+public class CustomisationUIManager : NetworkBehaviour
 {
     #region ✨ Data & References
 
@@ -96,10 +97,6 @@ public class CustomisationUIManager : MonoBehaviour
 
         Debug.Log("[CustomisationUI] ✅ Joueur local prêt.");
 
-        // ✅ Activation propre de l'interface
-        UIManager.Instance.HideAllPanels();
-        UIManager.Instance.ShowPanel(gameObject.name);
-
         // 📦 Récupération du PlayerCustomizationData
         customizationData = NetworkPlayerManager.Instance.LocalPlayerData;
         if (customizationData == null)
@@ -129,7 +126,11 @@ public class CustomisationUIManager : MonoBehaviour
         }
 
         // 🧠 Création de la logique de customisation
-        character = new CharacterCustomization.CharacterCustomization(characterBody, slotLibrary);
+        Transform bodyOrMesh = characterBody.transform.Find("Body")
+                            ?? characterBody.GetComponentInChildren<SkinnedMeshRenderer>()?.transform
+                            ?? characterBody.transform;
+
+        character = new CharacterCustomization.CharacterCustomization(bodyOrMesh.gameObject, slotLibrary);
         if (character == null || character.Slots == null)
         {
             Debug.LogError("[CustomisationUI] ❌ character ou Slots est null !");
@@ -354,11 +355,20 @@ public class CustomisationUIManager : MonoBehaviour
         slot.SetPrefab(item.prefab);
         slot.Toggle(true);
         //character.RefreshCustomization();
-        visualsHandler.Equip(slotType, item.prefab);
+        // visualsHandler.Equip(slotType, item.prefab);
+
 
         // 🔄 Enregistre les choix locaux dans le struct
         dataToSave.SetItem(slotType, item.GetInstanceID());
         customizationData.Data.Value = dataToSave;
+        customizationData.RequestEquipItemServerRpc(slotType, item.GetInstanceID());
+
+        if (IsHost)
+        {
+            var allItems = Resources.LoadAll<Item>("Items").ToList();
+            customizationData.ApplyToVisuals(visualsHandler, allItems);
+        }
+
     }
     #endregion
 

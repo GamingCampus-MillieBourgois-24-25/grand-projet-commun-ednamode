@@ -148,9 +148,11 @@ GameObject:
   - component: {fileID: 4031565643618299424}
   - component: {fileID: 7149397082388738194}
   - component: {fileID: 3988753623630320092}
+  - component: {fileID: 1804056036454347573}
   - component: {fileID: 4857314354769565007}
   - component: {fileID: 1720590028643767380}
   - component: {fileID: 8288099317412000299}
+  - component: {fileID: 7320334708832596496}
   m_Layer: 0
   m_Name: PlayerPrefab
   m_TagString: Untagged
@@ -206,6 +208,31 @@ CapsuleCollider:
   m_Height: 1.9
   m_Direction: 1
   m_Center: {x: 0, y: 0.9187706, z: 0.0075714365}
+--- !u!143 &1804056036454347573
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7563482144388931865}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4857314354769565007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -245,7 +272,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   playerCustomizationCamera: {fileID: 5271024291885732416}
-  cameraOffset: {x: -4.68, y: 1.05, z: 2.5}
+  cameraOffset: {x: -4.68, y: 0.9, z: 2.5}
 --- !u!114 &8288099317412000299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +287,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   Data: {}
+--- !u!114 &7320334708832596496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7563482144388931865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AuthorityMode: 0
+  TickSyncChildren: 1
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1001 &8106468605137213676
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -317,7 +380,8 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
-    - {fileID: 9161663989264889742, guid: 189aee9197ecba744ac69b5c706b6251, type: 3}
+    - {fileID: 0}
+    - {fileID: 271961579270255341, guid: 7f6862d8aee10a042821738d523fc6fa, type: 3}
     m_RemovedGameObjects:
     - {fileID: 5669476020647959694, guid: 189aee9197ecba744ac69b5c706b6251, type: 3}
     m_AddedGameObjects: []
@@ -343,6 +407,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3a6314429dc00d44bd7be97afe5384e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   copyAnimatorFromParent: 1
 --- !u!4 &8736459404699634684 stripped
 Transform:

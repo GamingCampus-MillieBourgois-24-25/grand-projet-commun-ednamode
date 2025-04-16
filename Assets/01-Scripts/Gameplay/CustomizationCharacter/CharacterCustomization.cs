@@ -23,8 +23,19 @@ namespace CharacterCustomization
         /// </summary>
         public CharacterCustomization(GameObject characterInstance, SlotLibrary slotLibrary)
         {
-            CharacterInstance = characterInstance; // ← ne pas instancier
-            CharacterInstance.name = "BaseCharacter";
+            var meshRoot = characterInstance.transform.Find("Body")
+                           ?? characterInstance.GetComponentInChildren<SkinnedMeshRenderer>()?.transform;
+
+            if (meshRoot != null)
+            {
+                CharacterInstance = meshRoot.gameObject;
+                CharacterInstance.name = "BaseCharacter";
+            }
+            else
+            {
+                Debug.LogWarning("[CharacterCustomization] ⚠ Aucun mesh ou enfant 'Body' trouvé. Utilisation du root.");
+                CharacterInstance = characterInstance;
+            }
 
             _slotLibrary = slotLibrary;
             Slots = CreateSlots(slotLibrary);

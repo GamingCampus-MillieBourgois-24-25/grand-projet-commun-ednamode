@@ -1,74 +1,91 @@
-﻿using UnityEngine;
-using Unity.Netcode;
+﻿using Unity.Netcode;
+using UnityEngine;
 using System.Collections;
+using Unity.Netcode.Components;
 
 /// <summary>
-/// Gère le joueur réseau instancié automatiquement par Netcode.
-/// Active et positionne la caméra de customisation uniquement pour le joueur local.
+/// Préfab réseau du joueur avec caméra locale et synchronisation de position.
 /// </summary>
+[RequireComponent(typeof(NetworkObject))]
+[RequireComponent(typeof(NetworkTransform))]
+[RequireComponent(typeof(CharacterController))]
 public class NetworkPlayer : NetworkBehaviour
 {
-    [Header("🎥 Caméra locale de customisation")]
-    [Tooltip("Caméra à activer uniquement pour le joueur local (doit être enfant du prefab)")]
-    [SerializeField] private Camera playerCustomizationCamera;
+    [Header("🎥 Caméra de customisation locale")]
+    [SerializeField] private Camera customizationCamera;
+    [SerializeField] private Vector3 cameraOffset = new(0f, 2f, -4f);
 
-    [Tooltip("Décalage fixe de la caméra par rapport au joueur (ex: vue studio)")]
-    [SerializeField] private Vector3 cameraOffset = new Vector3(0f, 2f, -4f);
+    private CharacterController controller;
+
+    private void Awake()
+    {
+        controller = GetComponent<CharacterController>();
+        if (customizationCamera != null)
+            customizationCamera.enabled = false;
+    }
 
     public override void OnNetworkSpawn()
     {
-        if (!IsOwner) return;
-
-        StartCoroutine(DelayedSpawnAndCamera());
-    }
-
-    private IEnumerator DelayedSpawnAndCamera()
-    {
-        // Attends que NetworkPlayerManager.Instance existe et que spawnPoints soient prêts
-        yield return new WaitUntil(() => NetworkPlayerManager.Instance != null && NetworkPlayerManager.Instance.spawnPoints.Count > 0);
-
-        ApplySpawnPoint();
-        ActivateAndPositionCamera();
-    }
-
-    /// <summary>
-    /// Applique le point de spawn du joueur local.
-    /// </summary>
-    private void ApplySpawnPoint()
-    {
-        var spawnPoint = NetworkPlayerManager.Instance?.GetSpawnPoint(OwnerClientId);
-        if (spawnPoint != null)
+        if (IsOwner)
         {
-            transform.SetPositionAndRotation(spawnPoint.position, spawnPoint.rotation);
-            Debug.Log($"[NetworkPlayer] 🧍 Téléporté au spawn point {spawnPoint.name}");
+            StartCoroutine(DelayedCameraActivation());
+        }
+
+        if (IsServer)
+        {
+            TeleportToSpawnPoint();
         }
         else
         {
-            Debug.LogWarning("[NetworkPlayer] ⚠ Aucun point de spawn trouvé !");
+            if (customizationCamera != null)
+                customizationCamera.enabled = false;
         }
     }
 
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer)
+        {
+            NetworkPlayerManager.Instance?.ReleaseSpawnPoint(OwnerClientId);
+        }
+    }
 
     /// <summary>
-    /// Active et positionne la caméra du joueur local dans une vue statique de customisation.
+    /// Téléporte le joueur à son point de spawn assigné.
     /// </summary>
-    private void ActivateAndPositionCamera()
+    private void TeleportToSpawnPoint()
     {
-        if (playerCustomizationCamera == null)
+        var spawn = NetworkPlayerManager.Instance?.GetSpawnPoint(OwnerClientId);
+        if (spawn != null)
         {
-            Debug.LogWarning("[NetworkPlayer] ⚠️ Caméra de customisation non assignée.");
-            return;
+            transform.SetPositionAndRotation(spawn.position, spawn.rotation);
+            Debug.Log($"[NetworkPlayer] 🧍 Joueur {OwnerClientId} téléporté au point {spawn.name}");
         }
+        else
+        {
+            Debug.LogWarning("[NetworkPlayer] ⚠ Aucun point de spawn trouvé pour ce client.");
+        }
+    }
 
-        playerCustomizationCamera.enabled = true;
+    /// <summary>
+    /// Active la caméra locale pour le joueur propriétaire, après un court délai de synchronisation.
+    /// </summary>
+    private IEnumerator DelayedCameraActivation()
+    {
+        yield return new WaitForSeconds(0.2f); // Laisse le temps au NetworkTransform de synchroniser la position
+        ActivateCamera();
+    }
 
-        // Position fixe par rapport au joueur à son spawn
-        Vector3 cameraPosition = transform.position + cameraOffset;
-        playerCustomizationCamera.transform.position = cameraPosition;
+    /// <summary>
+    /// Active la caméra locale pour le joueur propriétaire.
+    /// </summary>
+    private void ActivateCamera()
+    {
+        if (customizationCamera == null) return;
 
-        // Regarder légèrement au-dessus du torse
-        playerCustomizationCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
-
-        Debug.Log("[NetworkPlayer] 📷 Caméra activée et positionnée pour le joueur local.");
+        customizationCamera.enabled = true;
+        customizationCamera.transform.position = transform.position + cameraOffset;
+        customizationCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
+        Debug.Log("[NetworkPlayer] 📷 Caméra locale activée.");
     }
 }
