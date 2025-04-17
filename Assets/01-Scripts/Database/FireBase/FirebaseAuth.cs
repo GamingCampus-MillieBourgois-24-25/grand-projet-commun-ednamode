@@ -142,7 +142,7 @@ public class FirebaseAuthManager : MonoBehaviour
                 UIManagerLogin.Instance.OpenSignedInPanel();
 
                 // Chargez les données après la connexion
-                DataSaver.Instance.LoadDataFn();
+                DataSaver.Instance.InitializeDataSaver();
                 Debug.Log("Données utilisateur chargées.");
 
             }
@@ -264,7 +264,7 @@ public class FirebaseAuthManager : MonoBehaviour
                 References.userName = user.DisplayName;
                 UIManagerLogin.Instance.OpenSignedInPanel();
                 // Load Data
-                DataSaver.Instance.LoadDataFn();
+                DataSaver.Instance.InitializeDataSaver();
                 Debug.LogError("Load Data Done");
             }
             else

@@ -34,8 +34,9 @@ public class DataSaver : MonoBehaviour
     {
         userId = newUserId;
     }
-    private void Awake()
+     private void Awake()
     {
+        // Implémentation du Singleton
         if (Instance == null)
         {
             Instance = this;
@@ -46,7 +47,9 @@ public class DataSaver : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
+    }
+    public void InitializeDataSaver()
+    {
         if (dts == null)
         {
             dts = new dataToSave(); // Initialisation de l'objet
@@ -54,6 +57,7 @@ public class DataSaver : MonoBehaviour
 
         try
         {
+            // Initialisation Firebase
             AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
             FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
             auth = FirebaseAuth.GetAuth(app);

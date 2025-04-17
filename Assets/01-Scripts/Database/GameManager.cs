@@ -31,15 +31,15 @@ public class GameManager : MonoBehaviour
         var dts = DataSaver.Instance.dts;
 
         // Remplacement des anciens getters par des accès directs aux propriétés publiques
-        userNameText.text = dts.userName;
-        userIdText.text = DataSaver.Instance.GetUserId();
+        userNameText.text = "UserName : " + dts.userName;
+        userIdText.text = "ID : " + DataSaver.Instance.GetUserId();
 
         levelText.text = $"Niveau : {dts.crrLevel}";
         progressText.text = $"Progression : {dts.crrLevelProgress}/{dts.totalLevelProgress}";
         progressSlider.value = (float)dts.crrLevelProgress / dts.totalLevelProgress;
 
-        coinsText.text = dts.totalCoins.ToString();
-        jewelsText.text = dts.totalJewels.ToString();
+        coinsText.text = "coins : " + dts.totalCoins.ToString();
+        jewelsText.text = "jewels : " + dts.totalJewels.ToString();
     }
 
     private void ShowMessage()
