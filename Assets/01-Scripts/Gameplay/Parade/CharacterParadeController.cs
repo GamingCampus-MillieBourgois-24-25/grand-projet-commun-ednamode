@@ -13,22 +13,24 @@ public class CharacterParadeController : MonoBehaviour
     public Vector3 pointC = new Vector3(-43f, 2.15f, 134.19f); // Point C
     public Vector3 pointD = new Vector3(-49f, 2.15f, 116.18f); // Point D (point final)
 
-    [Header("Position de téléportation après délai")]
-    public Vector3 teleportPositionAfterDelay = new Vector3(-40f, 2.15f, 120f); // Position où le personnage se téléporte après 10 secondes
-
     [Header("Paramètres de défilement")]
-    public float teleportDelay = 10f; // Délai avant la téléportation (10 secondes)
+    public float customizationDelay = 10f; // Délai pour la personnalisation (10 secondes)
     public float pauseDurationAtC = 5f; // Durée de la pause au point C (5 secondes)
 
+    [Header("Caméras")]
+    [SerializeField] private Camera customizationCamera; // Caméra utilisée pendant la personnalisation
+    [SerializeField] private Camera paradeCamera; // Caméra utilisée pendant le défilement
+
     private NavMeshAgent navAgent; // Référence au NavMeshAgent
-    private float timer = 0f; // Timer pour le délai de téléportation
-    private bool hasTeleported = false; // Indique si la téléportation a eu lieu
+    private float customizationTimer = 0f; // Timer pour le délai de personnalisation
+    private bool hasStartedParade = false; // Indique si le défilement a commencé
     private int currentTargetIndex = 0; // Index du point cible actuel (0 = Point A, 1 = Point B, 2 = Point C, 3 = Point D)
     private Vector3[] paradePoints; // Tableau des points de défilement
-    private bool isMoving = true; // Indique si le personnage est en mouvement
+    private bool isMoving = false; // Indique si le personnage est en mouvement
     private bool isFinished = false; // Indique si le défilement est terminé
     private bool goingBack = false; // Indique si on est en phase de retour (après le point C)
     private bool isInitialized = false; // Indique si le personnage est initialisé
+    private bool isPaused = false; // Indique si le personnage est en pause (par exemple, au point C)
 
     // Propriété publique pour assigner characterInstance dynamiquement
     public GameObject CharacterInstance
@@ -38,8 +40,8 @@ public class CharacterParadeController : MonoBehaviour
         {
             characterInstance = value;
             Debug.Log("[CharacterParadeController] characterInstance assigné : " + (characterInstance != null));
-/*            InitializeCharacter(); // Appeler l'initialisation une fois que characterInstance est assigné
-*/        }
+            InitializeCharacter(); // Appeler l'initialisation une fois que characterInstance est assigné
+        }
     }
 
     void Start()
@@ -47,32 +49,55 @@ public class CharacterParadeController : MonoBehaviour
         // Initialiser le tableau des points de défilement
         paradePoints = new Vector3[] { pointA, pointB, pointC, pointD };
 
-       /* // Si characterInstance est déjà assigné (par exemple, via l'inspecteur), initialiser immédiatement
+        // Vérifier et configurer les caméras au démarrage
+        if (customizationCamera != null && paradeCamera != null)
+        {
+            customizationCamera.enabled = true; // Activer la caméra de personnalisation au début
+            paradeCamera.enabled = false; // Désactiver la caméra de défilement
+            Debug.Log("[CharacterParadeController] Caméra de personnalisation activée, caméra de défilement désactivée.");
+        }
+        else
+        {
+            Debug.LogError("[CharacterParadeController] Une ou les deux caméras ne sont pas assignées !");
+        }
+
+        // Si characterInstance est déjà assigné (par exemple, via l'inspecteur), initialiser immédiatement
         if (characterInstance != null)
         {
             InitializeCharacter();
-        }*/
+        }
     }
 
     void Update()
     {
         if (!isInitialized || isFinished || navAgent == null) return;
 
-        // Gérer le délai avant la téléportation
-        if (!hasTeleported)
+        // Gérer le délai de personnalisation avant de commencer le défilement
+        if (!hasStartedParade)
         {
-            timer += Time.deltaTime;
-            if (timer >= teleportDelay)
+            customizationTimer += Time.deltaTime;
+            if (customizationTimer >= customizationDelay)
             {
-                // Téléporter le personnage à la nouvelle position
-                characterInstance.transform.position = teleportPositionAfterDelay;
-                navAgent.Warp(teleportPositionAfterDelay); // Utiliser Warp pour synchroniser le NavMeshAgent
-                hasTeleported = true;
-                Debug.Log("[CharacterParadeController] Personnage téléporté après 10 secondes à : " + teleportPositionAfterDelay);
+                // Téléporter le personnage au point A après 10 secondes de personnalisation
+                characterInstance.transform.position = pointA;
+                navAgent.Warp(pointA);
+                Debug.Log("[CharacterParadeController] Personnage téléporté au point A après 10 secondes : " + pointA);
 
-                // Réinitialiser la destination après la téléportation
+                // Changer de caméra
+                if (customizationCamera != null && paradeCamera != null)
+                {
+                    customizationCamera.enabled = false; // Désactiver la caméra de personnalisation
+                    paradeCamera.enabled = true; // Activer la caméra de défilement
+                    Debug.Log("[CharacterParadeController] Changement de caméra : caméra de défilement activée.");
+                }
+
+                // Commencer le défilement immédiatement
+                hasStartedParade = true;
+                isMoving = true;
+                currentTargetIndex = 1; // Passer directement au point B
                 SetNextDestination();
             }
+            return; // Ne pas exécuter le reste de Update pendant la personnalisation
         }
 
         // Vérifier si le personnage a atteint sa destination
@@ -98,14 +123,8 @@ public class CharacterParadeController : MonoBehaviour
             return;
         }
 
-        // Positionner le personnage au point A
-        characterInstance.transform.position = pointA;
-        navAgent.Warp(pointA); // S'assurer que le NavMeshAgent est synchronisé
-        Debug.Log("[CharacterParadeController] Personnage positionné au point A : " + pointA);
-
-        // Passer directement au point B
-        currentTargetIndex = 1; // Point B
-        SetNextDestination();
+        // Ne pas téléporter ici, laisser le personnage à sa position initiale (0,0,0) pour la personnalisation
+        Debug.Log("[CharacterParadeController] Personnage initialisé, en attente de personnalisation à : " + characterInstance.transform.position);
 
         isInitialized = true; // Marquer comme initialisé
     }
@@ -117,9 +136,6 @@ public class CharacterParadeController : MonoBehaviour
         // Définir la destination suivante
         navAgent.SetDestination(paradePoints[currentTargetIndex]);
         Debug.Log("[CharacterParadeController] Destination définie : " + paradePoints[currentTargetIndex]);
-
-        // Pour le multijoueur : ici, vous pourriez synchroniser la destination avec les autres clients
-        // Exemple : Synchroniser via Unity Netcode ou Photon
     }
 
     private void HandleDestinationReached()
@@ -136,8 +152,6 @@ public class CharacterParadeController : MonoBehaviour
             navAgent.isStopped = true; // Arrêter complètement le NavMeshAgent
             navAgent.enabled = false; // Désactiver pour économiser des ressources
             Debug.Log("[CharacterParadeController] Défilement terminé au point D : " + pointD);
-
-            // Pour le multijoueur : ici, vous pourriez signaler aux autres clients que ce personnage a terminé
         }
         else
         {
@@ -161,6 +175,7 @@ public class CharacterParadeController : MonoBehaviour
     private IEnumerator PauseAtPointC()
     {
         isMoving = false;
+        isPaused = true; // Mettre en pause
         navAgent.isStopped = true; // Arrêter le NavMeshAgent pendant la pause
         Debug.Log("[CharacterParadeController] Pause de 5 secondes au point C : " + pointC);
         yield return new WaitForSeconds(pauseDurationAtC);
@@ -169,9 +184,8 @@ public class CharacterParadeController : MonoBehaviour
         Debug.Log("[CharacterParadeController] Reprise vers le point B : " + pointB);
         navAgent.isStopped = false; // Reprendre le mouvement
         isMoving = true;
+        isPaused = false;
         SetNextDestination();
-
-        // Pour le multijoueur : ici, vous pourriez synchroniser l'état de la pause avec les autres clients
     }
 
     // Méthode pour obtenir la position actuelle (utile pour le multijoueur)
