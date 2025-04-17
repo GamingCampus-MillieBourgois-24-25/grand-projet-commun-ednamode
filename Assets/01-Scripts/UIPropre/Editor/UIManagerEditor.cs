@@ -55,6 +55,7 @@ public class UIManagerEditor : Editor
             {
                 "countdownPanel",
                 "countdownText",
+                "countdownDuration",
                 "normalColor",
                 "alertColor"
             }

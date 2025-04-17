@@ -35,6 +35,7 @@ namespace CharacterCustomization
 
             }
             Item[] loadedItems = Resources.LoadAll<Item>("Items");
+            Debug.Log($"Nombre d'items chargés : {loadedItems.Length}");
             // Sort items into their respective tabs
             foreach (Tab tab in tabs)
             {
@@ -44,12 +45,16 @@ namespace CharacterCustomization
                     if ((int)item.category == (int)tab.category)
                     {
                         tab.items.Add(item);
-                        // Instancier le bouton de l'item en tant qu'enfant du LayoutGroup
                         GameObject itemButton = Instantiate(itemButtonPrefab, gridLayoutGroup.transform);
                         itemButton.GetComponent<ShopButton>().SetScriptable(item);
                     }
+                    else
+                    {
+                        Debug.Log($"Item {item.itemName} ne correspond pas à la catégorie {tab.category}");
+                    }
                 }
             }
+
 
         }
     }

@@ -32,14 +32,12 @@ public class ButtonScrollViewManager : MonoBehaviour
             if (pair.scrollView != null)
             {
                 pair.scrollView.gameObject.SetActive(false);
-                Debug.Log($"ScrollView {pair.scrollView.name} désactivée au démarrage.");
             }
         }
 
         if (mainScrollView != null)
         {
             mainScrollView.gameObject.SetActive(true);
-            Debug.Log($"Main ScrollView {mainScrollView.name} activée au démarrage.");
         }
 
         if (buttonTags != null)
@@ -48,7 +46,6 @@ public class ButtonScrollViewManager : MonoBehaviour
             buttonTags.onClick.RemoveAllListeners();
             buttonTags.onClick.AddListener(() =>
             {
-                Debug.Log("Bouton Tags cliqué - appel de ShowTagsPanel.");
                 _characterUI.ShowTagsPanel();
             });
             Debug.Log("Bouton Tags configuré et activé.");
@@ -69,7 +66,6 @@ public class ButtonScrollViewManager : MonoBehaviour
         if (button != null)
         {
             button.gameObject.SetActive(active);
-            Debug.Log($"Bouton {button.name} défini à l'état: {active}");
         }
     }
 

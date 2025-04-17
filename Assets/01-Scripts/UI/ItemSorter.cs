@@ -6,6 +6,11 @@ namespace CharacterCustomization
 {
     public class ItemSorter : MonoBehaviour
     {
+        private ChooseCamPoint chooseCamPoint;
+        private void Start()
+        {
+            chooseCamPoint = Object.FindFirstObjectByType<ChooseCamPoint>();
+        }
         public void SortItemsByCategory(string category)
         {
             foreach (Transform child in transform)
@@ -27,6 +32,7 @@ namespace CharacterCustomization
             foreach (Transform child in transform)
             {
                 child.gameObject.SetActive(true);
+                chooseCamPoint.SwitchToCamPoint(ChooseCamPoint.CamPointType.FullBody);
             }
         }
     }
