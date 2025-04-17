@@ -44,25 +44,33 @@ namespace CharacterCustomization
             savedItems = dataSaver.GetItems();
             loadedItems = loadedItems.Except(savedItems).ToList();
 
-            // Sort items into their respective tabs
+            Dictionary<SlotType, List<Item>> itemsByCategory = loadedItems
+            .GroupBy(item => item.category)
+            .ToDictionary(group => group.Key, group => group.ToList());
+
+            // Récupérer la liste des items possédés
+            HashSet<Item> ownedItemsSet = new HashSet<Item>(savedItems); // Utiliser un HashSet pour une recherche rapide
+
+            // Associer les items aux tabs correspondants
             foreach (Tab tab in tabs)
             {
-                tab.items.Clear(); // Clear existing items
-                foreach (Item item in loadedItems)
+                if (itemsByCategory.TryGetValue(tab.category, out List<Item> itemsInCategory))
                 {
-                    if ((int)item.category == (int)tab.category)
+                    foreach (Item item in itemsInCategory)
                     {
-                        tab.items.Add(item);
+                        // Vérifier si l'item est déjà possédé
+                        if (ownedItemsSet.Contains(item))
+                        {
+                            continue; // Passer cet item
+                        }
+
+                        tab.items.Add(item); // Ajouter l'item au tab
+
                         GameObject itemButton = Instantiate(itemButtonPrefab, gridLayoutGroup.transform);
                         itemButton.GetComponent<ShopButton>().SetScriptable(item);
                     }
-                    else
-                    {
-                        Debug.Log($"Item {item.itemName} ne correspond pas à la catégorie {tab.category}");
-                    }
                 }
             }
-
 
         }
     }
