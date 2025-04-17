@@ -1,14 +1,26 @@
 using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 public class ChooseCamPoint : MonoBehaviour
 {
     [SerializeField] private Camera characterCam;
     [SerializeField] private float lerpSpeed = 5f;
+    [SerializeField] private RawImage characterRawImage;
+    [SerializeField] private Transform characterTransform;
+    [SerializeField] private float padding = 1.2f; // Facteur pour ajouter un peu d'espace autour du personnage
 
     private List<Transform> camPoints = new List<Transform>();
     private Transform targetCamPoint;
 
+    public enum CamPointType
+    {
+        Face,
+        Torso,
+        Legs,
+        Shoe,
+        FullBody
+    }
     private void Start()
     {
         GameObject[] camPointObjects = GameObject.FindGameObjectsWithTag("CamPoint");
@@ -35,6 +47,7 @@ public class ChooseCamPoint : MonoBehaviour
                 characterCam.transform.position,
                 targetCamPoint.position,
                 Time.deltaTime * lerpSpeed
+                
             );
 
             characterCam.transform.rotation = Quaternion.Lerp(
@@ -45,9 +58,9 @@ public class ChooseCamPoint : MonoBehaviour
         }
     }
 
-    public void SwitchToCamPoint(string camPoint)
+    public void SwitchToCamPoint(CamPointType camPoint)
     {
-        GameObject targetObject = GameObject.Find(camPoint);
+        GameObject targetObject = GameObject.Find(camPoint.ToString()+"CamPoint");
 
         if (targetObject != null)
         {
@@ -59,6 +72,4 @@ public class ChooseCamPoint : MonoBehaviour
             Debug.LogWarning($"Le GameObject avec le nom '{camPoint}' n'a pas été trouvé dans la scène.");
         }
     }
-
-
 }

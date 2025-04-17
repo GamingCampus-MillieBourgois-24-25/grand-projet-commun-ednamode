@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/firebase_database_url,@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id">
+  <string name="firebase_database_url" translatable="false">https://drip-or-drop-default-rtdb.firebaseio.com</string>
+  <string name="gcm_defaultSenderId" translatable="false">1064458188877</string>
+  <string name="google_storage_bucket" translatable="false">drip-or-drop.firebasestorage.app</string>
+  <string name="project_id" translatable="false">drip-or-drop</string>
+  <string name="google_api_key" translatable="false">AIzaSyA7x-66cdpmoqLVeGWGM3603rW0MeW12Wg</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyA7x-66cdpmoqLVeGWGM3603rW0MeW12Wg</string>
+  <string name="google_app_id" translatable="false">1:1064458188877:android:217edb915076140c65c404</string>
+</resources>

@@ -10093,12 +10093,7 @@ MonoBehaviour:
     preview: {fileID: 21300000, guid: 8cc28ce80f8ad453690b5824462729ec, type: 3}
   textureButtonPrefab: {fileID: 101958353}
   textureButtonContainer: {fileID: 806999550}
-  clothingItems:
-  - {fileID: 11400000, guid: 640bbfed431ab9f41895eaa40fbb8030, type: 2}
-  - {fileID: 11400000, guid: 531d48a0d3445c6499385110b897ff00, type: 2}
-  - {fileID: 11400000, guid: be1cc39425120e041b09b6f05072682d, type: 2}
-  - {fileID: 11400000, guid: bcc452094cf6fee45918ed23d42ff09c, type: 2}
-  - {fileID: 11400000, guid: 3639012b5ee132b4ca71c62bd31fd547, type: 2}
+  slotLibrary: {fileID: 11400000, guid: ddee382934caf604e8a9199b8118a57e, type: 2}
   equippedItemsScrollView: {fileID: 1064197886}
   equippedItemsContent: {fileID: 1200267150}
 --- !u!114 &1120090856
@@ -11021,7 +11016,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0000076293945, y: 99.99996}
+  m_AnchoredPosition: {x: 0.0000076293945, y: 100.96697}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1284286946
@@ -12807,8 +12802,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 836318472}
   m_HandleRect: {fileID: 836318471}
   m_Direction: 2
-  m_Value: -0.00000015258789
-  m_Size: 0.6666667
+  m_Value: -0.009670105
+  m_Size: 0.629753
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

@@ -547,10 +547,10 @@ public class UIManager : MonoBehaviour
 
             countdownText.transform.localScale = Vector3.one * 0.5f;
             countdownText.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack);
-            if (i <= 3 && i > 0)
+   /*         if (i <= 3 && i > 0)
             {
                 VibrationManager.Vibrate();
-            }
+            }*/
 
             yield return new WaitForSeconds(1f);
         }

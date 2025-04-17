@@ -7,8 +7,7 @@ public class RotateCharacterHold : MonoBehaviour
     private InputSystem_Actions inputActions;
 
     private bool _isHolding = false;
-    public event Action<bool> OnHoldingStateChanged; // Événement déclenché lorsque isHolding change
-
+    public event Action<bool> OnHoldingStateChanged;
     private float currentRotationSpeed = 0f;
 
     [SerializeField]
@@ -26,6 +25,9 @@ public class RotateCharacterHold : MonoBehaviour
         inputActions.UI.Hold.started += OnHoldStarted;
         inputActions.UI.Hold.canceled += OnHoldCanceled;
         inputActions.Enable();
+
+        // S'abonner à l'événement pour gérer la rotation
+        OnHoldingStateChanged += HandleHoldingStateChanged;
     }
 
     private void OnDisable()
@@ -33,6 +35,9 @@ public class RotateCharacterHold : MonoBehaviour
         inputActions.UI.Hold.started -= OnHoldStarted;
         inputActions.UI.Hold.canceled -= OnHoldCanceled;
         inputActions.Disable();
+
+        // Se désabonner de l'événement
+        OnHoldingStateChanged -= HandleHoldingStateChanged;
     }
 
     private bool IsHolding
@@ -60,32 +65,55 @@ public class RotateCharacterHold : MonoBehaviour
 
     private void OnHoldCanceled(InputAction.CallbackContext context)
     {
-        IsHolding = false; 
+        IsHolding = false;
     }
-        
 
-    private void Update()
+    private void HandleHoldingStateChanged(bool isHolding)
     {
-        if (IsHolding)
+        if (isHolding)
         {
-            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-            currentRotationSpeed = mouseDelta.x*100;
-            if (currentRotationSpeed > maxRotationSpeed)
-            {
-                currentRotationSpeed = maxRotationSpeed;
-            }
-            else if (currentRotationSpeed < -maxRotationSpeed)
-            {
-                currentRotationSpeed = -maxRotationSpeed;
-            }
-            transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
+            // Commencer la rotation
+            StartRotating();
         }
-        else if (currentRotationSpeed != 0f)
+        else
         {
-            // Appliquer la rotation
+            // Arrêter la rotation et appliquer la décélération
+            StopRotating();
+        }
+    }
+
+    private void StartRotating()
+    {
+        // Utiliser une coroutine pour gérer la rotation pendant que IsHolding est vrai
+        StartCoroutine(RotateWhileHolding());
+    }
+
+    private void StopRotating()
+    {
+        // Appliquer la décélération
+        StartCoroutine(ApplyDeceleration());
+    }
+
+    private System.Collections.IEnumerator RotateWhileHolding()
+    {
+        while (IsHolding)
+        {
+            Vector2 inputDelta = GetInputDelta();
+
+            currentRotationSpeed = inputDelta.x * 100;
+            currentRotationSpeed = Mathf.Clamp(currentRotationSpeed, -maxRotationSpeed, maxRotationSpeed);
+
+            transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
+            yield return null; // Attendre la prochaine frame
+        }
+    }
+
+    private System.Collections.IEnumerator ApplyDeceleration()
+    {
+        while (currentRotationSpeed != 0f)
+        {
             transform.Rotate(-Vector3.up, currentRotationSpeed * Time.deltaTime);
 
-            // Réduire progressivement la vitesse de rotation
             float deceleration = decelerationRate * Time.deltaTime;
             if (currentRotationSpeed > 0f)
             {
@@ -95,8 +123,9 @@ public class RotateCharacterHold : MonoBehaviour
             {
                 currentRotationSpeed = Mathf.Min(0f, currentRotationSpeed + deceleration); // Augmenter vers 0
             }
-        }
 
+            yield return null; // Attendre la prochaine frame
+        }
     }
 
     private bool IsPointerInLeftThird()
@@ -116,6 +145,20 @@ public class RotateCharacterHold : MonoBehaviour
         else if (Mouse.current != null)
         {
             return Mouse.current.position.ReadValue();
+        }
+
+        return Vector2.zero;
+    }
+
+    private Vector2 GetInputDelta()
+    {
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+        {
+            return Touchscreen.current.delta.ReadValue();
+        }
+        else if (Mouse.current != null)
+        {
+            return Mouse.current.delta.ReadValue();
         }
 
         return Vector2.zero;

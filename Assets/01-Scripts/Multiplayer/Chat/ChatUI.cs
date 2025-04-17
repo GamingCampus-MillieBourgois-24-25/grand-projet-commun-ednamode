@@ -116,9 +116,9 @@ public class ChatUI : MonoBehaviour
                     Destroy(child.gameObject);
                 LogLocal("🧹 Chat cleaned");
                 break;
-            case "/vibe":
+           /* case "/vibe":
                 VibrationManager.Vibrate();
-                break;
+                break;*/
             case "/clearlog":
                 localLog.Clear();
                 PlayerPrefs.DeleteKey(CHAT_LOG_KEY);
