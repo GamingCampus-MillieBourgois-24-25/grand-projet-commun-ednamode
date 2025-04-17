@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 554426757272805218}
   - component: {fileID: 3551262366963380543}
-  - component: {fileID: 2696245262201629575}
+  - component: {fileID: 454105380675611629}
   - component: {fileID: 3248472179866018280}
   m_Layer: 0
-  m_Name: UI
+  m_Name: UI Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf9f16ea12b2c1441999b261bc22b57c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &2696245262201629575
+--- !u!114 &454105380675611629
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -56,80 +56,133 @@ MonoBehaviour:
   m_GameObject: {fileID: 3115213980792739767}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19319e060eb0545439091e50e8ce23dc, type: 3}
+  m_Script: {fileID: 11500000, guid: 830534b9d89ac754da5e20e0c24059b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   panels:
-  - panelName: Top Right Settings
+  - panelName: PLAY
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Create Session
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Join Session
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Offline Settings
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 0
+    hasCloseButton: 0
+    useSpecialAnimation: 1
+    specialAnimation: 4
+  - panelName: Online Settings
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 0
+    hasCloseButton: 0
+    useSpecialAnimation: 1
+    specialAnimation: 4
+  - panelName: Customization Settings
     panelObject: {fileID: 0}
     triggerButton: {fileID: 0}
     startVisible: 0
     closeOnOutsideClick: 1
     closeOtherPanelWhenOpened: 1
     hasCloseButton: 0
-  - panelName: Settings
+    useSpecialAnimation: 1
+    specialAnimation: 4
+  - panelName: Show Mail
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 0
+    hasCloseButton: 0
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Show Parameters
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 0
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Show Profile
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: OfflineChat
     panelObject: {fileID: 0}
     triggerButton: {fileID: 0}
     startVisible: 0
     closeOnOutsideClick: 1
     closeOtherPanelWhenOpened: 1
     hasCloseButton: 0
-  - panelName: Profile
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: OnlineChat
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 0
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Customization Panels
     panelObject: {fileID: 0}
     triggerButton: {fileID: 0}
     startVisible: 0
     closeOnOutsideClick: 0
-    closeOtherPanelWhenOpened: 1
+    closeOtherPanelWhenOpened: 0
     hasCloseButton: 0
-  - panelName: Mail
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 1
-    hasCloseButton: 0
-  - panelName: Play
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 1
-    hasCloseButton: 0
-  - panelName: ChoiceLobby Create
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 1
-    hasCloseButton: 1
-  - panelName: ChoiceLobby Join
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 1
-    hasCloseButton: 1
-  - panelName: Playmode List
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 1
-    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
   animationDuration: 0.4
-  animationEase: 28
-  hiddenScale: {x: 0, y: 0, z: 1}
+  animationEase: 27
+  hiddenScale: {x: 0.85, y: 0.85, z: 1}
+  useSpecialAnimation: 0
   uiAudioSource: {fileID: 713933515105271150}
-  clickSound: {fileID: 8300000, guid: dae95dd97baeb8949bc3bb701ac363f2, type: 3}
-  panelOpenSound: {fileID: 0}
-  panelCloseSound: {fileID: 8300000, guid: e679d70ec2e67dd4b96185bc6ff08ad2, type: 3}
+  clickSound: {fileID: 0}
+  panelOpenSound: {fileID: 8300000, guid: dae95dd97baeb8949bc3bb701ac363f2, type: 3}
+  panelCloseSound: {fileID: 0}
   transitionIntroSound: {fileID: 0}
   transitionOutroSound: {fileID: 0}
   screenTransitionPanel: {fileID: 0}
   centerPosition: {x: 0, y: 0}
-  openExitPosition: {x: 1600, y: -1600}
-  closeStartPosition: {x: -1600, y: 1600}
-  screenMoveDuration: 0.65
+  openExitPosition: {x: 1850, y: -1450}
+  closeStartPosition: {x: -1850, y: 1450}
+  screenMoveDuration: 0.5
   autoPlayIntroOnStart: 1
   OnSwipeLeft:
     m_PersistentCalls:
@@ -143,9 +196,11 @@ MonoBehaviour:
   OnDoubleTap:
     m_PersistentCalls:
       m_Calls: []
+  countdownPanel: {fileID: 0}
   countdownText: {fileID: 0}
-  normalColor: {r: 0.972549, g: 0.8039216, b: 0.16862746, a: 1}
-  alertColor: {r: 0.972549, g: 0.2784314, b: 0.16862746, a: 1}
+  countdownDuration: 1
+  normalColor: {r: 0.9716981, g: 0.8029474, b: 0.42626378, a: 1}
+  alertColor: {r: 1, g: 0.3160377, b: 0.3700603, a: 1}
 --- !u!114 &3248472179866018280
 MonoBehaviour:
   m_ObjectHideFlags: 0

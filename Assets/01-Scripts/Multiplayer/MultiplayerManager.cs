@@ -166,6 +166,20 @@ public class MultiplayerManager : NetworkBehaviour
 
     }
 
+    /// <summary>
+    /// Retourne le nom du joueur associé à son clientId, sinon \"Joueur {clientId}\".
+    /// </summary>
+    public string GetDisplayName(ulong clientId)
+    {
+        if (!SessionStore.Instance) return $"Joueur {clientId}";
+
+        string playerId = SessionStore.Instance.GetPlayerId(clientId);
+        string playerName = SessionStore.Instance.GetPlayerName(playerId);
+
+        return string.IsNullOrEmpty(playerName) ? $"Joueur {clientId}" : playerName;
+    }
+
+
     [ClientRpc]
     private void RefreshLobbyClientRpc()
     {

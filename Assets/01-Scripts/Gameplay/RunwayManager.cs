@@ -1,5 +1,5 @@
-// ?? RunwayManager : Orchestration des défilés joueur par joueur
-// Gère le cycle du défilé, déclenche l'UI (RunwayUIManager), les votes, le timing, la caméra, etc.
+ï»¿// ?? RunwayManager : Orchestration des dÃ©filÃ©s joueur par joueur
+// GÃ¨re le cycle du dÃ©filÃ©, dÃ©clenche l'UI (RunwayUIManager), les votes, le timing, la camÃ©ra, etc.
 
 using UnityEngine;
 using Unity.Netcode;
@@ -9,28 +9,30 @@ using System.Linq;
 
 public class RunwayManager : NetworkBehaviour
 {
-    #region ?? Références
+    #region ?? RÃ©fÃ©rences
 
     public static RunwayManager Instance { get; private set; }
 
-    [Tooltip("Durée d'un passage de défilé par joueur (vote inclus)")]
+    [Header("ðŸŽ¥ DÃ©filÃ©")]
+    [Tooltip("DurÃ©e d'un passage de dÃ©filÃ© par joueur (vote inclus)")]
     [SerializeField] private float runwayDurationPerPlayer = 7f;
 
-    [Tooltip("Caméra principale utilisée pour suivre le défilé")]
+    [Tooltip("CamÃ©ra principale utilisÃ©e pour suivre le dÃ©filÃ©")]
     [SerializeField] private Camera mainCamera;
 
-    [Tooltip("Offsets et paramètres de focus caméra")]
+    [Tooltip("Offsets et paramÃ¨tres de focus camÃ©ra")]
     [SerializeField] private Vector3 cameraOffset = new Vector3(0, 2, -5);
 
-    [Tooltip("SFX à jouer pour annoncer un joueur")]
+    [Header("Effets")]
+    [Tooltip("SFX Ã  jouer pour annoncer un joueur")]
     [SerializeField] private AudioClip runwayAnnounceSFX;
 
-    [Tooltip("AudioSource utilisée pour jouer les effets sonores")]
+    [Tooltip("AudioSource utilisÃ©e pour jouer les effets sonores")]
     [SerializeField] private AudioSource sfxAudioSource;
 
     #endregion
 
-    #region ?? Cycle de défilé
+    #region ?? Cycle de dÃ©filÃ©
 
     private List<ulong> orderedPlayers;
 
@@ -45,7 +47,7 @@ public class RunwayManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// Débute la séquence de défilé + vote pour tous les joueurs connectés
+    /// DÃ©bute la sÃ©quence de dÃ©filÃ© + vote pour tous les joueurs connectÃ©s
     /// </summary>
     public void StartRunwayPhase()
     {
@@ -69,12 +71,12 @@ public class RunwayManager : NetworkBehaviour
             yield return new WaitForSeconds(0.5f); // Petite pause entre deux passages
         }
 
-        // ?? Fin de phase : prévenir GamePhaseTransitionController ou GameManager si besoin
+        // ?? Fin de phase : prÃ©venir GamePhaseTransitionController ou GameManager si besoin
     }
 
     #endregion
 
-    #region ?? Déclenchements UI côté clients
+    #region ?? DÃ©clenchements UI cÃ´tÃ© clients
 
     [ClientRpc]
     private void StartRunwayForClientRpc(ulong clientId)
@@ -95,7 +97,7 @@ public class RunwayManager : NetworkBehaviour
 
     #endregion
 
-    #region ?? Caméra & SFX
+    #region ?? CamÃ©ra & SFX
 
     private void FocusCameraOn(ulong clientId)
     {

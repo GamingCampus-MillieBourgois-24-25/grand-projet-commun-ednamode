@@ -20,16 +20,16 @@ public class GameModePanelMapping
     [Tooltip("Panel à masquer en quittant la phase précédente vers la customisation.")]
     public GameObject customizationPanelToHide;
 
-    [Header("🕺 Phase : Défilé")]
+    [Header("🕺 Phase : Défilé/Vote")]
+    [Tooltip("Panel à afficher pour la phase de défilé/vote.")]
     public GameObject runwayPanel;
+    [Tooltip("Panel à masquer en quittant la phase précédente vers le défilé/vote.")]
     public GameObject runwayPanelToHide;
 
-    [Header("⭐ Phase : Vote")]
-    public GameObject votingPanel;
-    public GameObject votingPanelToHide;
-
     [Header("🏆 Phase : Podium")]
+    [Tooltip("Panel à afficher pour la phase de podium.")]
     public GameObject podiumPanel;
+    [Tooltip("Panel à masquer en quittant la phase précédente vers le podium.")]
     public GameObject podiumPanelToHide;
 }
 

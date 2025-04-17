@@ -110,7 +110,7 @@ public class GamePhaseTransitionController : NetworkBehaviour
                 toShow = mapping.runwayPanel;
                 break;
             case GamePhaseManager.GamePhase.Podium:
-                toHide = mapping.votingPanelToHide;
+                toHide = mapping.podiumPanelToHide;
                 toShow = mapping.podiumPanel;
                 break;
             case GamePhaseManager.GamePhase.ReturnToLobby:
