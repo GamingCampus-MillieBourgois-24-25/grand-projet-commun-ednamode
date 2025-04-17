@@ -5,63 +5,53 @@ using System.Collections;
 public class CharacterParadeController : MonoBehaviour
 {
     [Header("Référence au personnage (assignée dynamiquement)")]
-    [SerializeField] private GameObject characterInstance; // Référence à _characterInstance de CustomizableCharacterUI
+    [SerializeField] private GameObject characterInstance;
 
     [Header("Points de défilement")]
-    public Vector3 pointA = new Vector3(-39f, 2.15f, 116f); // Point de départ (A)
-    public Vector3 pointB = new Vector3(-43f, 2.15f, 117.26f); // Point B
-    public Vector3 pointC = new Vector3(-43f, 2.15f, 134.19f); // Point C
-    public Vector3 pointD = new Vector3(-49f, 2.15f, 116.18f); // Point D (point final)
+    public Vector3 pointA = new Vector3(-39f, 2.15f, 116f);
+    public Vector3 pointB = new Vector3(-43f, 2.15f, 117.26f);
+    public Vector3 pointC = new Vector3(-43f, 2.15f, 134.19f);
+    public Vector3 pointD = new Vector3(-49f, 2.15f, 116.18f);
 
     [Header("Paramètres de défilement")]
-    public float customizationDelay = 10f; // Délai pour la personnalisation (10 secondes)
-    public float pauseDurationAtC = 5f; // Durée de la pause au point C (5 secondes)
+    public float customizationDelay = 10f;
+    public float pauseDurationAtC = 5f;
 
     [Header("Caméras")]
-    [SerializeField] private Camera customizationCamera; // Caméra utilisée pendant la personnalisation
-    [SerializeField] private Camera paradeCamera; // Caméra utilisée pendant le défilement
+    [SerializeField] private Camera customizationCamera;
+    [SerializeField] private Camera paradeCamera;
 
-    private NavMeshAgent navAgent; // Référence au NavMeshAgent
-    private float customizationTimer = 0f; // Timer pour le délai de personnalisation
-    private bool hasStartedParade = false; // Indique si le défilement a commencé
-    private int currentTargetIndex = 0; // Index du point cible actuel (0 = Point A, 1 = Point B, 2 = Point C, 3 = Point D)
-    private Vector3[] paradePoints; // Tableau des points de défilement
-    private bool isMoving = false; // Indique si le personnage est en mouvement
-    private bool isFinished = false; // Indique si le défilement est terminé
-    private bool goingBack = false; // Indique si on est en phase de retour (après le point C)
-    private bool isInitialized = false; // Indique si le personnage est initialisé
-    private bool isPaused = false; // Indique si le personnage est en pause (par exemple, au point C)
+    private NavMeshAgent navAgent;
+    private Animator animator;
+    private float customizationTimer = 0f;
+    private bool hasStartedParade = false;
+    private int currentTargetIndex = 0;
+    private Vector3[] paradePoints;
+    private bool isMoving = false;
+    private bool isFinished = false;
+    private bool isInitialized = false;
+    private bool isPaused = false;
 
-    // Propriété publique pour assigner characterInstance dynamiquement
     public GameObject CharacterInstance
     {
         get => characterInstance;
         set
         {
             characterInstance = value;
-            Debug.Log("[CharacterParadeController] characterInstance assigné : " + (characterInstance != null));
-            InitializeCharacter(); // Appeler l'initialisation une fois que characterInstance est assigné
+            InitializeCharacter();
         }
     }
 
     void Start()
     {
-        // Initialiser le tableau des points de défilement
         paradePoints = new Vector3[] { pointA, pointB, pointC, pointD };
 
-        // Vérifier et configurer les caméras au démarrage
         if (customizationCamera != null && paradeCamera != null)
         {
-            customizationCamera.enabled = true; // Activer la caméra de personnalisation au début
-            paradeCamera.enabled = false; // Désactiver la caméra de défilement
-            Debug.Log("[CharacterParadeController] Caméra de personnalisation activée, caméra de défilement désactivée.");
-        }
-        else
-        {
-            Debug.LogError("[CharacterParadeController] Une ou les deux caméras ne sont pas assignées !");
+            customizationCamera.enabled = true;
+            paradeCamera.enabled = false;
         }
 
-        // Si characterInstance est déjà assigné (par exemple, via l'inspecteur), initialiser immédiatement
         if (characterInstance != null)
         {
             InitializeCharacter();
@@ -72,129 +62,111 @@ public class CharacterParadeController : MonoBehaviour
     {
         if (!isInitialized || isFinished || navAgent == null) return;
 
-        // Gérer le délai de personnalisation avant de commencer le défilement
         if (!hasStartedParade)
         {
             customizationTimer += Time.deltaTime;
             if (customizationTimer >= customizationDelay)
             {
-                // Téléporter le personnage au point A après 10 secondes de personnalisation
-                characterInstance.transform.position = pointA;
                 navAgent.Warp(pointA);
-                Debug.Log("[CharacterParadeController] Personnage téléporté au point A après 10 secondes : " + pointA);
+                characterInstance.transform.position = pointA;
 
-                // Changer de caméra
-                if (customizationCamera != null && paradeCamera != null)
-                {
-                    customizationCamera.enabled = false; // Désactiver la caméra de personnalisation
-                    paradeCamera.enabled = true; // Activer la caméra de défilement
-                    Debug.Log("[CharacterParadeController] Changement de caméra : caméra de défilement activée.");
-                }
+                customizationCamera.enabled = false;
+                paradeCamera.enabled = true;
 
-                // Commencer le défilement immédiatement
                 hasStartedParade = true;
                 isMoving = true;
-                currentTargetIndex = 1; // Passer directement au point B
-                SetNextDestination();
+                currentTargetIndex = 1;
+                MoveToNextPoint();
             }
-            return; // Ne pas exécuter le reste de Update pendant la personnalisation
+            return;
         }
 
-        // Vérifier si le personnage a atteint sa destination
         if (isMoving && !navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
         {
             HandleDestinationReached();
         }
+
+        UpdateAnimations();
     }
 
     private void InitializeCharacter()
     {
-        // Vérifier si characterInstance est assigné et récupérer le NavMeshAgent
-        if (characterInstance == null)
-        {
-            Debug.LogError("[CharacterParadeController] characterInstance n'est pas assigné !");
-            return;
-        }
+        if (characterInstance == null) return;
 
         navAgent = characterInstance.GetComponent<NavMeshAgent>();
-        if (navAgent == null)
+        animator = characterInstance.GetComponent<Animator>();
+
+        if (navAgent != null && animator != null)
         {
-            Debug.LogError("[CharacterParadeController] NavMeshAgent manquant sur le personnage !");
-            return;
+            isInitialized = true;
+            navAgent.updateRotation = true;
         }
-
-        // Ne pas téléporter ici, laisser le personnage à sa position initiale (0,0,0) pour la personnalisation
-        Debug.Log("[CharacterParadeController] Personnage initialisé, en attente de personnalisation à : " + characterInstance.transform.position);
-
-        isInitialized = true; // Marquer comme initialisé
     }
 
-    private void SetNextDestination()
+    private void MoveToNextPoint()
     {
-        if (isFinished) return;
-
-        // Définir la destination suivante
-        navAgent.SetDestination(paradePoints[currentTargetIndex]);
-        Debug.Log("[CharacterParadeController] Destination définie : " + paradePoints[currentTargetIndex]);
+        if (currentTargetIndex < paradePoints.Length)
+        {
+            Vector3 destination = paradePoints[currentTargetIndex];
+            navAgent.isStopped = false;
+            navAgent.SetDestination(destination);
+            isMoving = true;
+            Debug.Log($"Déplacement vers le point {currentTargetIndex}: {destination}");
+        }
     }
 
     private void HandleDestinationReached()
     {
-        // Si on est au point C (index 2), faire une pause
-        if (currentTargetIndex == 2) // Point C
+        Debug.Log($"Point {currentTargetIndex} atteint.");
+
+        if (currentTargetIndex == 2)
         {
             StartCoroutine(PauseAtPointC());
         }
-        // Si on est au point D (index 3), arrêter le défilement
-        else if (currentTargetIndex == 3) // Point D
+        else if (currentTargetIndex == 3)
         {
             isFinished = true;
-            navAgent.isStopped = true; // Arrêter complètement le NavMeshAgent
-            navAgent.enabled = false; // Désactiver pour économiser des ressources
-            Debug.Log("[CharacterParadeController] Défilement terminé au point D : " + pointD);
+            isMoving = false;
+            navAgent.isStopped = true;
+            animator.SetTrigger("StopWalking");
+            Debug.Log("Défilement terminé.");
         }
         else
         {
-            // Déterminer la direction du parcours
-            if (!goingBack)
-            {
-                // Phase aller : A -> B -> C
-                currentTargetIndex++; // Avancer au point suivant
-                Debug.Log("[CharacterParadeController] Prochain point : " + paradePoints[currentTargetIndex]);
-            }
-            else
-            {
-                // Phase retour : C -> B -> D
-                currentTargetIndex = (currentTargetIndex == 1) ? 3 : 1; // Après C, aller à B, puis après B, aller à D
-                Debug.Log("[CharacterParadeController] Prochain point : " + paradePoints[currentTargetIndex]);
-            }
-            SetNextDestination();
+            currentTargetIndex++;
+            MoveToNextPoint();
         }
     }
 
     private IEnumerator PauseAtPointC()
     {
+        Debug.Log("Pause au point C.");
         isMoving = false;
-        isPaused = true; // Mettre en pause
-        navAgent.isStopped = true; // Arrêter le NavMeshAgent pendant la pause
-        Debug.Log("[CharacterParadeController] Pause de 5 secondes au point C : " + pointC);
+        isPaused = true;
+        navAgent.isStopped = true;
+        animator.SetTrigger("StopWalking");
+
         yield return new WaitForSeconds(pauseDurationAtC);
-        goingBack = true; // Passer en mode retour après la pause au point C
-        currentTargetIndex = 1; // Repartir vers le point B (index 1)
-        Debug.Log("[CharacterParadeController] Reprise vers le point B : " + pointB);
-        navAgent.isStopped = false; // Reprendre le mouvement
-        isMoving = true;
+
+        currentTargetIndex++;
         isPaused = false;
-        SetNextDestination();
+        isMoving = true;
+        MoveToNextPoint();
     }
 
-    // Méthode pour obtenir la position actuelle (utile pour le multijoueur)
+    private void UpdateAnimations()
+    {
+        if (animator == null) return;
+
+        bool isCurrentlyMoving = navAgent.velocity.magnitude > 0.1f && !navAgent.isStopped;
+        animator.SetBool("IsWalking", isCurrentlyMoving);
+    }
+
     public Vector3 GetCurrentPosition()
     {
         return characterInstance != null ? characterInstance.transform.position : Vector3.zero;
     }
 
-    // Méthode pour obtenir l'état actuel (utile pour le multijoueur)
     public bool IsFinished()
     {
         return isFinished;
