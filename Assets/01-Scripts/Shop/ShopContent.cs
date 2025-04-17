@@ -3,6 +3,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Linq;
 namespace CharacterCustomization
 {
     public class ShopContent : MonoBehaviour
@@ -11,8 +12,12 @@ namespace CharacterCustomization
         [SerializeField] private GameObject tabButtonPrefab;
         [SerializeField] private GameObject itemButtonPrefab;
         [SerializeField] private List<GameObject> itemButtons = new List<GameObject>();
+        private DataSaver dataSaver;
+        private List<Item> loadedItems;
+        private List<Item> savedItems;
         private void Start()
         {
+            dataSaver = DataSaver.Instance;
             itemButtons = new List<GameObject>();
             // Trouver l'enfant avec un LayoutGroup
             LayoutGroup layoutGroup = GetComponentInChildren<LayoutGroup>();
@@ -34,8 +39,11 @@ namespace CharacterCustomization
                 tabButton.GetComponent<ShopButton>().SetScriptable(tab);
 
             }
-            Item[] loadedItems = Resources.LoadAll<Item>("Items");
-            Debug.Log($"Nombre d'items chargés : {loadedItems.Length}");
+
+            loadedItems = Resources.LoadAll<Item>("Items").ToList();
+            savedItems = dataSaver.GetItems();
+            loadedItems = loadedItems.Except(savedItems).ToList();
+
             // Sort items into their respective tabs
             foreach (Tab tab in tabs)
             {

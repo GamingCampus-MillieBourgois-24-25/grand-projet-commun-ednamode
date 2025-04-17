@@ -187,13 +187,9 @@ public class DataSaver : MonoBehaviour
         dts.ownedItems.Add(item);
         SaveDataFn();
     }
-
-    public void ShowItems()
+    public List<Item> GetItems()
     {
-        foreach (Item item in dts.ownedItems)
-        {
-            Debug.Log($"Item: {item.itemName}, Price: {item.price}");
-        }
+        return dts.ownedItems;
     }
 }
 

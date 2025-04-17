@@ -7,7 +7,8 @@ public class ShoppingScript : MonoBehaviour
     private DataSaver _dataSaver;
     [SerializeField] private TextMeshProUGUI coinsText;
     [SerializeField] private TextMeshProUGUI jewelsText;
-    [SerializeField] private Item selectedItem;
+    [SerializeField] private ItemButton selectedItemButton;
+    private Item selectedItem;
     void Start()
     {
         _dataSaver = DataSaver.Instance;
@@ -15,16 +16,15 @@ public class ShoppingScript : MonoBehaviour
         jewelsText.text = "Jewels: " + _dataSaver.GetJewels().ToString();
     }
 
-    public void SetSelectedItem(Item item)
+    public void SetSelectedItemButton(ItemButton itemButton)
     {
-        if (item == null)
+        if (itemButton == null)
         {
             Debug.LogError("SetSelectedItem a reçu un item null !");
             return;
         }
 
-        selectedItem = item;
-        Debug.Log($"Item sélectionné : {item.name}");
+        selectedItemButton = itemButton;
     }
 
 
@@ -34,7 +34,7 @@ public class ShoppingScript : MonoBehaviour
         {
             removeCurrency(price);
             _dataSaver.AddItem(selectedItem);
-            _dataSaver.ShowItems();
+            Destroy(selectedItemButton.gameObject);
         }
         else
         {
@@ -44,6 +44,7 @@ public class ShoppingScript : MonoBehaviour
 
     public void Buy()
     {
+        selectedItem = selectedItemButton.GetItem();
         if (selectedItem == null)
         {
             Debug.LogError("Item is null");
