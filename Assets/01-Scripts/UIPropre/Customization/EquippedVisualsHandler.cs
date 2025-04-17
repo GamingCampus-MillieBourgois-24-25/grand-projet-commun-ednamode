@@ -43,13 +43,21 @@ public class EquippedVisualsHandler : NetworkBehaviour
             Debug.LogError("[EquippedVisualsHandler] Aucun Animator trouvé dans le parent !");
             return;
         }
-
-        bodyTarget = referenceAnimator.transform;
+        else
+        {
+            Debug.Log($"[EquippedVisualsHandler] Animator trouvé : {referenceAnimator.name}");
+        }
+            bodyTarget = referenceAnimator.transform;
     }
 
     #endregion
 
     #region 🧥 Gestion des habits
+
+    public void Equip(SlotType slotType, GameObject prefab)
+    {
+        Equip(slotType, prefab, Color.white, null); // Appel de la version complète
+    }
 
     /// <summary>
     /// Équipe un prefab (habit) dans un slot spécifique. Instancié et synchronisé si possible.
@@ -57,49 +65,84 @@ public class EquippedVisualsHandler : NetworkBehaviour
     /// <summary>
     /// Équipe un prefab (habit) dans un slot spécifique. Instancié et synchronisé si possible, sans duplication.
     /// </summary>
-    public void Equip(SlotType slotType, GameObject prefab)
+    /// <summary>
+    /// Équipe un prefab (habit) dans un slot spécifique, avec couleur et texture.
+    /// </summary>
+    public void Equip(SlotType slotType, GameObject prefab, Color color, string textureName)
     {
         // 🔁 Supprime l'existant
         Unequip(slotType);
 
         if (prefab == null)
         {
-            Debug.LogWarning($"[EquippedVisualsHandler] Prefab null pour {slotType}");
+            Debug.LogWarning($"[EquippedVisualsHandler] ❌ Prefab null pour {slotType}");
             return;
         }
 
-        // 🔧 Instanciation sans parent
+        // 🔧 Instanciation
         GameObject instance = Instantiate(prefab);
 
-        // 🔁 Spawn réseau uniquement côté serveur si applicable
-        if (NetworkManager.Singleton.IsServer && instance.TryGetComponent(out NetworkObject netObj))
-        {
-            if (!netObj.IsSpawned)
-            {
-                netObj.Spawn(true); // Ownership serveur uniquement
-                Debug.Log($"[EquippedVisualsHandler] 🔁 {prefab.name} spawné en réseau pour {slotType}");
-            }
-        }
-
-        // 🎯 Réintègre dans la hiérarchie une fois spawné
+        // 🎯 Placement hiérarchique
         instance.transform.SetParent(bodyTarget, false);
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.identity;
         instance.transform.localScale = Vector3.one;
 
-        // 🎭 Copie le contrôleur d'animation si demandé
+        // 🎭 Animation
         if (copyAnimatorFromParent && referenceAnimator != null)
         {
-            var instanceAnimator = instance.GetComponent<Animator>();
-            if (instanceAnimator != null)
+            var animator = instance.GetComponent<Animator>();
+            if (animator != null)
+                animator.runtimeAnimatorController = referenceAnimator.runtimeAnimatorController;
+        }
+
+        // 🎨 Appliquer couleur
+        foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
+        {
+            foreach (var mat in renderer.materials)
             {
-                instanceAnimator.runtimeAnimatorController = referenceAnimator.runtimeAnimatorController;
+                if (mat != null)
+                    mat.color = color;
+            }
+        }
+        var skinned = instance.GetComponentInChildren<SkinnedMeshRenderer>();
+        var bodySkinned = GetComponentInChildren<SkinnedMeshRenderer>();
+
+        if (skinned != null && bodySkinned != null)
+        {
+            skinned.bones = bodySkinned.bones;
+            skinned.rootBone = bodySkinned.rootBone;
+        }
+        else
+        {
+            Debug.LogWarning($"[EquippedVisualsHandler] ⚠️ SkinnedMeshRenderer non trouvé pour {slotType}");
+        }
+
+        // 🧵 Appliquer texture
+        if (!string.IsNullOrEmpty(textureName))
+        {
+            Texture tex = Resources.Load<Texture>($"Textures/{textureName}");
+            if (tex != null)
+            {
+                foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
+                {
+                    foreach (var mat in renderer.materials)
+                    {
+                        if (mat != null)
+                            mat.mainTexture = tex;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[EquippedVisualsHandler] ❌ Texture non trouvée : {textureName}");
             }
         }
 
-        // 💾 Sauvegarde dans le dictionnaire
+        // 💾 Sauvegarde
         equippedVisuals[slotType] = instance;
     }
+
     /// <summary>
     /// Supprime un objet visuel d’un slot si déjà équipé.
     /// </summary>

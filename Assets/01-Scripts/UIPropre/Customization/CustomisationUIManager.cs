@@ -360,20 +360,26 @@ public class CustomisationUIManager : NetworkBehaviour
 
         // 🔄 Enregistre les choix locaux dans le struct
         dataToSave.SetItem(slotType, item.itemId);
-        customizationData.Data.Value = dataToSave;
+        //customizationData.Data.Value = dataToSave;
 
         if (!customizationData.IsSpawned || customizationData.NetworkObject == null)
         {
             Debug.LogWarning("[CustomisationUI] ❌ Impossible d’envoyer un ServerRpc car le NetworkObject n’est pas prêt.");
             return;
         }
-        customizationData.RequestEquipItemServerRpc(slotType, item.itemId);
+        customizationData.SetItemAndApplyLocal(slotType, item.itemId, item);
 
-        if (IsHost)
+        if (item == null || item.prefab == null)
         {
-            var allItems = Resources.LoadAll<Item>("Items").ToList();
-            customizationData.ApplyToVisuals(visualsHandler, allItems);
+            Debug.LogError($"[CustomisationUI] ❌ L’item ou son prefab est null → {item?.itemId}");
+            return;
         }
+
+        //if (IsHost)
+        //{
+        //    var allItems = Resources.LoadAll<Item>("Items").ToList();
+        //    customizationData.ApplyToVisuals(visualsHandler, allItems);
+        //}
 
     }
     #endregion
@@ -383,7 +389,30 @@ public class CustomisationUIManager : NetworkBehaviour
     /// <summary>
     /// Efface et prépare le panneau des textures
     /// </summary>
-    private void PopulateTextureList() => ClearContainer(textureListContainer);
+    private void PopulateTextureList()
+    {
+        ClearContainer(textureListContainer);
+
+        var textureNames = new[] { "TextureDenim", "TextureFloral", "TextureZebra" };
+        foreach (var texName in textureNames)
+        {
+            var tex = Resources.Load<Texture>($"Textures/{texName}");
+            if (tex == null) continue;
+
+            var btnObj = Instantiate(textureButtonPrefab, textureListContainer);
+            btnObj.GetComponentInChildren<TMP_Text>().text = texName;
+            btnObj.GetComponent<Button>().onClick.AddListener(() => ApplyTexture(texName));
+        }
+    }
+
+    private void ApplyTexture(string textureName)
+    {
+        if (currentSelectedItem == null) return;
+        var slotType = currentCategory.Item1;
+        dataToSave.SetTexture(slotType, textureName);
+        customizationData.Data.Value.SetTexture(slotType, textureName);
+    }
+
 
     /// <summary>
     /// Affiche une palette de couleurs à appliquer à l’item sélectionné
@@ -407,22 +436,81 @@ public class CustomisationUIManager : NetworkBehaviour
     /// </summary>
     private void ApplyColor(Color color)
     {
-        if (currentSelectedItem == null) return;
+        if (currentSelectedItem == null)
+        {
+            Debug.LogWarning("[CustomisationUI] Aucun item sélectionné.");
+            return;
+        }
+
         var slotType = currentCategory.Item1;
         var slot = character.Slots.FirstOrDefault(s => s.Type == slotType);
-        if (slot == null || !slot.HasPrefab()) return;
+
+        if (slot == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] Slot introuvable pour {slotType}");
+            return;
+        }
 
         var preview = slot.Preview;
-        if (preview == null) return;
+        if (preview == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] Aucun preview disponible pour {slotType}");
+            return;
+        }
 
-        foreach (var rend in preview.GetComponentsInChildren<Renderer>())
-            foreach (var mat in rend.materials)
-                mat.color = color;
+        var renderers = preview.GetComponentsInChildren<Renderer>(true);
+        if (renderers == null || renderers.Length == 0)
+        {
+            Debug.LogWarning($"[CustomisationUI] Aucun Renderer trouvé pour {preview.name}");
+            return;
+        }
+
+        foreach (var rend in renderers)
+        {
+            if (rend == null) continue;
+
+            // `.material` crée une copie runtime (safe)
+            Material[] runtimeMats = rend.materials;
+            foreach (var mat in runtimeMats)
+            {
+                if (mat != null)
+                    mat.color = color;
+            }
+        }
+
+        // Sauvegarde de la couleur dans la structure
+        dataToSave.SetColor(slotType, color);
+        customizationData.Data.Value.SetColor(slotType, color);
+        Debug.Log($"[CustomisationUI] ✅ Couleur {color} appliquée à {slotType}");
     }
+
 
     #endregion
 
     #region ♲ Utils
+
+    /// <summary>
+    /// Sauvegarde toutes les données locales dans la variable réseau synchronisée.
+    /// À appeler avant le défilé.
+    /// </summary>
+    public void CommitLocalCustomization()
+    {
+        if (customizationData == null) return;
+
+        Debug.Log("[CustomisationUI] ✅ Commit de la tenue locale dans la NetworkVariable.");
+
+        customizationData.Data.Value = dataToSave;
+    }
+
+    /// <summary>
+    /// Rafraîchit la tenue globale du joueur, en envoyant les données au serveur.
+    /// À appeler après un changement de tenue.
+    /// </summary>
+    public void RefreshTenueGlobale()
+    {
+        CommitLocalCustomization();
+        customizationData.SendRefreshServerRpc();
+    }
 
     /// <summary>
     /// Détruit tous les enfants d’un conteneur

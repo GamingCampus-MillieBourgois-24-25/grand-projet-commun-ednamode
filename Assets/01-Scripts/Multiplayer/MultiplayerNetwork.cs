@@ -40,4 +40,14 @@ public class MultiplayerNetwork : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Retourne le nom affiché d’un joueur à partir de son clientId.
+    /// </summary>
+    public string GetDisplayName(ulong clientId)
+    {
+        string playerId = SessionStore.Instance.GetPlayerId(clientId);
+        return SessionStore.Instance.GetPlayerName(playerId);
+    }
+
+
 }

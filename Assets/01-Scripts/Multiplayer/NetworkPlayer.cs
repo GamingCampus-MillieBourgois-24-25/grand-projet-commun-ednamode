@@ -34,7 +34,6 @@ public class NetworkPlayer : NetworkBehaviour
         if (IsOwner)
         {
             CreateAndAttachLocalCamera();
-            StartCoroutine(DelayedCameraOrientation());
         }
     }
 
@@ -92,19 +91,5 @@ public class NetworkPlayer : NetworkBehaviour
         camObj.transform.LookAt(transform.position + Vector3.up * 1.5f);
 
         Debug.Log("[NetworkPlayer] 🎥 Caméra locale créée pour ce joueur");
-    }
-
-    /// <summary>
-    /// Attente avant de réorienter la caméra après synchronisation de la position réseau.
-    /// </summary>
-    private IEnumerator DelayedCameraOrientation()
-    {
-        yield return new WaitForSeconds(0.05f);
-        if (localCamera != null)
-        {
-            localCamera.transform.position = transform.position + cameraOffset;
-            localCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
-            Debug.Log("[NetworkPlayer] 📷 Caméra orientée après délai");
-        }
     }
 }

@@ -44,14 +44,23 @@ public class GamePhaseManager : NetworkBehaviour
     public static GamePhaseManager Instance { get; private set; }
 
     /// <summary>Phase actuelle du jeu.</summary>
-    public enum GamePhase { Waiting, Customization, Runway, Voting, Podium, ReturnToLobby }
+    public enum GamePhase { Waiting, Customization, RunwayVoting, Podium, ReturnToLobby }
 
     [Tooltip("Phase du jeu en cours.")]
     public NetworkVariable<GamePhase> CurrentPhase = new(writePerm: NetworkVariableWritePermission.Server);
 
+    [Header("⏱️ Durées des phases")]
     [Tooltip("Durée de la phase de customisation avant le défilé.")]
     [SerializeField] private float customizationDuration = 60f;
     public float CustomizationDuration => customizationDuration;
+
+    [Tooltip("Durée d'un passage de défilé (vote inclus) par joueur.")]
+    [SerializeField] private float runwayVotingPerPlayerDuration = 7f;
+    public float RunwayVotingPerPlayerDuration => runwayVotingPerPlayerDuration;
+
+    [Tooltip("Durée d'affichage du podium.")]
+    [SerializeField] private float podiumDuration = 10f;
+    public float PodiumDuration => podiumDuration;
 
     [Tooltip("Référence vers le gestionnaire de transitions synchronisées.")]
     [SerializeField] private GamePhaseTransitionController transitionController;
