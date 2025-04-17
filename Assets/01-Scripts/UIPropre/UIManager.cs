@@ -622,5 +622,9 @@ public class UIManager : MonoBehaviour
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene("AccountScene");
     }
+    public void loadShop()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Melvin_Shop");
+    }
     #endregion
 }

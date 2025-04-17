@@ -11,8 +11,10 @@ public class ShoppingScript : MonoBehaviour
     void Start()
     {
         _dataSaver = DataSaver.Instance;
-        coinsText.text = "Coins: " + _dataSaver.GetCoins().ToString();
-        jewelsText.text = "Jewels: " + _dataSaver.GetJewels().ToString();
+
+        // Accès direct aux propriétés publiques de dts
+        coinsText.text = "Coins: " + _dataSaver.dts.totalCoins.ToString();
+        jewelsText.text = "Jewels: " + _dataSaver.dts.totalJewels.ToString();
     }
 
     public void SetSelectedItem(Item item)
@@ -33,8 +35,11 @@ public class ShoppingScript : MonoBehaviour
         if (currentBalance >= price)
         {
             removeCurrency(price);
-            _dataSaver.AddItem(selectedItem);
-            _dataSaver.ShowItems();
+
+            // Ajout de l'item à la liste des vêtements débloqués
+            _dataSaver.dts.unlockedClothes.Add(selectedItem.itemName);
+
+            Debug.Log($"Item ajouté : {selectedItem.itemName}");
         }
         else
         {
@@ -53,17 +58,17 @@ public class ShoppingScript : MonoBehaviour
         if (selectedItem.tags.Contains("premium"))
         {
             ProcessPurchase(
-                _dataSaver.GetJewels(),
+                _dataSaver.dts.totalJewels, // Accès direct à totalJewels
                 selectedItem.price,
-                _dataSaver.removeJewels
+                jewelsToRemove => _dataSaver.dts.totalJewels -= jewelsToRemove // Modification directe
             );
         }
         else
         {
             ProcessPurchase(
-                _dataSaver.GetCoins(),
+                _dataSaver.dts.totalCoins, // Accès direct à totalCoins
                 selectedItem.price,
-                _dataSaver.removeCoins
+                coinsToRemove => _dataSaver.dts.totalCoins -= coinsToRemove // Modification directe
             );
         }
     }

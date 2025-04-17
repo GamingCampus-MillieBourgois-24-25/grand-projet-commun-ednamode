@@ -23,16 +23,16 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/03-Scenes/Sandbox/Mato-Lobby_DripOrDrop.unity
     guid: b27077153d6761d47abb035f59cdbad7
-  - enabled: 0
+  - enabled: 1
     path: Assets/03-Scenes/Authentification/FirebaseLogin.unity
     guid: 07020c8fc917ce448bfb264687aa7ede
   - enabled: 0
     path: Assets/03-Scenes/Authentification/GameSceneExample.unity
     guid: 63da3480631d4784d9f4cc73b920c1b8
-  - enabled: 0
+  - enabled: 1
     path: Assets/03-Scenes/Account/AccountScene.unity
     guid: 37b53452a556d3149aafe8799fd81b82
-  - enabled: 0
+  - enabled: 1
     path: Assets/03-Scenes/Sandbox/Lobby_Horizontal v2.unity
     guid: 8229dce35f0d0ca49b79f229705c51aa
   - enabled: 0
@@ -41,7 +41,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/03-Scenes/Lobby/Lobby_Horizontal.unity
     guid: 0ac13300046e37343a94211ae8457fbe
-  - enabled: 0
+  - enabled: 1
     path: Assets/03-Scenes/Shop/Melvin_Shop.unity
     guid: 90b86e57e84d06540a454bfeba041bd4
   - enabled: 1

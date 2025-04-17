@@ -4774,7 +4774,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 270486023}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1839184294}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: loadShop
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &270486023
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15062,8 +15074,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e5c8ea2d57f87d45857da67043b2109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterPrefab: {fileID: 1230992875}
-  slotLibrary: {fileID: 11400000, guid: ddee382934caf604e8a9199b8118a57e, type: 2}
   categoryButtonContainer: {fileID: 231492239}
   categoryButtonPrefab: {fileID: 293819967451510782, guid: 5b8cfd6c8f5a2824a81cd7f64afb8f25, type: 3}
   tabItemPanel: {fileID: 306926802}
@@ -18500,11 +18510,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Padding: {x: -8, y: -5, z: -8, w: -5}
   m_Softness: {x: 0, y: 0}
---- !u!1 &1230992875 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 146935546818660778, guid: 7f6862d8aee10a042821738d523fc6fa, type: 3}
-  m_PrefabInstance: {fileID: 1850556863}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1230992878 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 667049195000124176, guid: 7f6862d8aee10a042821738d523fc6fa, type: 3}
@@ -27295,6 +27300,7 @@ MonoBehaviour:
       m_Calls: []
   countdownPanel: {fileID: 1967792719}
   countdownText: {fileID: 1038226755}
+  countdownDuration: 10
   normalColor: {r: 0.9716981, g: 0.8029474, b: 0.42626378, a: 1}
   alertColor: {r: 1, g: 0.3160377, b: 0.3700603, a: 1}
 --- !u!1 &1840993383
