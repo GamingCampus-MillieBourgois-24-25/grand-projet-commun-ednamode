@@ -4,41 +4,37 @@ using System.Collections;
 using Unity.Netcode.Components;
 
 /// <summary>
-/// Préfab réseau du joueur avec caméra locale et synchronisation de position.
+/// Préfab réseau du joueur. Chaque joueur est téléporté à son point de spawn et possède sa propre caméra locale instanciée dynamiquement.
+/// Cette caméra ne concerne que le joueur propriétaire et ne provoque aucun conflit entre clients.
 /// </summary>
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(NetworkTransform))]
 [RequireComponent(typeof(CharacterController))]
 public class NetworkPlayer : NetworkBehaviour
 {
-    [Header("🎥 Caméra de customisation locale")]
-    [SerializeField] private Camera customizationCamera;
+    [Header("🎯 Décalage de la caméra locale (vue customisation)")]
+    [Tooltip("Position relative de la caméra par rapport au joueur.")]
     [SerializeField] private Vector3 cameraOffset = new(0f, 2f, -4f);
 
     private CharacterController controller;
+    private Camera localCamera;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
-        if (customizationCamera != null)
-            customizationCamera.enabled = false;
     }
 
     public override void OnNetworkSpawn()
     {
-        if (IsOwner)
-        {
-            StartCoroutine(DelayedCameraActivation());
-        }
-
         if (IsServer)
         {
             TeleportToSpawnPoint();
         }
-        else
+
+        if (IsOwner)
         {
-            if (customizationCamera != null)
-                customizationCamera.enabled = false;
+            CreateAndAttachLocalCamera();
+            StartCoroutine(DelayedCameraOrientation());
         }
     }
 
@@ -47,11 +43,21 @@ public class NetworkPlayer : NetworkBehaviour
         if (IsServer)
         {
             NetworkPlayerManager.Instance?.ReleaseSpawnPoint(OwnerClientId);
+
+            // 🔥 Nettoyage des objets orphelins RootBody
+            foreach (var root in GameObject.FindObjectsOfType<Transform>())
+            {
+                if (root.name == "RootBody" && root.parent == null)
+                {
+                    Destroy(root.gameObject);
+                    Debug.Log("[NetworkPlayer] 🧹 RootBody orphelin détruit");
+                }
+            }
         }
     }
 
     /// <summary>
-    /// Téléporte le joueur à son point de spawn assigné.
+    /// Téléporte le joueur à son point de spawn défini.
     /// </summary>
     private void TeleportToSpawnPoint()
     {
@@ -68,24 +74,37 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     /// <summary>
-    /// Active la caméra locale pour le joueur propriétaire, après un court délai de synchronisation.
+    /// Instancie une caméra propre à ce joueur local uniquement.
     /// </summary>
-    private IEnumerator DelayedCameraActivation()
+    private void CreateAndAttachLocalCamera()
     {
-        yield return new WaitForSeconds(0.2f); // Laisse le temps au NetworkTransform de synchroniser la position
-        ActivateCamera();
+        GameObject camObj = new GameObject($"LocalCamera_{OwnerClientId}");
+        localCamera = camObj.AddComponent<Camera>();
+        camObj.AddComponent<AudioListener>();
+
+        localCamera.clearFlags = CameraClearFlags.Skybox;
+        localCamera.fieldOfView = 60f;
+        localCamera.nearClipPlane = 0.1f;
+        localCamera.farClipPlane = 100f;
+
+        camObj.transform.SetParent(transform);
+        camObj.transform.localPosition = cameraOffset;
+        camObj.transform.LookAt(transform.position + Vector3.up * 1.5f);
+
+        Debug.Log("[NetworkPlayer] 🎥 Caméra locale créée pour ce joueur");
     }
 
     /// <summary>
-    /// Active la caméra locale pour le joueur propriétaire.
+    /// Attente avant de réorienter la caméra après synchronisation de la position réseau.
     /// </summary>
-    private void ActivateCamera()
+    private IEnumerator DelayedCameraOrientation()
     {
-        if (customizationCamera == null) return;
-
-        customizationCamera.enabled = true;
-        customizationCamera.transform.position = transform.position + cameraOffset;
-        customizationCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
-        Debug.Log("[NetworkPlayer] 📷 Caméra locale activée.");
+        yield return new WaitForSeconds(0.05f);
+        if (localCamera != null)
+        {
+            localCamera.transform.position = transform.position + cameraOffset;
+            localCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
+            Debug.Log("[NetworkPlayer] 📷 Caméra orientée après délai");
+        }
     }
 }

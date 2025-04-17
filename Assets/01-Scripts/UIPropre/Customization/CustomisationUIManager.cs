@@ -359,9 +359,15 @@ public class CustomisationUIManager : NetworkBehaviour
 
 
         // 🔄 Enregistre les choix locaux dans le struct
-        dataToSave.SetItem(slotType, item.GetInstanceID());
+        dataToSave.SetItem(slotType, item.itemId);
         customizationData.Data.Value = dataToSave;
-        customizationData.RequestEquipItemServerRpc(slotType, item.GetInstanceID());
+
+        if (!customizationData.IsSpawned || customizationData.NetworkObject == null)
+        {
+            Debug.LogWarning("[CustomisationUI] ❌ Impossible d’envoyer un ServerRpc car le NetworkObject n’est pas prêt.");
+            return;
+        }
+        customizationData.RequestEquipItemServerRpc(slotType, item.itemId);
 
         if (IsHost)
         {

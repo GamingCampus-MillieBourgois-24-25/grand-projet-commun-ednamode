@@ -20,24 +20,6 @@ public class PlayerCustomizationData : NetworkBehaviour
 
     #region 🎮 Application des visuels
 
-    [ServerRpc(RequireOwnership = false)]
-    public void RequestEquipItemServerRpc(SlotType slotType, int itemId)
-    {
-        if (!IsServer) return;
-
-        Debug.Log($"[PlayerCustomizationData] 🛰️ Equipement demandé : {slotType} → {itemId}");
-
-        Data.Value.SetItem(slotType, itemId);
-
-        var handler = GetComponentInChildren<EquippedVisualsHandler>();
-        if (handler != null)
-        {
-            var allItems = Resources.LoadAll<Item>("Items").ToList();
-            ApplyToVisuals(handler, allItems);
-        }
-    }
-
-
     /// <summary>
     /// Applique les objets équipés à un handler visuel, basé sur les données synchronisées.
     /// ⚠ Doit être appelé uniquement côté serveur pour éviter les doublons.
@@ -55,13 +37,12 @@ public class PlayerCustomizationData : NetworkBehaviour
         foreach (var kvp in Data.Value.equippedItemIds)
         {
             SlotType slot = kvp.Key;
-            int itemId = kvp.Value;
+            string itemId = kvp.Value;
 
-            // ✅ Ne pas équiper plusieurs fois le même slot
             if (alreadyEquipped.Contains(slot))
                 continue;
 
-            var item = allItems.FirstOrDefault(i => i.GetInstanceID() == itemId && i.category == slot);
+            var item = allItems.FirstOrDefault(i => i.itemId == itemId); 
             if (item != null)
             {
                 handler.Equip(slot, item.prefab);
@@ -72,6 +53,31 @@ public class PlayerCustomizationData : NetworkBehaviour
             {
                 Debug.LogWarning($"[PlayerCustomizationData] ⚠ Aucun item trouvé pour slot {slot} avec ID {itemId}");
             }
+        }
+    }
+
+    /// <summary>
+    /// Requête envoyée par le client au serveur pour équiper un item donné dans un slot spécifique.
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestEquipItemServerRpc(SlotType slotType, string itemId)
+    {
+        if (!IsSpawned || NetworkObject == null)
+        {
+            Debug.LogError("[PlayerCustomizationData] ❌ ServerRpc appelé alors que l'objet n'est pas spawné ou n'a pas de NetworkObject !");
+            return;
+        }
+
+        Debug.Log($"[PlayerCustomizationData] 🛰️ Equipement demandé : {slotType} → {itemId}");
+
+        Data.Value.SetItem(slotType, itemId);
+
+        var handler = GetComponentInChildren<EquippedVisualsHandler>();
+        if (handler != null)
+        {
+            Debug.LogWarning($"[PlayerCustomizationData] ⚠ Aucun EquippedVisualsHandler trouvé sur le joueur {OwnerClientId}. Abandon de l'équipement.");
+            List<Item> allItems = Resources.LoadAll<Item>("Items").ToList();
+            ApplyToVisuals(handler, allItems);
         }
     }
 

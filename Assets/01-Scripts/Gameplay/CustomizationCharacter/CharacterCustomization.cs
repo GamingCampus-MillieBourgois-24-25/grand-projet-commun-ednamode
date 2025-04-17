@@ -23,7 +23,7 @@ namespace CharacterCustomization
         /// </summary>
         public CharacterCustomization(GameObject characterInstance, SlotLibrary slotLibrary)
         {
-            var meshRoot = characterInstance.transform.Find("Body")
+            var meshRoot = characterInstance.transform.Find("RootBody")
                            ?? characterInstance.GetComponentInChildren<SkinnedMeshRenderer>()?.transform;
 
             if (meshRoot != null)

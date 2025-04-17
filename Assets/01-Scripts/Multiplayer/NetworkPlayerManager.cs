@@ -40,6 +40,16 @@ public class NetworkPlayerManager : MonoBehaviour
     /// <summary>
     /// Essaie de trouver le joueur local dans la scène
     /// </summary>
+    public NetworkPlayer GetNetworkPlayerFrom(ulong clientId)
+    {
+        var allPlayers = FindObjectsOfType<NetworkPlayer>(true);
+        return allPlayers.FirstOrDefault(p => p.OwnerClientId == clientId);
+    }
+
+
+    /// <summary>
+    /// Essaie de trouver le joueur local dans la scène
+    /// </summary>
     private void TryFindLocalPlayer()
     {
         var all = FindObjectsOfType<PlayerCustomizationData>();
@@ -54,7 +64,18 @@ public class NetworkPlayerManager : MonoBehaviour
     /// </summary>
     public Transform GetBodyRoot()
     {
-        return LocalPlayerData?.GetComponentInChildren<EquippedVisualsHandler>()?.transform;
+        var handler = LocalPlayerData?.GetComponentInChildren<EquippedVisualsHandler>();
+        if (handler == null) return null;
+
+        var meshName = handler.GetTargetMeshName();
+        var meshTransform = handler.transform.Find(meshName);
+
+        if (meshTransform == null)
+        {
+            Debug.LogWarning($"[NetworkPlayerManager] ⚠ Aucun Transform nommé '{meshName}' trouvé dans le joueur local.");
+        }
+
+        return meshTransform;
     }
 
     /// <summary>

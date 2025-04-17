@@ -67,7 +67,6 @@ public class MultiplayerManager : NetworkBehaviour
             await Task.Delay(100); // ⏱️ petite pause pour éviter un while infini en frame
         }
 
-
         // ⏳ Attendre qu'on soit bien serveur et que tout soit initialisé
         await Task.Delay(500);
 
