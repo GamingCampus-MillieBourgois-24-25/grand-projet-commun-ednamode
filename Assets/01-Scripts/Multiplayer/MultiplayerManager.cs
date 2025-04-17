@@ -530,18 +530,8 @@ public class MultiplayerManager : NetworkBehaviour
             if (IsHost())
             {
                 int selectedGameMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
-                GamePhaseManager.Instance?.StartCustomizationPhase(); // Début du flow logique
-                
-                /* string sceneToLoad = selectedGameMode switch
-                {
-                    0 => "Scene_PassMode",
-                    1 => "Scene_Sabotage",
-                    2 => "Lucie_BasicGameplay",
-                    _ => "Mato-Lobby_Horizontal"
-                };
+                GamePhaseTransitionController.Instance?.StartPhaseSequence();
 
-                NetworkManager.Singleton.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Single);
-            */
             }
         });
     }

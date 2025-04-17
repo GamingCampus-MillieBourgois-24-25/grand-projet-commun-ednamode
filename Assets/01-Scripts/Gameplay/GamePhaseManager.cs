@@ -51,9 +51,10 @@ public class GamePhaseManager : NetworkBehaviour
 
     [Tooltip("Durée de la phase de customisation avant le défilé.")]
     [SerializeField] private float customizationDuration = 60f;
+    public float CustomizationDuration => customizationDuration;
 
     [Tooltip("Référence vers le gestionnaire de transitions synchronisées.")]
-    [SerializeField] private PhaseTransitionController transitionController;
+    [SerializeField] private GamePhaseTransitionController transitionController;
 
     [Tooltip("Liste des mappings UI pour chaque mode de jeu.")]
     [SerializeField] private List<GameModePanelMapping> panelMappings;
@@ -85,7 +86,7 @@ public class GamePhaseManager : NetworkBehaviour
     /// <summary>
     /// Récupère le mapping de panels pour le mode de jeu actuellement sélectionné.
     /// </summary>
-    private GameModePanelMapping GetActivePanelMapping()
+    public GameModePanelMapping GetActivePanelMapping()
     {
         int selected = MultiplayerNetwork.Instance.SelectedGameMode.Value;
         if (selected >= 0 && selected < panelMappings.Count)
@@ -107,99 +108,6 @@ public class GamePhaseManager : NetworkBehaviour
             UIManager.Instance.ShowPanelDirect(toShow);
     }
 
-
     #endregion
 
-    #region 🎨 PHASES DU JEU
-
-    /// <summary>
-    /// Démarre la phase de customisation.
-    /// </summary>
-    public void StartCustomizationPhase()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.Customization;
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.customizationPanelToHide, mapping.customizationPanel);
-
-        if (mapping.customizationPanel.TryGetComponent(out CustomisationUIManager ui))
-            ui.ForceInit();
-
-        StartCoroutine(CustomizationRoutine());
-    }
-
-    /// <summary>
-    /// Attente de fin de customisation avant le défilé.
-    /// </summary>
-    private IEnumerator CustomizationRoutine()
-    {
-        yield return new WaitForSeconds(customizationDuration);
-        StartRunwayPhase();
-    }
-
-    /// <summary>
-    /// Démarre la phase de défilé synchronisé.
-    /// </summary>
-    public void StartRunwayPhase()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.Runway;
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.runwayPanelToHide, mapping.runwayPanel);
-
-        var allItems = Resources.LoadAll<Item>("Items").ToList();
-        foreach (var player in FindObjectsOfType<PlayerCustomizationData>())
-        {
-            var visuals = player.GetComponentInChildren<EquippedVisualsHandler>();
-            if (visuals != null)
-            {
-                visuals.ClearAll();
-                player.ApplyToVisuals(visuals, allItems);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Démarre la phase de vote.
-    /// </summary>
-    public void StartVotingPhase()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.Voting;
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.votingPanelToHide, mapping.votingPanel);
-    }
-
-    /// <summary>
-    /// Affiche le podium final avec les résultats.
-    /// </summary>
-    public void ShowPodium()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.Podium;
-
-        var mapping = GetActivePanelMapping();
-        if (mapping != null)
-            Transition(mapping.votingPanelToHide, mapping.podiumPanel);
-    }
-
-    /// <summary>
-    /// Retourne tous les joueurs dans le lobby.
-    /// </summary>
-    public void ReturnToLobby()
-    {
-        if (!IsServer) return;
-        CurrentPhase.Value = GamePhase.ReturnToLobby;
-
-        UIManager.Instance.HideAllPanels();
-        UIManager.Instance.ShowPanel("Online");
-    }
-
-    #endregion
 }
