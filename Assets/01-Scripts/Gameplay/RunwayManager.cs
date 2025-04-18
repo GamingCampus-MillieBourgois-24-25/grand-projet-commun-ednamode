@@ -6,6 +6,7 @@ using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 
 public class RunwayManager : NetworkBehaviour
 {
@@ -16,9 +17,6 @@ public class RunwayManager : NetworkBehaviour
     [Header("🎥 Défilé")]
     [Tooltip("Durée d'un passage de défilé par joueur (vote inclus)")]
     [SerializeField] private float runwayDurationPerPlayer = 7f;
-
-    [Tooltip("Caméra principale utilisée pour suivre le défilé")]
-    [SerializeField] private Camera mainCamera;
 
     [Tooltip("Offsets et paramètres de focus caméra")]
     [SerializeField] private Vector3 cameraOffset = new Vector3(0, 2, -5);
@@ -84,7 +82,9 @@ public class RunwayManager : NetworkBehaviour
         if (!IsClient) return;
 
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(clientId);
+        DeactivateAllOtherCameras();
         FocusCameraOn(clientId);
+
         PlayIntroSFX();
     }
 
@@ -99,14 +99,48 @@ public class RunwayManager : NetworkBehaviour
 
     #region ?? Caméra & SFX
 
-    private void FocusCameraOn(ulong clientId)
+    private void FocusCameraOn(ulong targetClientId)
     {
-        var player = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
-        if (player == null || mainCamera == null) return;
+        var targetPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(targetClientId);
+        if (targetPlayer == null)
+        {
+            Debug.LogWarning($"[RunwayManager] ❌ Aucun joueur cible trouvé pour {targetClientId}");
+            return;
+        }
 
-        mainCamera.transform.position = player.transform.position + cameraOffset;
-        mainCamera.transform.LookAt(player.transform);
+        Transform lookTarget = GameObject.Find("RunwayTarget")?.transform ?? targetPlayer.transform;
+
+        var localPlayer = NetworkPlayerManager.Instance.GetLocalPlayer();
+        if (localPlayer == null)
+        {
+            Debug.LogError("[RunwayManager] ❌ Aucun joueur local trouvé !");
+            return;
+        }
+
+        Camera cam = localPlayer.GetLocalCamera();
+        if (cam == null)
+        {
+            Debug.LogError("[RunwayManager] ❌ Caméra locale introuvable !");
+            return;
+        }
+
+        cam.gameObject.SetActive(true); // Force l'activation
+
+        cam.transform.DOMove(lookTarget.position + cameraOffset, 0.5f).SetEase(Ease.InOutSine);
+        cam.transform.DOLookAt(lookTarget.position + Vector3.up * 1.5f, 0.5f).SetEase(Ease.InOutSine);
+
+        Debug.Log($"[RunwayManager] 🎥 Caméra LOCALE déplacée pour observer {targetClientId}");
     }
+
+    private void DeactivateAllOtherCameras()
+    {
+        foreach (var p in FindObjectsOfType<NetworkPlayer>())
+        {
+            var cam = p.GetComponentInChildren<Camera>(true);
+            if (cam != null) cam.gameObject.SetActive(false);
+        }
+    }
+
 
     private void PlayIntroSFX()
     {
