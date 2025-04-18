@@ -12,7 +12,7 @@ public class Debug_AddCoins : MonoBehaviour
        button = GetComponent<Button>();
         if (button != null)
         {
-            button.onClick.AddListener(() => dataSaver.addCoins(1000));
+            button.onClick.AddListener(() => dataSaver.addJewels(1000));
         }
         else
         {
