@@ -31,7 +31,6 @@ public class CharacterParadeController : MonoBehaviour
     private bool isFinished = false;
     private bool isInitialized = false;
     private bool isPaused = false;
-    private string lastWalkDirection = "";
     private bool wasMovingLastFrame = false;
 
     public GameObject CharacterInstance
@@ -129,18 +128,7 @@ public class CharacterParadeController : MonoBehaviour
     {
         if (animator == null) return;
 
-        if (isMoving)
-        {
-            string newWalkDirection = "WalkForward";
-            animator.SetTrigger(newWalkDirection);
-            lastWalkDirection = newWalkDirection;
-        }
-
-        if (wasMovingLastFrame && !isMoving)
-        {
-            animator.SetTrigger("StopWalking");
-            lastWalkDirection = "";
-        }
+        animator.SetBool("IsWalking", isMoving);
     }
 
     private void SetNextDestination()
@@ -177,8 +165,6 @@ public class CharacterParadeController : MonoBehaviour
         isMoving = false;
         isPaused = true;
         navAgent.isStopped = true;
-
-        animator.SetTrigger("StopWalking");
 
         yield return new WaitForSeconds(pauseDurationAtC);
 
