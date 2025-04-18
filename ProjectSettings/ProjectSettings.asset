@@ -948,11 +948,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: d2e28440-b262-4c42-884c-d371f0ef4342
+  cloudProjectId: 302be826-c9ae-4664-9f17-5eb1d4cdc0de
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: DripOrDrop
-  organizationId: royhugo2004
+  organizationId: onnen
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
