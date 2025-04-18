@@ -47,9 +47,7 @@ public class DataSaver : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-    }
-    public void InitializeDataSaver()
-    {
+
         if (dts == null)
         {
             dts = new dataToSave(); // Initialisation de l'objet
@@ -68,6 +66,9 @@ public class DataSaver : MonoBehaviour
         {
             Debug.LogError($"Erreur lors de l'initialisation de Firebase : {ex.Message}");
         }
+    }
+    public void InitializeDataSaver()
+    {
 
         if (auth.CurrentUser != null)
         {

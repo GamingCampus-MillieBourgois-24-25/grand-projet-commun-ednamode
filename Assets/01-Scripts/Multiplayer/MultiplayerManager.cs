@@ -276,13 +276,14 @@ public class MultiplayerManager : NetworkBehaviour
                 return;
             }
 
-            
-
-            var playerName = "Joueur_" + UnityEngine.Random.Range(1000, 9999);
+            // Utilisation des données de DataSaver
+            string playerName = DataSaver.Instance.dts.userName;
+            string playerId = DataSaver.Instance.userId;
 
             var playerData = new Dictionary<string, PlayerDataObject>
             {
-                { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) }
+                { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                { "id", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerId) }
             };
 
             var createOptions = new CreateLobbyOptions
@@ -329,7 +330,6 @@ public class MultiplayerManager : NetworkBehaviour
         FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(CurrentLobby.LobbyCode);
         Debug.Log($"[LOBBY] Code d'invitation du lobby : {CurrentLobby.LobbyCode}");
         Debug.Log($"[RELAY] Code de Relay : {JoinCode}");
-
     }
 
     public async void JoinLobbyByCode(string code, MultiplayerUI multiplayerUI)
@@ -338,13 +338,18 @@ public class MultiplayerManager : NetworkBehaviour
 
         try
         {
+            // Utilisation des données de DataSaver
+            string playerName = DataSaver.Instance.dts.userName;
+            string playerId = DataSaver.Instance.userId;
+
             var joinOptions = new JoinLobbyByCodeOptions
             {
                 Player = new Unity.Services.Lobbies.Models.Player(
                     id: AuthenticationService.Instance.PlayerId,
                     data: new Dictionary<string, PlayerDataObject>
                     {
-                    { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "Client_" + UnityEngine.Random.Range(0, 9999)) }
+                        { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                        { "id", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerId) }
                     }
                 )
             };

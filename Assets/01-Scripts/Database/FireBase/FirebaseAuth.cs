@@ -347,6 +347,17 @@ public class FirebaseAuthManager : MonoBehaviour
             else
             {
                 Debug.Log("Inscription réussie. Bienvenue " + user.DisplayName);
+
+                // Initialisation des données dans DataSaver
+                DataSaver.Instance.dts.userName = name;
+                DataSaver.Instance.userId = user.UserId;
+                DataSaver.Instance.dts.totalCoins = 0; // Exemple : initialisation des pièces
+                DataSaver.Instance.dts.totalJewels = 0; // Exemple : initialisation des bijoux
+                DataSaver.Instance.dts.crrLevel = 1; // Exemple : niveau initial
+                DataSaver.Instance.dts.crrLevelProgress = 0;
+                DataSaver.Instance.dts.totalLevelProgress = 100; // Exemple : progression totale initiale
+                DataSaver.Instance.SaveDataFn(); // Sauvegarde des données dans Firebase
+
                 if (user.IsEmailVerified)
                 {
                     UIManagerLogin.Instance.OpenLoginPanel();
