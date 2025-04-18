@@ -31,6 +31,8 @@ public class CharacterParadeController : MonoBehaviour
     private bool isFinished = false;
     private bool isInitialized = false;
     private bool isPaused = false;
+    private string lastWalkDirection = "";
+    private bool wasMovingLastFrame = false;
 
     public GameObject CharacterInstance
     {
@@ -67,57 +69,91 @@ public class CharacterParadeController : MonoBehaviour
             customizationTimer += Time.deltaTime;
             if (customizationTimer >= customizationDelay)
             {
-                navAgent.Warp(pointA);
                 characterInstance.transform.position = pointA;
+                navAgent.Warp(pointA);
 
-                customizationCamera.enabled = false;
-                paradeCamera.enabled = true;
+                if (customizationCamera != null && paradeCamera != null)
+                {
+                    customizationCamera.enabled = false;
+                    paradeCamera.enabled = true;
+                }
 
                 hasStartedParade = true;
                 isMoving = true;
                 currentTargetIndex = 1;
-                MoveToNextPoint();
+                SetNextDestination();
             }
             return;
         }
 
-        if (isMoving && !navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
+        UpdateAnimations();
+
+        if (isMoving && !navAgent.pathPending)
         {
-            HandleDestinationReached();
+            float distanceToTarget = Vector3.Distance(characterInstance.transform.position, paradePoints[currentTargetIndex]);
+            Debug.Log($"[CharacterParadeController] Distance to target: {distanceToTarget}, Stopping Distance: {navAgent.stoppingDistance}, Remaining Distance: {navAgent.remainingDistance}");
+
+            if (distanceToTarget <= navAgent.stoppingDistance + 0.3f)
+            {
+                HandleDestinationReached();
+            }
         }
 
-        UpdateAnimations();
+        wasMovingLastFrame = isMoving;
     }
 
     private void InitializeCharacter()
     {
-        if (characterInstance == null) return;
+        if (characterInstance == null)
+        {
+            return;
+        }
 
         navAgent = characterInstance.GetComponent<NavMeshAgent>();
-        animator = characterInstance.GetComponent<Animator>();
-
-        if (navAgent != null && animator != null)
+        if (navAgent == null)
         {
-            isInitialized = true;
-            navAgent.updateRotation = true;
+            return;
+        }
+
+        animator = characterInstance.GetComponent<Animator>();
+        if (animator == null)
+        {
+            return;
+        }
+
+        navAgent.stoppingDistance = 0.1f;
+        isInitialized = true;
+    }
+
+    private void UpdateAnimations()
+    {
+        if (animator == null) return;
+
+        if (isMoving)
+        {
+            string newWalkDirection = "WalkForward";
+            animator.SetTrigger(newWalkDirection);
+            lastWalkDirection = newWalkDirection;
+        }
+
+        if (wasMovingLastFrame && !isMoving)
+        {
+            animator.SetTrigger("StopWalking");
+            lastWalkDirection = "";
         }
     }
 
-    private void MoveToNextPoint()
+    private void SetNextDestination()
     {
-        if (currentTargetIndex < paradePoints.Length)
-        {
-            Vector3 destination = paradePoints[currentTargetIndex];
-            navAgent.isStopped = false;
-            navAgent.SetDestination(destination);
-            isMoving = true;
-            Debug.Log($"Déplacement vers le point {currentTargetIndex}: {destination}");
-        }
+        if (isFinished) return;
+
+        navAgent.SetDestination(paradePoints[currentTargetIndex]);
+        Debug.Log($"[CharacterParadeController] Destination définie : {paradePoints[currentTargetIndex]}");
     }
 
     private void HandleDestinationReached()
     {
-        Debug.Log($"Point {currentTargetIndex} atteint.");
+        Debug.Log($"[CharacterParadeController] Destination atteinte : {paradePoints[currentTargetIndex]}");
 
         if (currentTargetIndex == 2)
         {
@@ -126,40 +162,31 @@ public class CharacterParadeController : MonoBehaviour
         else if (currentTargetIndex == 3)
         {
             isFinished = true;
-            isMoving = false;
             navAgent.isStopped = true;
-            animator.SetTrigger("StopWalking");
-            Debug.Log("Défilement terminé.");
+            navAgent.enabled = false;
         }
         else
         {
             currentTargetIndex++;
-            MoveToNextPoint();
+            SetNextDestination();
         }
     }
 
     private IEnumerator PauseAtPointC()
     {
-        Debug.Log("Pause au point C.");
         isMoving = false;
         isPaused = true;
         navAgent.isStopped = true;
+
         animator.SetTrigger("StopWalking");
 
         yield return new WaitForSeconds(pauseDurationAtC);
 
-        currentTargetIndex++;
-        isPaused = false;
+        currentTargetIndex = 3;
+        navAgent.isStopped = false;
         isMoving = true;
-        MoveToNextPoint();
-    }
-
-    private void UpdateAnimations()
-    {
-        if (animator == null) return;
-
-        bool isCurrentlyMoving = navAgent.velocity.magnitude > 0.1f && !navAgent.isStopped;
-        animator.SetBool("IsWalking", isCurrentlyMoving);
+        isPaused = false;
+        SetNextDestination();
     }
 
     public Vector3 GetCurrentPosition()
