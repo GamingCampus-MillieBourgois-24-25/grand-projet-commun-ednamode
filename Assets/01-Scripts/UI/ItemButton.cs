@@ -5,16 +5,19 @@ namespace CharacterCustomization
     public class ItemButton : ShopButton
     {
         private ShoppingScript shoppingScript;
+        private ItemEquipper itemEquipper;
         protected override void Start()
         {
             base.Start();
             shoppingScript = Object.FindFirstObjectByType<ShoppingScript>();
+            itemEquipper = Object.FindFirstObjectByType<ItemEquipper>();
             if (scriptable is Item item)
             {
                 category = item.category.ToString();
                 buttonImage.sprite = item.icon;
                 buttonText.text = item.price.ToString();
                 button.onClick.AddListener(() => shoppingScript.SetSelectedItemButton(this));
+                button.onClick.AddListener(() => itemEquipper.OnItemButtonClicked(item));
 
             }
             else
@@ -57,6 +60,11 @@ namespace CharacterCustomization
             }
             else
             {
+                if (buttonImage == null)
+                {
+                    Debug.LogError("Le composant Image n'a pas été trouvé !");
+                    return;
+                }
                 buttonImage.sprite = item.icon;
             }
 

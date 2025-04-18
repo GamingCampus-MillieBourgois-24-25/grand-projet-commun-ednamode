@@ -23,7 +23,7 @@ namespace CharacterCustomization
             chooseCamPoint = Object.FindFirstObjectByType<ChooseCamPoint>();
             itemSorter = Object.FindFirstObjectByType<ItemSorter>();
             button = GetComponent<UnityEngine.UI.Button>();
-            buttonImage = GetComponentInChildren<UnityEngine.UI.Image>();
+            buttonImage = GetComponent<UnityEngine.UI.Image>();
             buttonText = GetComponentInChildren<TextMeshProUGUI>();
 
             TabToCamType = new Dictionary<SlotType, ChooseCamPoint.CamPointType>
