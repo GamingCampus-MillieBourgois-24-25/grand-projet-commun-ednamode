@@ -70,7 +70,6 @@ public class MultiplayerManager : NetworkBehaviour
             await Task.Delay(100); // ⏱️ petite pause pour éviter un while infini en frame
         }
 
-
         // ⏳ Attendre qu'on soit bien serveur et que tout soit initialisé
         await Task.Delay(500);
 
@@ -169,6 +168,20 @@ public class MultiplayerManager : NetworkBehaviour
         }
 
     }
+
+    /// <summary>
+    /// Retourne le nom du joueur associé à son clientId, sinon \"Joueur {clientId}\".
+    /// </summary>
+    public string GetDisplayName(ulong clientId)
+    {
+        if (!SessionStore.Instance) return $"Joueur {clientId}";
+
+        string playerId = SessionStore.Instance.GetPlayerId(clientId);
+        string playerName = SessionStore.Instance.GetPlayerName(playerId);
+
+        return string.IsNullOrEmpty(playerName) ? $"Joueur {clientId}" : playerName;
+    }
+
 
     [ClientRpc]
     private void RefreshLobbyClientRpc()
@@ -530,18 +543,8 @@ public class MultiplayerManager : NetworkBehaviour
             if (IsHost())
             {
                 int selectedGameMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
-                GamePhaseManager.Instance?.StartCustomizationPhase(); // Début du flow logique
-                
-                /* string sceneToLoad = selectedGameMode switch
-                {
-                    0 => "Scene_PassMode",
-                    1 => "Scene_Sabotage",
-                    2 => "Lucie_BasicGameplay",
-                    _ => "Mato-Lobby_Horizontal"
-                };
+                GamePhaseTransitionController.Instance?.StartPhaseSequence();
 
-                NetworkManager.Singleton.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Single);
-            */
             }
         });
     }

@@ -6,6 +6,7 @@ namespace CharacterCustomization
     public class Item : ScriptableObject
     {
         private const string _path = "Resources/Items/";
+        public string itemId;
         public string itemName;
         public Sprite icon;
         public GameObject prefab;

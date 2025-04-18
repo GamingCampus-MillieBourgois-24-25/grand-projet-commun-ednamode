@@ -96,7 +96,7 @@ namespace CharacterCustomization
 
             if (IsEnabled && _prefabs.Length > 0)
             {
-                _currentInstance = Object.Instantiate(_prefabs[_selectedIndex]);
+                // _currentInstance = Object.Instantiate(_prefabs[_selectedIndex]);
             }
         }
     }
