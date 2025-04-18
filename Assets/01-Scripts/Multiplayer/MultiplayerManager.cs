@@ -174,6 +174,19 @@ public class MultiplayerManager : NetworkBehaviour
     /// </summary>
     public string GetDisplayName(ulong clientId)
     {
+        // Vérifie si DataSaver est initialisé et contient des données
+        if (DataSaver.Instance != null && DataSaver.Instance.dts != null)
+        {
+            string firebaseUserName = DataSaver.Instance.dts.userName;
+            string firebaseUserId = DataSaver.Instance.userId;
+
+            if (!string.IsNullOrEmpty(firebaseUserName) && !string.IsNullOrEmpty(firebaseUserId))
+            {
+                return string.IsNullOrEmpty(firebaseUserName) ? $"Joueur {firebaseUserId}" : firebaseUserName;
+            }
+        }
+
+        // Si DataSaver n'est pas disponible ou les données sont manquantes, utilise les données de SessionStore
         if (!SessionStore.Instance) return $"Joueur {clientId}";
 
         string playerId = SessionStore.Instance.GetPlayerId(clientId);
