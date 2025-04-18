@@ -31,7 +31,6 @@ public class CharacterParadeController : MonoBehaviour
     private bool isFinished = false;
     private bool isInitialized = false;
     private bool isPaused = false;
-    private bool wasMovingLastFrame = false;
 
     public GameObject CharacterInstance
     {
@@ -90,15 +89,13 @@ public class CharacterParadeController : MonoBehaviour
         if (isMoving && !navAgent.pathPending)
         {
             float distanceToTarget = Vector3.Distance(characterInstance.transform.position, paradePoints[currentTargetIndex]);
-            Debug.Log($"[CharacterParadeController] Distance to target: {distanceToTarget}, Stopping Distance: {navAgent.stoppingDistance}, Remaining Distance: {navAgent.remainingDistance}");
+            Debug.Log($"[CharacterParadeController] Distance to target: {distanceToTarget}, Stopping Distance: {navAgent.stoppingDistance}, Remaining Distance: {navAgent.remainingDistance}, isMoving: {isMoving}");
 
             if (distanceToTarget <= navAgent.stoppingDistance + 0.3f)
             {
                 HandleDestinationReached();
             }
         }
-
-        wasMovingLastFrame = isMoving;
     }
 
     private void InitializeCharacter()
@@ -129,6 +126,7 @@ public class CharacterParadeController : MonoBehaviour
         if (animator == null) return;
 
         animator.SetBool("IsWalking", isMoving);
+        Debug.Log($"[CharacterParadeController] IsWalking set to: {isMoving}, Animator IsWalking: {animator.GetBool("IsWalking")}");
     }
 
     private void SetNextDestination()
@@ -136,7 +134,8 @@ public class CharacterParadeController : MonoBehaviour
         if (isFinished) return;
 
         navAgent.SetDestination(paradePoints[currentTargetIndex]);
-        Debug.Log($"[CharacterParadeController] Destination définie : {paradePoints[currentTargetIndex]}");
+        isMoving = true;
+        Debug.Log($"[CharacterParadeController] Destination définie : {paradePoints[currentTargetIndex]}, isMoving: {isMoving}");
     }
 
     private void HandleDestinationReached()
@@ -150,6 +149,7 @@ public class CharacterParadeController : MonoBehaviour
         else if (currentTargetIndex == 3)
         {
             isFinished = true;
+            isMoving = false;
             navAgent.isStopped = true;
             navAgent.enabled = false;
         }
