@@ -82,7 +82,8 @@ public class RunwayUIManager : MonoBehaviour
         voteDuration = RunwayManager.Instance.GetRunwayDuration();
         hasVoted = false;
 
-        string displayName = MultiplayerNetwork.Instance.GetDisplayName(clientId);
+        // Récupération du displayName via MultiplayerManager, qui inclut les données Firebase
+        string displayName = MultiplayerManager.Instance.GetDisplayName(clientId);
         playerNameText.text = displayName;
 
         nameAnimator?.SetTrigger("Enter");

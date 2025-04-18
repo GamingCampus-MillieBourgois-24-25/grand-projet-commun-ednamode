@@ -179,11 +179,8 @@ public class MultiplayerManager : NetworkBehaviour
         {
             string firebaseUserName = DataSaver.Instance.dts.userName;
             string firebaseUserId = DataSaver.Instance.userId;
-
-            if (!string.IsNullOrEmpty(firebaseUserName) && !string.IsNullOrEmpty(firebaseUserId))
-            {
-                return string.IsNullOrEmpty(firebaseUserName) ? $"Joueur {firebaseUserId}" : firebaseUserName;
-            }
+            return string.IsNullOrEmpty(firebaseUserName) ? $"Joueur {firebaseUserId}" : firebaseUserName;
+            
         }
 
         // Si DataSaver n'est pas disponible ou les données sont manquantes, utilise les données de SessionStore
