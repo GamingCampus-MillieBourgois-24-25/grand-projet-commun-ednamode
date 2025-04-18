@@ -87,6 +87,15 @@ public class NetworkPlayerManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Retourne le joueur local
+    /// </summary>
+    public NetworkPlayer GetLocalPlayer()
+    {
+        return FindObjectsOfType<NetworkPlayer>().FirstOrDefault(p => p.IsOwner);
+    }
+
+
+    /// <summary>
     /// Retourne le Transform associé à un clientId donné
     /// </summary>
     public Transform GetSpawnPoint(ulong clientId)

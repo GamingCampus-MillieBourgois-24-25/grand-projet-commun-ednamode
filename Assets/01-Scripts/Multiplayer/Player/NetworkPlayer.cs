@@ -19,9 +19,20 @@ public class NetworkPlayer : NetworkBehaviour
     private CharacterController controller;
     private Camera localCamera;
 
+    public Camera GetLocalCamera() => localCamera;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+    }
+
+    private void Start()
+    {
+        if (IsOwner)
+        {
+            Debug.Log("🎮 Je suis le joueur local !");
+            CreateAndAttachLocalCamera();
+        }
     }
 
     public override void OnNetworkSpawn()
@@ -88,7 +99,6 @@ public class NetworkPlayer : NetworkBehaviour
 
         camObj.transform.SetParent(transform);
         camObj.transform.localPosition = cameraOffset;
-        camObj.transform.LookAt(transform.position + Vector3.up * 1.5f);
 
         Debug.Log("[NetworkPlayer] 🎥 Caméra locale créée pour ce joueur");
     }

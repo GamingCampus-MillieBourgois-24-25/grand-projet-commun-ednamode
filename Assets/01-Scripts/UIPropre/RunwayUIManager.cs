@@ -1,8 +1,9 @@
-﻿// 🎯 RunwayUIManager : gère l'affichage du panel pendant le défilé d'un joueur
+﻿// 🎯 RunwayUIManager : Gère l'affichage du panel pendant le défilé d'un joueur
 // - Nom du joueur avec animation d'entrée
 // - Système de vote dynamique selon le mode de jeu (étoiles, pouce haut/bas)
 // - Timer visuel (slider)
 // - Screenshot en popup à la fin du passage
+// - Animation des étoiles cliquées et inactives
 
 using UnityEngine;
 using TMPro;
@@ -34,15 +35,17 @@ public class RunwayUIManager : MonoBehaviour
     [Header("🌟 Étoiles (Mode DressToImpress)")]
     [SerializeField] private GameObject starVoteContainer;
     [SerializeField] private Button[] starButtons;
-    [SerializeField] private Animator[] starAnimators;
+    [SerializeField] private Color defaultStarColor = Color.yellow;
+    [SerializeField] private Color inactiveStarColor = Color.gray;
+    [SerializeField] private float inactiveStarScale = 0.75f;
 
     [Header("👍👎 Boutons (Mode Impostor)")]
     [SerializeField] private GameObject thumbsVoteContainer;
     [SerializeField] private Button thumbsUpButton;
     [SerializeField] private Button thumbsDownButton;
 
-    [Header("📷 Screenshot")]
-    [SerializeField] private GameObject screenshotPopup;
+    // [Header("📷 Screenshot")]
+    // [SerializeField] private GameObject screenshotPopup;
 
     private ulong currentTargetClientId;
     private float voteDuration;
@@ -65,16 +68,13 @@ public class RunwayUIManager : MonoBehaviour
         starVoteContainer?.SetActive(false);
         thumbsVoteContainer?.SetActive(false);
         runwayPanel?.SetActive(false);
-        screenshotPopup?.SetActive(false);
+        // screenshotPopup?.SetActive(false);
     }
 
     #endregion
 
     #region 🚀 Public API
 
-    /// <summary>
-    /// Déclenché par le serveur via ClientRpc : lance le panneau et le vote.
-    /// </summary>
     public void ShowCurrentRunwayPlayer(ulong clientId)
     {
         runwayPanel.SetActive(true);
@@ -96,7 +96,7 @@ public class RunwayUIManager : MonoBehaviour
     public void HideRunwayPanel()
     {
         runwayPanel.SetActive(false);
-        screenshotPopup?.SetActive(false);
+        // screenshotPopup?.SetActive(false);
     }
 
     #endregion
@@ -115,7 +115,7 @@ public class RunwayUIManager : MonoBehaviour
         }
 
         timerSlider.value = 0f;
-        TriggerScreenshotPopup();
+         // TriggerScreenshotPopup();
     }
 
     #endregion
@@ -127,18 +127,23 @@ public class RunwayUIManager : MonoBehaviour
         starVoteContainer.SetActive(false);
         thumbsVoteContainer.SetActive(false);
 
-        var mode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
+        int mode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
+
         if (mode == 0) // Dress To Impress
         {
             starVoteContainer.SetActive(true);
+            ResetStarsToImpulse();
+
             for (int i = 0; i < starButtons.Length; i++)
             {
                 int vote = i + 1;
+                int index = i;
+
                 starButtons[i].onClick.RemoveAllListeners();
                 starButtons[i].onClick.AddListener(() => SubmitStarVote(vote));
             }
         }
-        else if (mode == 1) // Impostor Mode
+        else if (mode == 2) // Impostor Mode
         {
             thumbsVoteContainer.SetActive(true);
             thumbsUpButton.onClick.RemoveAllListeners();
@@ -153,14 +158,42 @@ public class RunwayUIManager : MonoBehaviour
         if (hasVoted) return;
         hasVoted = true;
 
-        for (int i = 0; i < starAnimators.Length; i++)
+        for (int i = 0; i < starButtons.Length; i++)
         {
+            Image img = starButtons[i].GetComponent<Image>();
+            DOTween.Kill("StarPulse" + i);
+
             if (i < stars)
-                starAnimators[i].SetTrigger("Vote");
+            {
+                img.color = defaultStarColor;
+                img.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack);
+            }
+            else
+            {
+                img.color = inactiveStarColor;
+                img.transform.DOScale(inactiveStarScale, 0.2f).SetEase(Ease.InOutQuad);
+            }
         }
 
         VotingManager.Instance.SubmitVote_ServerRpc(currentTargetClientId, stars);
     }
+
+    private void ResetStarsToImpulse()
+    {
+        for (int i = 0; i < starButtons.Length; i++)
+        {
+            var image = starButtons[i].GetComponent<Image>();
+            image.color = defaultStarColor;
+            starButtons[i].transform.localScale = Vector3.one;
+            starButtons[i].transform.DOPunchScale(Vector3.one * 0.2f, 0.5f, 2, 0.5f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetId("StarPulse" + i);
+        }
+    }
+
+    #endregion
+
+    #region 👍👎 Mode Impostor
 
     private void SubmitBinaryVote(bool isInTheme)
     {
@@ -173,7 +206,7 @@ public class RunwayUIManager : MonoBehaviour
 
     #endregion
 
-    #region 📸 Screenshot
+/*    #region 📸 Screenshot
 
     private void TriggerScreenshotPopup()
     {
@@ -194,4 +227,5 @@ public class RunwayUIManager : MonoBehaviour
     }
 
     #endregion
+*/
 }

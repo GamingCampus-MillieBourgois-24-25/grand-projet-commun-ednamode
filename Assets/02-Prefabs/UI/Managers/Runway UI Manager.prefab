@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3625383955
+  GlobalObjectIdHash: 3843173778
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -77,12 +77,18 @@ MonoBehaviour:
   nameAnimator: {fileID: 0}
   timerSlider: {fileID: 0}
   starVoteContainer: {fileID: 0}
-  starButtons: []
-  starAnimators: []
+  starButtons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  defaultStarColor: {r: 0.8862745, g: 0.8862745, b: 0.8862745, a: 1}
+  inactiveStarColor: {r: 0.14150941, g: 0.14150941, b: 0.14150941, a: 1}
+  inactiveStarScale: 0.75
   thumbsVoteContainer: {fileID: 0}
   thumbsUpButton: {fileID: 0}
   thumbsDownButton: {fileID: 0}
-  screenshotPopup: {fileID: 0}
 --- !u!114 &2897648513508716860
 MonoBehaviour:
   m_ObjectHideFlags: 0
