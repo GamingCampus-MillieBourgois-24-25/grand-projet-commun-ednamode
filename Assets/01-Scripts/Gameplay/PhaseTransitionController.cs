@@ -1,18 +1,21 @@
-﻿using UnityEngine;
+﻿using System.Collections;
 using Unity.Netcode;
-using System.Collections;
-using System.Collections.Generic;
+using CharacterCustomization;
+
+using UnityEngine;
+using System.Linq;
 
 /// <summary>
-/// Gère les transitions UI pour toutes les phases de jeu, de façon synchrone entre clients et host.
-/// Utilise les mappings dynamiques provenant de GamePhaseManager.
+/// Contrôleur des transitions synchronisées entre les phases du jeu (host -> clients).
 /// </summary>
 public class GamePhaseTransitionController : NetworkBehaviour
 {
     public static GamePhaseTransitionController Instance { get; private set; }
 
-    private GamePhaseManager _phaseManager;
+    [Tooltip("Délai entre chaque grande phase (en secondes)")]
     [SerializeField] private float delayBetweenPhases = 3f;
+
+    private GamePhaseManager _phaseManager;
 
     private void Awake()
     {
@@ -31,12 +34,45 @@ public class GamePhaseTransitionController : NetworkBehaviour
             Debug.LogError("[GamePhaseTransition] Aucun GamePhaseManager trouvé dans la scène.");
     }
 
-    public void SetPhase(GamePhaseManager.GamePhase newPhase)
+    /// <summary>
+    /// Débute la séquence de phases de jeu. S'exécute côté serveur uniquement.
+    /// </summary>
+    public void StartPhaseSequence()
     {
         if (!IsServer) return;
+        StartCoroutine(PhaseSequenceCoroutine());
+    }
 
+    private IEnumerator PhaseSequenceCoroutine()
+    {
+        SetPhase(GamePhaseManager.GamePhase.Customization);
+        yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
+
+        SetPhase(GamePhaseManager.GamePhase.RunwayVoting);
+
+        // 🔁 Appliquer les visuels pour tous les joueurs avant les votes/défilés
+        ApplyAllPlayersVisualsClientRpc();
+        yield return new WaitForSeconds(1f);
+
+        var players = NetworkManager.Singleton.ConnectedClientsList.Select(c => c.PlayerObject.GetComponent<PlayerCustomizationData>()).ToList();
+        foreach (var player in players)
+        {
+            ShowRunwayForClientRpc(player.OwnerClientId);
+            yield return new WaitForSeconds(_phaseManager.RunwayVotingPerPlayerDuration);
+        }
+
+        yield return new WaitForSeconds(delayBetweenPhases);
+
+        SetPhase(GamePhaseManager.GamePhase.Podium);
+        yield return new WaitForSeconds(_phaseManager.PodiumDuration);
+
+        SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
+    }
+
+    private void SetPhase(GamePhaseManager.GamePhase newPhase)
+    {
+        if (!IsServer) return;
         SyncPhaseClientRpc((int)newPhase);
-        ApplyPhaseLocally(newPhase);
         _phaseManager.CurrentPhase.Value = newPhase;
     }
 
@@ -46,6 +82,9 @@ public class GamePhaseTransitionController : NetworkBehaviour
         ApplyPhaseLocally((GamePhaseManager.GamePhase)phaseValue);
     }
 
+    /// <summary>
+    /// Affiche localement le panel correspondant à la phase.
+    /// </summary>
     private void ApplyPhaseLocally(GamePhaseManager.GamePhase phase)
     {
         if (_phaseManager == null) return;
@@ -66,16 +105,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
                 toHide = mapping.customizationPanelToHide;
                 toShow = mapping.customizationPanel;
                 break;
-            case GamePhaseManager.GamePhase.Runway:
+            case GamePhaseManager.GamePhase.RunwayVoting:
                 toHide = mapping.runwayPanelToHide;
                 toShow = mapping.runwayPanel;
                 break;
-            case GamePhaseManager.GamePhase.Voting:
-                toHide = mapping.votingPanelToHide;
-                toShow = mapping.votingPanel;
-                break;
             case GamePhaseManager.GamePhase.Podium:
-                toHide = mapping.votingPanelToHide; // depuis vote vers podium
+                toHide = mapping.podiumPanelToHide;
                 toShow = mapping.podiumPanel;
                 break;
             case GamePhaseManager.GamePhase.ReturnToLobby:
@@ -92,29 +127,23 @@ public class GamePhaseTransitionController : NetworkBehaviour
             UIManager.Instance.ShowPanelDirect(toShow);
     }
 
-    /// <summary>
-    /// Enchaîne automatiquement toutes les phases du jeu dans l'ordre.
-    /// </summary>
-    public void StartPhaseSequence()
+    [ClientRpc]
+    private void ApplyAllPlayersVisualsClientRpc()
     {
-        if (!IsServer) return;
-        StartCoroutine(PhaseSequenceCoroutine());
+        var allItems = Resources.LoadAll<Item>("Items").ToList();
+        var allPlayers = FindObjectsOfType<PlayerCustomizationData>();
+
+        foreach (var playerData in allPlayers)
+        {
+            var visuals = playerData.GetComponentInChildren<EquippedVisualsHandler>(true);
+            if (visuals != null)
+                playerData.ApplyToVisuals(visuals, allItems);
+        }
     }
 
-    private IEnumerator PhaseSequenceCoroutine()
+    [ClientRpc]
+    private void ShowRunwayForClientRpc(ulong playerClientId)
     {
-        SetPhase(GamePhaseManager.GamePhase.Customization);
-        yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
-
-        SetPhase(GamePhaseManager.GamePhase.Runway);
-        yield return new WaitForSeconds(delayBetweenPhases);
-
-        SetPhase(GamePhaseManager.GamePhase.Voting);
-        yield return new WaitForSeconds(delayBetweenPhases);
-
-        SetPhase(GamePhaseManager.GamePhase.Podium);
-        yield return new WaitForSeconds(delayBetweenPhases);
-
-        SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
+        RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(playerClientId);
     }
 }
