@@ -7,17 +7,17 @@ namespace CharacterCustomization
     public class TagFilterUI : MonoBehaviour
     {
         [Header("UI Elements")]
-        public Button filterButton;           // Bouton pour ouvrir le panneau de tags
-        public GameObject tagPanel;          // Panneau contenant les tags
-        public GameObject tagTogglePrefab;   // Prefab d’un toggle pour chaque tag
-        public Transform tagContent;         // Conteneur pour les toggles dans le panneau
+        public Button filterButton;
+        public GameObject tagPanel;       
+        public GameObject tagTogglePrefab;   
+        public Transform tagContent;         
 
         [Header("References")]
-        public CustomizableCharacterUI characterUI; // Référence à CustomizableCharacterUI
+        public CustomizableCharacterUI characterUI; 
 
-        private List<string> allTags = new List<string>(); // Liste de tous les tags possibles
-        private List<string> selectedTags = new List<string>(); // Tags actuellement sélectionnés
-        private bool _isUpdatingToggles = false; // Pour éviter les boucles
+        private List<string> allTags = new List<string>(); 
+        private List<string> selectedTags = new List<string>(); 
+        private bool _isUpdatingToggles = false; 
 
         private void Start()
         {
@@ -35,7 +35,6 @@ namespace CharacterCustomization
         {
             HashSet<string> uniqueTags = new HashSet<string>();
 
-            // Récupérer les tags directement depuis les Items dans SlotLibrary
             if (characterUI != null && characterUI.slotLibrary != null)
             {
                 foreach (var slotEntry in characterUI.slotLibrary.Slots)
@@ -55,15 +54,10 @@ namespace CharacterCustomization
                     }
                 }
             }
-            else
-            {
-                Debug.LogWarning("characterUI ou slotLibrary est null lors de PopulateTagList !");
-            }
+          
 
             allTags = new List<string>(uniqueTags);
-            Debug.Log($"Tags trouvés : {string.Join(", ", allTags)}");
 
-            // Créer les toggles pour chaque tag
             foreach (var tag in allTags)
             {
                 GameObject toggleObj = Instantiate(tagTogglePrefab, tagContent);
@@ -77,13 +71,12 @@ namespace CharacterCustomization
                     }
                     toggle.onValueChanged.AddListener((isOn) =>
                     {
-                        if (_isUpdatingToggles) return; // Éviter les appels pendant la mise à jour
+                        if (_isUpdatingToggles) return; 
                         OnTagToggleChanged(tag, isOn);
                     });
                 }
             }
 
-            // Réinitialiser les toggles sans déclencher d'événements
             ClearFilters();
         }
 
@@ -109,7 +102,6 @@ namespace CharacterCustomization
                 selectedTags.Remove(tag);
             }
 
-            Debug.Log($"Tag {tag} {(isOn ? "sélectionné" : "désélectionné")}. Tags sélectionnés : {string.Join(", ", selectedTags)}");
 
             if (characterUI != null)
             {
@@ -119,7 +111,7 @@ namespace CharacterCustomization
 
         public void ClearFilters()
         {
-            _isUpdatingToggles = true; // Empêcher les appels à OnTagToggleChanged
+            _isUpdatingToggles = true; 
             selectedTags.Clear();
             if (tagContent != null)
             {
@@ -130,7 +122,6 @@ namespace CharacterCustomization
             }
             _isUpdatingToggles = false;
 
-            Debug.Log("Filtres réinitialisés.");
             if (characterUI != null)
             {
                 characterUI.ApplyTagFilter(selectedTags);

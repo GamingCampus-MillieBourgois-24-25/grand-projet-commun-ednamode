@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.AI;
+using Unity.Netcode;
 using System.Collections;
 
-public class CharacterParadeController : MonoBehaviour
+public class CharacterParadeController : NetworkBehaviour
 {
     [Header("Référence au personnage (assignée dynamiquement)")]
     [SerializeField] private GameObject characterInstance;
@@ -14,23 +15,16 @@ public class CharacterParadeController : MonoBehaviour
     public Vector3 pointD = new Vector3(-49f, 2.15f, 116.18f);
 
     [Header("Paramètres de défilement")]
-    public float customizationDelay = 10f;
-    public float pauseDurationAtC = 5f;
-
-    [Header("Caméras")]
-    [SerializeField] private Camera customizationCamera;
-    [SerializeField] private Camera paradeCamera;
+    [SerializeField] private float pauseDurationAtC = 2f;
+    [SerializeField] private float navAgentSpeed = 3.5f;
 
     private NavMeshAgent navAgent;
     private Animator animator;
-    private float customizationTimer = 0f;
-    private bool hasStartedParade = false;
-    private int currentTargetIndex = 0;
     private Vector3[] paradePoints;
-    private bool isMoving = false;
-    private bool isFinished = false;
-    private bool isInitialized = false;
+    private int currentTargetIndex = 0;
+    private bool isParadeActive = false;
     private bool isPaused = false;
+    private bool isFinished = false;
 
     public GameObject CharacterInstance
     {
@@ -38,150 +32,230 @@ public class CharacterParadeController : MonoBehaviour
         set
         {
             characterInstance = value;
+            Debug.Log($"[CharacterParadeController] CharacterInstance assigné : {(characterInstance != null ? characterInstance.name : "null")}");
             InitializeCharacter();
         }
     }
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
+        Debug.Log($"[CharacterParadeController] OnNetworkSpawn appelé, IsOwner={IsOwner}, OwnerClientId={OwnerClientId}");
         paradePoints = new Vector3[] { pointA, pointB, pointC, pointD };
-
-        if (customizationCamera != null && paradeCamera != null)
-        {
-            customizationCamera.enabled = true;
-            paradeCamera.enabled = false;
-        }
-
         if (characterInstance != null)
         {
+            Debug.Log($"[CharacterParadeController] characterInstance déjà assigné dans OnNetworkSpawn : {characterInstance.name}");
             InitializeCharacter();
         }
-    }
-
-    void Update()
-    {
-        if (!isInitialized || isFinished || navAgent == null) return;
-
-        if (!hasStartedParade)
+        else
         {
-            customizationTimer += Time.deltaTime;
-            if (customizationTimer >= customizationDelay)
+            Debug.LogWarning("[CharacterParadeController] characterInstance non assigné dans OnNetworkSpawn, tentative de récupération...");
+            // Tentative de récupération du NetworkObject du joueur
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.ConnectedClients.ContainsKey(OwnerClientId))
             {
-                characterInstance.transform.position = pointA;
-                navAgent.Warp(pointA);
-
-                if (customizationCamera != null && paradeCamera != null)
+                var playerObject = NetworkManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject;
+                if (playerObject != null)
                 {
-                    customizationCamera.enabled = false;
-                    paradeCamera.enabled = true;
+                    characterInstance = playerObject.gameObject;
+                    Debug.Log($"[CharacterParadeController] characterInstance récupéré via NetworkObject : {characterInstance.name}");
+                    InitializeCharacter();
                 }
-
-                hasStartedParade = true;
-                isMoving = true;
-                currentTargetIndex = 1;
-                SetNextDestination();
-            }
-            return;
-        }
-
-        UpdateAnimations();
-
-        if (isMoving && !navAgent.pathPending)
-        {
-            float distanceToTarget = Vector3.Distance(characterInstance.transform.position, paradePoints[currentTargetIndex]);
-            Debug.Log($"[CharacterParadeController] Distance to target: {distanceToTarget}, Stopping Distance: {navAgent.stoppingDistance}, Remaining Distance: {navAgent.remainingDistance}, isMoving: {isMoving}");
-
-            if (distanceToTarget <= navAgent.stoppingDistance + 0.3f)
-            {
-                HandleDestinationReached();
             }
         }
     }
 
     private void InitializeCharacter()
     {
+        Debug.Log("[CharacterParadeController] InitializeCharacter appelé");
         if (characterInstance == null)
         {
+            Debug.LogError("[CharacterParadeController] characterInstance est null");
             return;
         }
 
         navAgent = characterInstance.GetComponent<NavMeshAgent>();
         if (navAgent == null)
         {
+            Debug.LogError("[CharacterParadeController] NavMeshAgent non trouvé sur characterInstance");
             return;
         }
+        navAgent.speed = navAgentSpeed;
+        navAgent.stoppingDistance = 0.1f;
+        Debug.Log($"[CharacterParadeController] NavMeshAgent trouvé, speed={navAgent.speed}, stoppingDistance={navAgent.stoppingDistance}");
 
         animator = characterInstance.GetComponent<Animator>();
         if (animator == null)
         {
+            Debug.LogError("[CharacterParadeController] Animator non trouvé sur characterInstance");
+            return;
+        }
+        Debug.Log("[CharacterParadeController] Animator trouvé");
+    }
+
+    private void Update()
+    {
+        if (!IsOwner || !isParadeActive || isFinished || navAgent == null || animator == null)
+        {
             return;
         }
 
-        navAgent.stoppingDistance = 0.1f;
-        isInitialized = true;
+        UpdateAnimations();
+
+        if (!isPaused && !navAgent.pathPending)
+        {
+            float distanceToTarget = Vector3.Distance(characterInstance.transform.position, paradePoints[currentTargetIndex]);
+            Debug.Log($"[CharacterParadeController] Déplacement vers cible {currentTargetIndex} ({paradePoints[currentTargetIndex]}), Distance={distanceToTarget:F3}, StoppingDistance={navAgent.stoppingDistance}, RemainingDistance={navAgent.remainingDistance:F3}");
+
+            if (distanceToTarget <= navAgent.stoppingDistance + 0.3f)
+            {
+                Debug.Log($"[CharacterParadeController] Cible atteinte (distance={distanceToTarget:F3} <= {navAgent.stoppingDistance + 0.3f})");
+                HandleDestinationReached();
+            }
+        }
     }
 
     private void UpdateAnimations()
     {
-        if (animator == null) return;
+        bool isMoving = navAgent.velocity.magnitude > 0.1f && !isPaused;
+        bool currentIsWalking = animator.GetBool("IsWalking");
+        if (currentIsWalking != isMoving)
+        {
+            animator.SetBool("IsWalking", isMoving);
+            Debug.Log($"[CharacterParadeController] IsWalking changé à {isMoving}");
+        }
 
-        animator.SetBool("IsWalking", isMoving);
-        Debug.Log($"[CharacterParadeController] IsWalking set to: {isMoving}, Animator IsWalking: {animator.GetBool("IsWalking")}");
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        string clipName = "Inconnu";
+        foreach (AnimationClip clip in animator.runtimeAnimatorController.animationClips)
+        {
+            if (stateInfo.IsName(clip.name))
+            {
+                clipName = clip.name;
+                break;
+            }
+        }
+        Debug.Log($"[CharacterParadeController] État Animator : Clip={clipName}, NormalizedTime={stateInfo.normalizedTime:F3}, Speed={stateInfo.speed:F3}, IsWalking={currentIsWalking}");
+    }
+
+    [ClientRpc]
+    public void StartParadeClientRpc()
+    {
+        Debug.Log($"[CharacterParadeController] StartParadeClientRpc appelé, IsOwner={IsOwner}, characterInstance={(characterInstance != null ? characterInstance.name : "null")}, navAgent={(navAgent != null ? "présent" : "null")}");
+        if (!IsOwner)
+        {
+            Debug.Log("[CharacterParadeController] StartParadeClientRpc ignoré : non-owner");
+            return;
+        }
+
+        if (characterInstance == null || navAgent == null)
+        {
+            Debug.LogError("[CharacterParadeController] Impossible de démarrer le défilé : characterInstance ou navAgent est null");
+            return;
+        }
+
+        Debug.Log("[CharacterParadeController] Début du défilé pour ce client");
+        isParadeActive = true;
+        isFinished = false;
+        currentTargetIndex = 0;
+
+        navAgent.Warp(pointA);
+        Debug.Log($"[CharacterParadeController] Téléportation à pointA={pointA}");
+        navAgent.isStopped = false;
+        SetNextDestination();
+    }
+
+    [ClientRpc]
+    public void StopParadeClientRpc()
+    {
+        Debug.Log($"[CharacterParadeController] StopParadeClientRpc appelé, IsOwner={IsOwner}");
+        if (!IsOwner)
+        {
+            Debug.Log("[CharacterParadeController] StopParadeClientRpc ignoré : non-owner");
+            return;
+        }
+
+        Debug.Log("[CharacterParadeController] Fin du défilé pour ce client");
+        isParadeActive = false;
+        isFinished = true;
+        if (navAgent != null)
+        {
+            navAgent.isStopped = true;
+        }
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", false);
+        }
     }
 
     private void SetNextDestination()
     {
-        if (isFinished) return;
+        if (isFinished || !isParadeActive)
+        {
+            Debug.Log("[CharacterParadeController] SetNextDestination ignoré : parade terminée ou inactive");
+            return;
+        }
 
+        currentTargetIndex++;
+        if (currentTargetIndex >= paradePoints.Length)
+        {
+            Debug.Log("[CharacterParadeController] Dernier point atteint, fin du défilé");
+            isFinished = true;
+            navAgent.isStopped = true;
+            animator.SetBool("IsWalking", false);
+            return;
+        }
+
+        Debug.Log($"[CharacterParadeController] Définition de la destination {currentTargetIndex} : {paradePoints[currentTargetIndex]}");
         navAgent.SetDestination(paradePoints[currentTargetIndex]);
-        isMoving = true;
-        Debug.Log($"[CharacterParadeController] Destination définie : {paradePoints[currentTargetIndex]}, isMoving: {isMoving}");
     }
 
     private void HandleDestinationReached()
     {
-        Debug.Log($"[CharacterParadeController] Destination atteinte : {paradePoints[currentTargetIndex]}");
+        Debug.Log($"[CharacterParadeController] Destination atteinte : {paradePoints[currentTargetIndex]}, index={currentTargetIndex}");
 
-        if (currentTargetIndex == 2)
+        if (currentTargetIndex == 2) // Point C
         {
+            Debug.Log("[CharacterParadeController] Point C atteint, démarrage de la pause");
             StartCoroutine(PauseAtPointC());
         }
-        else if (currentTargetIndex == 3)
+        else if (currentTargetIndex == 3) // Point D
         {
+            Debug.Log("[CharacterParadeController] Point D atteint, fin du défilé");
             isFinished = true;
-            isMoving = false;
             navAgent.isStopped = true;
-            navAgent.enabled = false;
+            animator.SetBool("IsWalking", false);
         }
         else
         {
-            currentTargetIndex++;
             SetNextDestination();
         }
     }
 
     private IEnumerator PauseAtPointC()
     {
-        isMoving = false;
+        Debug.Log($"[CharacterParadeController] Début de la pause à C, isPaused={isPaused}");
         isPaused = true;
         navAgent.isStopped = true;
+        animator.SetBool("IsWalking", false);
+        Debug.Log($"[CharacterParadeController] Pause à C : isPaused={isPaused}, navAgent arrêté={navAgent.isStopped}");
 
         yield return new WaitForSeconds(pauseDurationAtC);
 
-        currentTargetIndex = 3;
-        navAgent.isStopped = false;
-        isMoving = true;
+        Debug.Log("[CharacterParadeController] Fin de la pause à C");
         isPaused = false;
+        navAgent.isStopped = false;
         SetNextDestination();
     }
 
     public Vector3 GetCurrentPosition()
     {
-        return characterInstance != null ? characterInstance.transform.position : Vector3.zero;
+        Vector3 position = characterInstance != null ? characterInstance.transform.position : Vector3.zero;
+        Debug.Log($"[CharacterParadeController] GetCurrentPosition : {position}");
+        return position;
     }
 
     public bool IsFinished()
     {
+        Debug.Log($"[CharacterParadeController] IsFinished : {isFinished}");
         return isFinished;
     }
 }
