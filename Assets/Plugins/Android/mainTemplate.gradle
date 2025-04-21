@@ -31,6 +31,7 @@ dependencies {
 
     // Résolution dynamique
 // Android Resolver Dependencies Start
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.1.0' // Assets/LevelPlay/Editor/IronSourceSDKDependencies.xml:12
     implementation 'com.google.android.gms:play-services-base:18.6.0' // Assets/Firebase/Editor/DatabaseDependencies.xml:17
     implementation 'com.google.firebase:firebase-analytics:22.4.0' // Assets/Firebase/Editor/RemoteConfigDependencies.xml:15
     implementation 'com.google.firebase:firebase-app-unity:12.8.0' // Assets/Firebase/Editor/AppDependencies.xml:22
@@ -41,6 +42,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-config-unity:12.8.0' // Assets/Firebase/Editor/RemoteConfigDependencies.xml:20
     implementation 'com.google.firebase:firebase-database:21.0.0' // Assets/Firebase/Editor/DatabaseDependencies.xml:13
     implementation 'com.google.firebase:firebase-database-unity:12.8.0' // Assets/Firebase/Editor/DatabaseDependencies.xml:22
+    implementation 'com.unity3d.ads:unity-ads:4.14.2' // Assets/LevelPlay/Editor/ISUnityAdsAdapterDependencies.xml:12
+    implementation 'com.unity3d.ads-mediation:mediation-sdk:8.8.0' // Assets/LevelPlay/Editor/IronSourceSDKDependencies.xml:5
+    implementation 'com.unity3d.ads-mediation:unityads-adapter:4.3.54' // Assets/LevelPlay/Editor/ISUnityAdsAdapterDependencies.xml:5
 // Android Resolver Dependencies End
     **DEPS**
 }

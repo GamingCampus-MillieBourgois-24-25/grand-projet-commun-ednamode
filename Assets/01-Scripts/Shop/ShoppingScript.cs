@@ -37,7 +37,7 @@ public class ShoppingScript : MonoBehaviour
             removeCurrency(price);
 
             // Ajout de l'item � la liste des v�tements d�bloqu�s
-            _dataSaver.dts.unlockedClothes.Add(selectedItem.itemName);
+            _dataSaver.AddItem(selectedItem);
 
             Debug.Log($"Item ajout� : {selectedItem.itemName}");
         }

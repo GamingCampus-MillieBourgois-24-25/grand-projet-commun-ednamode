@@ -64,7 +64,7 @@ public class OfferButton : MonoBehaviour
     {
         if (offer is ConvertCurrencyOffer convertCurrencyOffer)
         {
-            if (dataSaver.GetJewels() >= jewelsToSpend)
+            if (dataSaver.dts.totalJewels >= jewelsToSpend)
             {
                 dataSaver.addCoins(coinsToObtain);
                 dataSaver.removeJewels(jewelsToSpend);

@@ -7,6 +7,8 @@ using Firebase.Auth;
 using TMPro;
 using UnityEditor;
 using Firebase; // Import n�cessaire pour TextMeshPro
+using CharacterCustomization; // Ajout de l'espace de noms correct
+
 
 public class DataSaver : MonoBehaviour
 {
@@ -220,35 +222,23 @@ public class DataSaver : MonoBehaviour
     {
         LoadDataFn();
     }
-    public void AddItem(Item item)
-    {
-        dts.ownedItems.Add(item);
-        SaveDataFn();
-    }
-    public List<Item> GetItems()
-    {
-        return dts.ownedItems;
-
 
     #region Clothing Management
-    public void UnlockClothingItem(string itemId)
+    public void AddItem(Item item)
     {
-        if (!dts.unlockedClothes.Contains(itemId))
-        {
-            dts.unlockedClothes.Add(itemId);
-            SaveDataFn();
-            Debug.Log($"Item d�bloqu� : {itemId}");
-        }
-        else
-        {
-            Debug.Log($"Item d�j� d�bloqu� : {itemId}");
-        }
+        dts.unlockedClothes.Add(item);
+        SaveDataFn();
+    }
+
+    public List<Item> GetItems()
+    {
+        return dts.unlockedClothes;
     }
     #endregion
-    public bool IsItemUnlocked(string itemId)
+    /*public bool IsItemUnlocked(string itemId)
     {
         return dts.unlockedClothes.Contains(itemId);
-    }
+    }*/
     #endregion
 }
 
@@ -261,7 +251,7 @@ public class dataToSave
     public int crrLevel;
     public int crrLevelProgress;
     public int totalLevelProgress;
-    public List<string> unlockedClothes = new List<string>();
+    public List<Item> unlockedClothes = new List<Item>(); // Remplacement par une liste d'Item
 }
 
 

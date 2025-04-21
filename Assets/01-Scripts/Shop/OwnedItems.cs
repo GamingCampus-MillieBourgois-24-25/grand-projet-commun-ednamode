@@ -12,7 +12,7 @@ public class OwnedItems : MonoBehaviour
     {
         dataSaver = DataSaver.Instance;
         ownedItems = new List<Item>();
-        ownedItems = dataSaver.dts.ownedItems;
+        ownedItems = dataSaver.dts.unlockedClothes;
         Debug.Log($"Owned items count: {ownedItems.Count}");
         LoadOwnedItems();
     }
