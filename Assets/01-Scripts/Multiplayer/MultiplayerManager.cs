@@ -480,12 +480,6 @@ public class MultiplayerManager : NetworkBehaviour
         if (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost)
         {
             SubmitReadyServerRpc(isReady);
-            PlayerListUI ui = FindFirstObjectByType<PlayerListUI>();
-            if (ui != null)
-            {
-                string playerId = AuthenticationService.Instance.PlayerId;
-                ui.MarkPlayerReady(playerId, isReady);
-            }
         }
     }
 
@@ -516,8 +510,6 @@ public class MultiplayerManager : NetworkBehaviour
             Debug.Log($"[ServerRpc] Pas tous les joueurs prêts. {GetReadyCount()}/{playerReadyStates.Count} prêts.");
             UIManager.Instance?.CancelCountdown();
         }
-        UpdateReadyVisualClientRpc(playerId, isReady);
-
     }
 
     [ClientRpc]

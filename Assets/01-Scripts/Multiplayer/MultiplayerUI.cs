@@ -69,6 +69,8 @@ public class MultiplayerUI : MonoBehaviour
 
         buttonCreate.interactable = false;
         buttonJoin.interactable = false;
+
+        buttonReady.interactable = false;
     }
 
     private void Start()
@@ -86,7 +88,13 @@ public class MultiplayerUI : MonoBehaviour
             });
         }
 
-        UpdateHostUI();
+        if (MultiplayerNetwork.Instance != null)
+        {
+            MultiplayerNetwork.Instance.SelectedGameMode.OnValueChanged += (_, _) =>
+            {
+                UpdateReadyButtonUI(); // 👈 met à jour l'interactabilité en live
+            };
+        }
 
         buttonReady.onClick.AddListener(() =>
         {
@@ -369,6 +377,9 @@ public class MultiplayerUI : MonoBehaviour
         colors.pressedColor = targetColor * 0.8f;
         colors.selectedColor = targetColor;
         buttonReady.colors = colors;
+
+        // ✅ Ne pas autoriser Ready si aucun mode sélectionné
+        buttonReady.interactable = MultiplayerNetwork.Instance.SelectedGameMode.Value != -1;
     }
 
     public void UpdateHostUI()
@@ -395,15 +406,16 @@ public class MultiplayerUI : MonoBehaviour
             var btn = gameModeButtons[i];
             if (btn == null) continue;
 
-            // Cible l'image du GameObject parent (Game 1 Button)
             Image backgroundImage = btn.GetComponent<Image>();
             if (backgroundImage == null) continue;
 
-            // Garde la couleur (r, g, b) intacte, modifie seulement l'alpha
             Color color = backgroundImage.color;
             color.a = (i == selectedIndex) ? 1f : 0.1f;
             backgroundImage.color = color;
         }
+
+        // 👇 Met à jour l’état Ready après sélection de mode
+        UpdateReadyButtonUI();
     }
     #endregion
 }
