@@ -22,6 +22,11 @@ public class MultiplayerNetwork : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        if (IsServer)
+        {
+            SelectedGameMode.Value = -1; // 👈 Initialisation par défaut !
+        }
+
         if (IsClient)
         {
             PlayerCount.OnValueChanged += (oldVal, newVal) =>

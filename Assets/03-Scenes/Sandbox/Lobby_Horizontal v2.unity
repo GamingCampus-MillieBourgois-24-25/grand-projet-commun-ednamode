@@ -36318,6 +36318,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2107230574}
     - target: {fileID: 5299365265119900440, guid: a6fc9650fa5e20d4b945ba6d2909ce77, type: 3}
+      propertyPath: notReadyColor.a
+      value: 0.9411765
+      objectReference: {fileID: 0}
+    - target: {fileID: 5299365265119900440, guid: a6fc9650fa5e20d4b945ba6d2909ce77, type: 3}
       propertyPath: hideOnConnected.Array.size
       value: 1
       objectReference: {fileID: 0}

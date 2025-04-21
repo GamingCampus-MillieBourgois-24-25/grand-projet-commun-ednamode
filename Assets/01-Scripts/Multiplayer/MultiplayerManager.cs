@@ -479,45 +479,30 @@ public class MultiplayerManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost)
         {
-            SubmitReadyServerRpc(isReady);
-            PlayerListUI ui = FindFirstObjectByType<PlayerListUI>();
-            if (ui != null)
-            {
-                string playerId = AuthenticationService.Instance.PlayerId;
-                ui.MarkPlayerReady(playerId, isReady);
-            }
+            string playerId = AuthenticationService.Instance.PlayerId;
+            SubmitReadyServerRpc(playerId, isReady);
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void SubmitReadyServerRpc(bool isReady, ServerRpcParams rpcParams = default)
+    private void SubmitReadyServerRpc(string playerId, bool isReady, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        Debug.Log($"[ServerRpc] Client {clientId} isReady = {isReady}");
+        Debug.Log($"[ServerRpc] {playerId} (clientId: {clientId}) isReady = {isReady}");
 
         playerReadyStates[clientId] = isReady;
-        ulong senderClientId = rpcParams.Receive.SenderClientId;
-        string playerId = SessionStore.Instance.GetPlayerId(senderClientId);
 
-        if (string.IsNullOrEmpty(playerId))
-        {
-            Debug.LogWarning($"[⚠️ ServerRpc] Impossible de récupérer playerId pour clientId = {senderClientId}. Fallback sur AuthenticationService.");
-            playerId = AuthenticationService.Instance.PlayerId;
-        }
+        // ✅ Supprime le fallback inutile ici
         UpdatePlayerReadyVisualClientRpc(playerId, isReady);
         UpdateReadyVisualClientRpc(playerId, isReady);
+
         UpdateReadyCount();
         NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
 
         if (AllPlayersReady())
             StartCountdown();
         else
-        {
-            Debug.Log($"[ServerRpc] Pas tous les joueurs prêts. {GetReadyCount()}/{playerReadyStates.Count} prêts.");
             UIManager.Instance?.CancelCountdown();
-        }
-        UpdateReadyVisualClientRpc(playerId, isReady);
-
     }
 
     [ClientRpc]
