@@ -5,12 +5,13 @@ using System;
 using Firebase.Database;
 using Firebase.Auth;
 using TMPro;
-using Firebase;
-using CharacterCustomization;
+using UnityEditor;
+using Firebase; // Import nï¿½cessaire pour TextMeshPro
 
 public class DataSaver : MonoBehaviour
 {
-    public static DataSaver Instance { get; private set; } // Singleton Instance
+
+    public static DataSaver Instance; // Singleton
 
     public dataToSave dts;
     public string userId;
@@ -21,45 +22,73 @@ public class DataSaver : MonoBehaviour
     public string jsonConfig;
 
     [SerializeField]
-    private TMP_Text dataDisplayText; // Référence au composant Text pour afficher les données
+    private TMP_Text dataDisplayText; // Rï¿½fï¿½rence au composant Text pour afficher les donnï¿½es
 
-    private void Awake()
+    #region UserId Management
+    public string GetUserId()
     {
-        // Singleton logic
-        if (Instance != null && Instance != this)
+        return userId;
+    }
+
+    public void SetUserId(string newUserId)
+    {
+        userId = newUserId;
+    }
+     private void Awake()
+    {
+        // Implï¿½mentation du Singleton
+        if (Instance == null)
         {
-            Destroy(gameObject); // Détruire les doublons
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
             return;
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject); // Persiste entre les scènes
+        if (dts == null)
+        {
+            dts = new dataToSave(); // Initialisation de l'objet
+        }
 
-        // Initialisation Firebase
-        AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
-        FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
-        auth = FirebaseAuth.GetAuth(app);
-
-        dbRef = FirebaseDatabase.GetInstance(app).RootReference;
+        try
+        {
+            // Initialisation Firebase
+            AppOptions options = AppOptions.LoadFromJsonConfig(jsonConfig);
+            FirebaseApp app = FirebaseApp.Create(options, "DripOrDrop");
+            auth = FirebaseAuth.GetAuth(app);
+            dbRef = FirebaseDatabase.GetInstance(app).RootReference;
+            Debug.Log("Firebase initialisï¿½ avec succï¿½s.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Erreur lors de l'initialisation de Firebase : {ex.Message}");
+        }
+    }
+    public void InitializeDataSaver()
+    {
 
         if (auth.CurrentUser != null)
         {
             userId = auth.CurrentUser.UserId;
-            Debug.Log($"Utilisateur connecté avec UID : {userId}");
+            Debug.Log($"Utilisateur connectï¿½ avec UID : {userId}");
 
-            LoadDataFn(); // Charge les données à l'initialisation
+            LoadDataFn();
         }
         else
         {
-            Debug.LogError("Aucun utilisateur connecté. Assurez-vous que l'utilisateur est authentifié.");
+            Debug.LogError("Aucun utilisateur connectï¿½. Assurez-vous que l'utilisateur est authentifiï¿½.");
         }
     }
 
+    #region Data saving/loading
     public void SaveDataFn()
     {
         if (string.IsNullOrEmpty(userId))
         {
-            Debug.LogError("Impossible de sauvegarder les données : userId est null ou vide.");
+            Debug.LogError("Impossible de sauvegarder les donnï¿½es : userId est null ou vide.");
             return;
         }
 
@@ -71,105 +100,114 @@ public class DataSaver : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userId))
         {
-            Debug.LogError("Impossible de charger les données : userId est null ou vide.");
+            Debug.LogError("Impossible de charger les donnï¿½es : userId est null ou vide.");
             return;
         }
 
         StartCoroutine(LoadDataEnum());
     }
 
-    IEnumerator LoadDataEnum()
+    private IEnumerator LoadDataEnum()
     {
+        Debug.Log("Tentative de rï¿½cupï¿½ration des donnï¿½es depuis Firebase...");
         var serverData = dbRef.Child("users").Child(userId).GetValueAsync();
-        yield return new WaitUntil(predicate: () => serverData.IsCompleted);
+        yield return new WaitUntil(() => serverData.IsCompleted);
 
-        print("process is complete");
+        if (serverData.Exception != null)
+        {
+            Debug.LogError($"Erreur lors de la rï¿½cupï¿½ration des donnï¿½es : {serverData.Exception.Message}");
+            yield break;
+        }
 
         DataSnapshot snapshot = serverData.Result;
         string jsonData = snapshot.GetRawJsonValue();
 
-        if (jsonData != null)
+        if (!string.IsNullOrEmpty(jsonData))
         {
-            print("server data found");
+            Debug.Log($"Donnï¿½es rï¿½cupï¿½rï¿½es : {jsonData}");
+            dataToSave loadedData = JsonUtility.FromJson<dataToSave>(jsonData);
 
-            dts = JsonUtility.FromJson<dataToSave>(jsonData);
+            // Remplacement des setters par des accï¿½s directs aux propriï¿½tï¿½s
+            dts.userName = loadedData.userName;
+            dts.totalCoins = loadedData.totalCoins;
+            dts.totalJewels = loadedData.totalJewels;
+            dts.crrLevel = loadedData.crrLevel;
+            dts.crrLevelProgress = loadedData.crrLevelProgress;
+            dts.totalLevelProgress = loadedData.totalLevelProgress;
+            dts.unlockedClothes = loadedData.unlockedClothes;
 
-            UpdateDataDisplay(); // Met à jour l'affichage des données
+            Debug.Log("Donnï¿½es appliquï¿½es avec succï¿½s.");
         }
         else
         {
-            print("no data found");
+            Debug.LogWarning("Aucune donnï¿½e trouvï¿½e pour cet utilisateur.");
         }
     }
+    #endregion
 
-    public void UpdateDataDisplay()
-    {
-        if (dataDisplayText != null)
-        {
-            dataDisplayText.text = $"Nom d'utilisateur : {dts.userName}\n" +
-                                   $"Total de pièces : {dts.totalCoins}\n" +
-                                   $"Total de bijoux : {dts.totalJewels}\n" +
-                                   $"Niveau actuel : {dts.crrLevel}\n" +
-                                   $"Progression du niveau actuel : {dts.crrLevelProgress}/{dts.totalLevelProgress}";
-        }
-        else
-        {
-            Debug.LogError("Le composant Text pour afficher les données n'est pas assigné.");
-        }
-    }
 
+    #region To Use Functions
     public void addCoins(int coins)
     {
-        dts.totalCoins += coins;
+        int currentCoins = dts.totalCoins; // Accï¿½s direct ï¿½ la propriï¿½tï¿½
+        dts.totalCoins = currentCoins + coins; // Modification directe
         SaveDataFn();
-        UpdateDataDisplay();
     }
 
     public void removeCoins(int coins)
     {
-        dts.totalCoins -= coins;
+        int currentCoins = dts.totalCoins;
+        dts.totalCoins = currentCoins - coins;
         SaveDataFn();
-        UpdateDataDisplay();
     }
-    public int GetCoins() { return dts.totalCoins; }
+
     public void addJewels(int jewels)
     {
-        dts.totalJewels += jewels;
+        int currentJewels = dts.totalJewels;
+        dts.totalJewels = currentJewels + jewels;
         SaveDataFn();
-        UpdateDataDisplay();
     }
 
     public void removeJewels(int jewels)
     {
-        dts.totalJewels -= jewels;
+        int currentJewels = dts.totalJewels;
+        dts.totalJewels = currentJewels - jewels;
         SaveDataFn();
-        UpdateDataDisplay();
     }
-    public int GetJewels() { return dts.totalJewels; }
+
     public void addLevelProgress(int levelProgress)
     {
-        dts.totalLevelProgress += levelProgress;
+        int currentTotalProgress = dts.totalLevelProgress;
+        dts.totalLevelProgress = currentTotalProgress + levelProgress;
         CheckForLevelUp(levelProgress);
         SaveDataFn();
-        UpdateDataDisplay();
     }
 
     public void CheckForLevelUp(int levelProgress)
     {
-        dts.crrLevelProgress += levelProgress;
+        int currentLevelProgress = dts.crrLevelProgress;
+        dts.crrLevelProgress = currentLevelProgress + levelProgress;
+
         if (dts.crrLevelProgress > dts.totalLevelProgress)
         {
-            dts.crrLevel++;
-            dts.crrLevelProgress = dts.crrLevelProgress - dts.totalLevelProgress;
+            int currentLevel = dts.crrLevel;
+            dts.crrLevel = currentLevel + 1;
+
+            int overflowProgress = dts.crrLevelProgress - dts.totalLevelProgress;
+            dts.crrLevelProgress = overflowProgress;
         }
+
         if (dts.crrLevelProgress == dts.totalLevelProgress)
         {
-            dts.crrLevel++;
+            int currentLevel = dts.crrLevel;
+            dts.crrLevel = currentLevel + 1;
             dts.crrLevelProgress = 0;
         }
+
         SaveDataFn();
-        UpdateDataDisplay();
     }
+
+
 
     [ContextMenu("Save")]
     public void Save()
@@ -190,7 +228,28 @@ public class DataSaver : MonoBehaviour
     public List<Item> GetItems()
     {
         return dts.ownedItems;
+
+
+    #region Clothing Management
+    public void UnlockClothingItem(string itemId)
+    {
+        if (!dts.unlockedClothes.Contains(itemId))
+        {
+            dts.unlockedClothes.Add(itemId);
+            SaveDataFn();
+            Debug.Log($"Item dï¿½bloquï¿½ : {itemId}");
+        }
+        else
+        {
+            Debug.Log($"Item dï¿½jï¿½ dï¿½bloquï¿½ : {itemId}");
+        }
     }
+    #endregion
+    public bool IsItemUnlocked(string itemId)
+    {
+        return dts.unlockedClothes.Contains(itemId);
+    }
+    #endregion
 }
 
 [Serializable]
@@ -202,6 +261,8 @@ public class dataToSave
     public int crrLevel;
     public int crrLevelProgress;
     public int totalLevelProgress;
-    public List<Item> ownedItems;
-    public List<Character> customCharacters;
+    public List<string> unlockedClothes = new List<string>();
 }
+
+
+#endregion

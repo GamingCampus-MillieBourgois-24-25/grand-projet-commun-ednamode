@@ -12,15 +12,17 @@ public class ShoppingScript : MonoBehaviour
     void Start()
     {
         _dataSaver = DataSaver.Instance;
-        coinsText.text = "Coins: " + _dataSaver.GetCoins().ToString();
-        jewelsText.text = "Jewels: " + _dataSaver.GetJewels().ToString();
+
+        // Accï¿½s direct aux propriï¿½tï¿½s publiques de dts
+        coinsText.text = "Coins: " + _dataSaver.dts.totalCoins.ToString();
+        jewelsText.text = "Jewels: " + _dataSaver.dts.totalJewels.ToString();
     }
 
     public void SetSelectedItemButton(ItemButton itemButton)
     {
         if (itemButton == null)
         {
-            Debug.LogError("SetSelectedItem a reçu un item null !");
+            Debug.LogError("SetSelectedItem a reï¿½u un item null !");
             return;
         }
 
@@ -33,8 +35,11 @@ public class ShoppingScript : MonoBehaviour
         if (currentBalance >= price)
         {
             removeCurrency(price);
-            _dataSaver.AddItem(selectedItem);
-            Destroy(selectedItemButton.gameObject);
+
+            // Ajout de l'item ï¿½ la liste des vï¿½tements dï¿½bloquï¿½s
+            _dataSaver.dts.unlockedClothes.Add(selectedItem.itemName);
+
+            Debug.Log($"Item ajoutï¿½ : {selectedItem.itemName}");
         }
         else
         {
@@ -54,17 +59,17 @@ public class ShoppingScript : MonoBehaviour
         if (selectedItem.tags.Contains("premium"))
         {
             ProcessPurchase(
-                _dataSaver.GetJewels(),
+                _dataSaver.dts.totalJewels, // Accï¿½s direct ï¿½ totalJewels
                 selectedItem.price,
-                _dataSaver.removeJewels
+                jewelsToRemove => _dataSaver.dts.totalJewels -= jewelsToRemove // Modification directe
             );
         }
         else
         {
             ProcessPurchase(
-                _dataSaver.GetCoins(),
+                _dataSaver.dts.totalCoins, // Accï¿½s direct ï¿½ totalCoins
                 selectedItem.price,
-                _dataSaver.removeCoins
+                coinsToRemove => _dataSaver.dts.totalCoins -= coinsToRemove // Modification directe
             );
         }
     }
