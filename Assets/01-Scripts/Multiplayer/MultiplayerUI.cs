@@ -379,7 +379,9 @@ public class MultiplayerUI : MonoBehaviour
         buttonReady.colors = colors;
 
         // ✅ Ne pas autoriser Ready si aucun mode sélectionné
-        buttonReady.interactable = MultiplayerNetwork.Instance.SelectedGameMode.Value != -1;
+        buttonReady.interactable =
+            MultiplayerNetwork.Instance.SelectedGameMode.Value != -1
+            || isReady; // autorise UNREADY même si mode désélectionné (ex : reset par erreur)
     }
 
     public void UpdateHostUI()
