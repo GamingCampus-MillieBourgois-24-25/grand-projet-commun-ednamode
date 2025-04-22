@@ -48,12 +48,8 @@ public class ButtonScrollViewManager : MonoBehaviour
             {
                 _characterUI.ShowTagsPanel();
             });
-            Debug.Log("Bouton Tags configuré et activé.");
         }
-        else
-        {
-            Debug.LogWarning("ButtonTags n'est pas assigné dans l'inspecteur !");
-        }
+     
 
         SetButtonActive(buttonBackFromTexture, false);
         SetButtonActive(backButton, false);
@@ -117,13 +113,11 @@ public class ButtonScrollViewManager : MonoBehaviour
             {
                 bool shouldBeActive = (pair == clickedPair);
                 pair.scrollView.gameObject.SetActive(shouldBeActive);
-                Debug.Log($"ScrollView {pair.scrollView.name} définie à l'état: {shouldBeActive}");
             }
         }
 
         if (backButton != null) backButton.gameObject.SetActive(true);
-        // Ne pas désactiver buttonTags ici
-        // if (buttonTags != null) buttonTags.gameObject.SetActive(false);
+        
     }
 
     private void OnBackButtonClicked()
@@ -133,14 +127,12 @@ public class ButtonScrollViewManager : MonoBehaviour
             if (pair.scrollView != null)
             {
                 pair.scrollView.gameObject.SetActive(false);
-                Debug.Log($"ScrollView {pair.scrollView.name} désactivée lors du retour.");
             }
         }
 
         if (mainScrollView != null)
         {
             mainScrollView.gameObject.SetActive(true);
-            Debug.Log($"Main ScrollView {mainScrollView.name} activée lors du retour.");
         }
 
         if (backButton != null)

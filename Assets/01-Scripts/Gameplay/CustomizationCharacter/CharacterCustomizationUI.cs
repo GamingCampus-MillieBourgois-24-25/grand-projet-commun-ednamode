@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // Ajout pour TextMeshProUGUI
+using TMPro;
 
 namespace CharacterCustomization
 {
@@ -87,6 +87,9 @@ namespace CharacterCustomization
         public ScrollRect equippedItemsScrollView;
         public Transform equippedItemsContent;
 
+        [Header("Défilement du personnage")]
+        public CharacterParadeController paradeController; // Référence au script de défilement
+
         private GameObject _characterInstance;
         private Vector3 _originalCameraPosition;
         private Quaternion _originalCameraRotation;
@@ -108,6 +111,21 @@ namespace CharacterCustomization
             if (_characterInstance == null && characterPrefab != null)
             {
                 _characterInstance = Instantiate(characterPrefab, Vector3.zero, Quaternion.identity);
+                Debug.Log("[CustomizableCharacterUI] Personnage instancié : " + _characterInstance.name);
+
+                // Assigner _characterInstance au CharacterParadeController
+                if (paradeController != null)
+                {
+                    paradeController.CharacterInstance = _characterInstance; // Utiliser la propriété publique
+                }
+                else
+                {
+                    Debug.LogError("[CustomizableCharacterUI] paradeController n'est pas assigné !");
+                }
+            }
+            else if (characterPrefab == null)
+            {
+                Debug.LogError("[CustomizableCharacterUI] characterPrefab n'est pas assigné !");
             }
 
             if (buttonManager != null)
@@ -445,7 +463,6 @@ namespace CharacterCustomization
             {
                 animationSync.Initialize(_characterInstance);
             }
-           
 
             _equippedClothing[slotType] = (item, instance);
             _lastEquippedInstance = instance;
@@ -576,38 +593,35 @@ namespace CharacterCustomization
                 Button button = buttonObj.GetComponent<Button>();
                 if (button != null)
                 {
-                    button.enabled = true; 
+                    button.enabled = true;
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => ApplyTexture(index));
                 }
-                
 
                 Image buttonImage = buttonObj.GetComponent<Image>();
                 if (buttonImage != null)
                 {
-                    buttonImage.enabled = true; 
+                    buttonImage.enabled = true;
                     if (option.preview != null)
                     {
                         buttonImage.sprite = option.preview;
                         buttonImage.preserveAspect = true;
                         buttonImage.color = Color.white;
                     }
-                  
                 }
-             
 
                 TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
                 if (buttonText != null)
                 {
                     buttonText.enabled = true;
-                    buttonText.text = option.name; 
+                    buttonText.text = option.name;
                 }
 
                 Text legacyText = buttonObj.GetComponentInChildren<Text>();
                 if (legacyText != null)
                 {
-                    legacyText.enabled = true; 
-                    legacyText.text = option.name; 
+                    legacyText.enabled = true;
+                    legacyText.text = option.name;
                 }
             }
 

@@ -28,6 +28,11 @@ public class RunwayManager : NetworkBehaviour
     [Tooltip("AudioSource utilisée pour jouer les effets sonores")]
     [SerializeField] private AudioSource sfxAudioSource;
 
+
+    [Header("Référence au contrôleur de défilé")]
+    [Tooltip("Référence au CharacterParadeController pour gérer le déplacement A-B-C-D")]
+    [SerializeField] private CharacterParadeController paradeController;
+
     #endregion
 
     #region ?? Cycle de défilé
@@ -85,6 +90,19 @@ public class RunwayManager : NetworkBehaviour
         DeactivateAllOtherCameras();
         FocusCameraOn(clientId);
 
+        // Assigner characterInstance pour le joueur concerné
+        if (paradeController != null)
+        {
+            var networkPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
+            if (networkPlayer != null)
+            {
+                paradeController.CharacterInstance = networkPlayer.gameObject;
+                Debug.Log($"[RunwayManager] characterInstance assigné pour client {clientId}: {networkPlayer.gameObject.name}");
+            }
+            paradeController.StartParadeClientRpc();
+            Debug.Log($"[RunwayManager] Défilé déclenché pour client {clientId}");
+        }
+
         PlayIntroSFX();
     }
 
@@ -93,6 +111,13 @@ public class RunwayManager : NetworkBehaviour
     {
         if (!IsClient) return;
         RunwayUIManager.Instance?.HideRunwayPanel();
+
+        // Arrêter le défilé
+        if (paradeController != null)
+        {
+            paradeController.StopParadeClientRpc();
+            Debug.Log($"[RunwayManager] Défilé arrêté pour client {clientId}");
+        }
     }
 
     #endregion
