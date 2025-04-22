@@ -4,20 +4,55 @@ namespace CloudFine
 {
     public class Orbit : MonoBehaviour
     {
-        public Transform _orbitTarget;
-        public float _distance = 10;
-        public float _speed = 1;
-        public float _verticalAngle = 45;
+        [Header("Reference cible")]
+        [Tooltip("Cible de l'orbite")]
+        public Transform orbitTarget;
 
-        // Update is called once per frame[aaa
+        [Header("Paramètres de l'orbite")]
+        [Tooltip("Distance de l'orbite")]
+        public float distance = 10f;
+        [Tooltip("Vitesse de rotation")]
+        public float speed = 30f; // en degrés par seconde
+        [Tooltip("Angle de départ")]
+        [Range(0f, 360f)]
+        public float startAngle = 0f; // Angle de départ horizontal en degrés
+        [Tooltip("Inclinaison verticale (en degrés)")]
+        [Range(-89f, 89f)]
+        public float verticalAngle = 45f; // Inclinaison verticale
+
+        private float currentAngle; // Angle courant en degrés
+
+        void Start()
+        {
+            // Initialisation de l'angle de départ
+            currentAngle = startAngle;
+            UpdatePosition();
+        }
+
         void Update()
         {
-            Vector3 target = _orbitTarget ? _orbitTarget.position : Vector3.zero;
-            float x = Mathf.Cos(Time.time * _speed);
-            float z = Mathf.Sin(Time.time * _speed);
-            transform.position = target + new Vector3(x, 0, z).normalized * _distance;
+            // On incrémente l'angle en fonction du temps et de la vitesse
+            currentAngle += speed * Time.deltaTime;
+            currentAngle %= 360f; // Pour rester entre 0 et 360
+            UpdatePosition();
+        }
+
+        void UpdatePosition()
+        {
+            if (!orbitTarget) return;
+
+            Vector3 target = orbitTarget.position;
+
+            // Calcul de la position orbitale
+            float radians = currentAngle * Mathf.Deg2Rad;
+            float x = Mathf.Cos(radians) * distance;
+            float z = Mathf.Sin(radians) * distance;
+
+            // Calcul de la hauteur en fonction de l'angle vertical
+            float y = Mathf.Tan(verticalAngle * Mathf.Deg2Rad) * distance;
+
+            transform.position = target + new Vector3(x, y, z);
             transform.LookAt(target);
-            transform.RotateAround(target, transform.right, _verticalAngle);
         }
     }
 }
