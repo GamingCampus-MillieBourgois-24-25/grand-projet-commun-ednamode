@@ -4844,6 +4844,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63b4b8d4afab8524a806d695c3c0f850, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dts:
+    userName: 
+    totalCoins: 0
+    totalJewels: 0
+    crrLevel: 0
+    crrLevelProgress: 0
+    totalLevelProgress: 0
+    unlockedClothes: []
   userId: 
   jsonConfig: "{\n  \"project_info\": {\n    \"project_number\": \"1064458188877\",\n   
     \"firebase_url\": \"https://drip-or-drop-default-rtdb.firebaseio.com\",\n   
