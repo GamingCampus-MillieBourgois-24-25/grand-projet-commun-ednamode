@@ -94,7 +94,7 @@ public class CustomizationDebuggerWindow : EditorWindow
             header.style.unityFontStyleAndWeight = FontStyle.Bold;
             box.Add(header);
 
-            var data = player.Data.Value;
+            var data = player.Data;
 
             if (data.equippedItemIds == null || data.equippedItemIds.Count == 0)
             {
@@ -153,7 +153,7 @@ public class CustomizationDebuggerWindow : EditorWindow
 
     private void ExportTenueAsJson(PlayerCustomizationData player)
     {
-        string json = JsonUtility.ToJson(player.Data.Value, true);
+        string json = JsonUtility.ToJson(player.Data, true);
         string folderPath = Application.dataPath + "Resources/TenueExports";
         Directory.CreateDirectory(folderPath);
 
