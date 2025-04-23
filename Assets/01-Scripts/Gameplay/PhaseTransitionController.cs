@@ -45,14 +45,16 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
     private IEnumerator PhaseSequenceCoroutine()
     {
+        // ============= Phase d'attente ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
+        // ============= Phase de défilé ============= //
         SetPhase(GamePhaseManager.GamePhase.RunwayVoting);
 
-        // 🔁 Appliquer les visuels pour tous les joueurs avant les votes/défilés
         ApplyAllPlayersVisualsClientRpc();
         yield return new WaitForSeconds(1f);
+        RunwayManager.Instance.StartRunwayPhase();
 
         var players = NetworkManager.Singleton.ConnectedClientsList.Select(c => c.PlayerObject.GetComponent<PlayerCustomizationData>()).ToList();
         foreach (var player in players)
@@ -63,9 +65,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         yield return new WaitForSeconds(delayBetweenPhases);
 
+        // ============= Phase de podium ============= //
         SetPhase(GamePhaseManager.GamePhase.Podium);
+        PodiumManager.Instance.StartPodiumSequence();
         yield return new WaitForSeconds(_phaseManager.PodiumDuration);
 
+        // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
     }
 
