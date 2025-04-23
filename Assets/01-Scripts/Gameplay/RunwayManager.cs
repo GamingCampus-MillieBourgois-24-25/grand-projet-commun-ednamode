@@ -19,9 +19,6 @@ public class RunwayManager : NetworkBehaviour
     [Tooltip("Durée d'un passage de défilé par joueur (vote inclus)")]
     [SerializeField] private float runwayDurationPerPlayer = 7f;
 
-    [Tooltip("Offsets et paramètres de focus caméra")]
-    [SerializeField] private Vector3 cameraOffset = new Vector3(0, 2, -5);
-
     [Header("Effets")]
     [Tooltip("SFX à jouer pour annoncer un joueur")]
     [SerializeField] private AudioClip runwayAnnounceSFX;

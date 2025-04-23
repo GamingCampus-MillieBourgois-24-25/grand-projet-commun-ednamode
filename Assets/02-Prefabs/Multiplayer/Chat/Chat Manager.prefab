@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 160921806468748749}
   - component: {fileID: 5118131079902323249}
   - component: {fileID: 8952852962347065186}
-  - component: {fileID: 4535830239493851927}
   m_Layer: 0
   m_Name: Chat Manager
   m_TagString: Untagged
@@ -47,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 720172610
+  GlobalObjectIdHash: 1789717328
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -74,27 +73,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &8952852962347065186
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4268627752218431868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11d7a1c6f909b94409bca1f3ea34f2b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chatPanel: {fileID: 0}
-  inputField: {fileID: 0}
-  messageContainer: {fileID: 0}
-  messagePrefab: {fileID: 2341327212921412798, guid: 2bd1c9396df54db4ba56ab4f4b971ea1, type: 3}
-  newMessagePill: {fileID: 0}
-  scrollRect: {fileID: 0}
-  sendButton: {fileID: 0}
-  bannedWordsData: {fileID: 11400000, guid: 6cd9e4e72b4d16046901904aabf6122e, type: 2}
-  maxMessages: 50
---- !u!114 &4535830239493851927
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
