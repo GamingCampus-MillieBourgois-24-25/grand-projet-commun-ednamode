@@ -21,9 +21,13 @@ GameObject:
   - component: {fileID: 1732740676328929932}
   - component: {fileID: 5122720541970335593}
   - component: {fileID: 3253298743976796269}
+<<<<<<< Updated upstream
   - component: {fileID: -4817372193745504417}
   - component: {fileID: 7742975981153587560}
   - component: {fileID: 3681952183107968475}
+=======
+  - component: {fileID: -5784594881663236336}
+>>>>>>> Stashed changes
   m_Layer: 0
   m_Name: BaseCharacter
   m_TagString: Untagged
@@ -292,6 +296,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   Speed: 5
+<<<<<<< Updated upstream
 --- !u!195 &-4817372193745504417
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -315,6 +320,9 @@ NavMeshAgent:
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!95 &7742975981153587560
+=======
+--- !u!95 &-5784594881663236336
+>>>>>>> Stashed changes
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
@@ -323,7 +331,11 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7563482144388931865}
   m_Enabled: 1
+<<<<<<< Updated upstream
   m_Avatar: {fileID: 9000000, guid: 335f64e53b1ba9648aec09bc1a394a09, type: 3}
+=======
+  m_Avatar: {fileID: 0}
+>>>>>>> Stashed changes
   m_Controller: {fileID: 9100000, guid: d16a1e98254f09443afa6295c1c9948e, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
@@ -336,6 +348,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+<<<<<<< Updated upstream
 --- !u!114 &3681952183107968475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,6 +368,8 @@ MonoBehaviour:
   pointD: {x: -14, y: 3.6, z: 183}
   pauseDurationAtC: 2
   navAgentSpeed: 3.5
+=======
+>>>>>>> Stashed changes
 --- !u!1001 &4886921824566826854
 PrefabInstance:
   m_ObjectHideFlags: 0
