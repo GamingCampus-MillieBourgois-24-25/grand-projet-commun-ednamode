@@ -9,37 +9,19 @@ namespace EasyBattlePass
         [System.Serializable]
         public class Currency
         {
-            public string name;           // Par exemple : "Currency_Gem" ou "Currency_Gold"
-            public int amount;            // Montant actuel
-            public int defaultAmount;     // Valeur par défaut (non utilisée ici, mais conservée si besoin)
+            public string name;
+            public int amount;
             public Sprite icon;
         }
 
         public List<Currency> currencies;
+
         private const string SAVE_KEY = "CURRENCY_AMOUNTS";
 
         private void Start()
         {
-            // Au lancement, si aucune donnée sauvegardée n'existe,
-            // on initialise toutes les devises à 250.
-            if (!PlayerPrefs.HasKey(SAVE_KEY))
-            {
-                InitializeCurrencies();
-                SaveCurrencies();
-            }
-            else
-            {
-                LoadCurrencies();
-            }
-        }
-
-        // Initialise toutes les devises à 250
-        private void InitializeCurrencies()
-        {
-            for (int i = 0; i < currencies.Count; i++)
-            {
-                currencies[i].amount = 250;
-            }
+            // load your saved currencies
+            LoadCurrencies();
         }
 
         public void SetCurrency(string currencyName, int amount)
@@ -112,6 +94,7 @@ namespace EasyBattlePass
             {
                 currencyData += currency.name + "," + currency.amount + ";";
             }
+            //PlayerPrefs.SetString(SAVE_KEY, currencyData);
             EncryptionManager.Save(SAVE_KEY, currencyData);
         }
 
@@ -119,11 +102,11 @@ namespace EasyBattlePass
         {
             if (PlayerPrefs.HasKey(SAVE_KEY))
             {
-                string currencyData = EncryptionManager.Load<string>(SAVE_KEY);
+                string currencyData = EncryptionManager.Load<string>(SAVE_KEY); //PlayerPrefs.GetString(SAVE_KEY);
                 string[] currencyEntries = currencyData.Split(';');
                 foreach (string entry in currencyEntries)
                 {
-                    if (!string.IsNullOrEmpty(entry))
+                    if (entry != "")
                     {
                         string[] currencyDataArray = entry.Split(',');
                         string currencyName = currencyDataArray[0];
@@ -139,18 +122,6 @@ namespace EasyBattlePass
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Réinitialise toutes les devises à 250.
-        /// </summary>
-        public void ResetCurrencies()
-        {
-            for (int i = 0; i < currencies.Count; i++)
-            {
-                currencies[i].amount = 250;
-            }
-            SaveCurrencies();
         }
     }
 }

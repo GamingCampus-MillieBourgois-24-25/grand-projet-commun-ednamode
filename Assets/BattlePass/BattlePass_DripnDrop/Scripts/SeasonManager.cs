@@ -33,7 +33,7 @@ namespace EasyBattlePass
         [SerializeField] private TMP_Text seasonTimeText;
 
         [SerializeField] private BattlePassManager battlePassManager;
-        [SerializeField] private XPBooster xpBoosterManager;
+
 
         private DateTime seasonEndTime;
         private DateTime worldTimeNow;
@@ -68,7 +68,7 @@ namespace EasyBattlePass
             else
             {
                 GetTimeNow();
-            }     
+            }
         }
 
         // Check if there is a time saved already, if not start the new season.
@@ -301,9 +301,9 @@ namespace EasyBattlePass
             Debug.Log("Season has ended.");
             seasonEndTime = DateTime.UtcNow.AddDays(0).AddHours(0).AddMinutes(0);
             SaveSeasonEndTime();
-            EncryptionManager.SaveInt("SeasonEnded", 1);           
+            EncryptionManager.SaveInt("SeasonEnded", 1);
             LoadBattlePassEndStatus();
-            EndBoostedXp();
+
         }
 
         //calls the end season function in the battle pass
@@ -313,10 +313,6 @@ namespace EasyBattlePass
         }
 
         // makes any remaing Xp boost end if the season has ended
-        private void EndBoostedXp()
-        {
-            xpBoosterManager.EndXpBoost();
-        }
 
         // Saves the seasons current time;
         private void SaveSeasonEndTime()
@@ -325,7 +321,12 @@ namespace EasyBattlePass
             EncryptionManager.Save(SeasonEndTimeKey, endTimeString);
         }
 
+    
+public void NewSeason()
+        {
+            StartCoroutine(StartNewSeason());
+        }
     }
+
+
 }
-
-

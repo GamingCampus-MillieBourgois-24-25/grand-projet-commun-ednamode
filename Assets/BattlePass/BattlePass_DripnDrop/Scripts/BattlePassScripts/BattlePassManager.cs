@@ -738,6 +738,8 @@ namespace EasyBattlePass
                 tierScroller.ScrollToSection(level);
 
             reset = true;
+            currencySystem.SetCurrency("Gems", 250);
+            currencySystem.SetCurrency("Gold", 0);
             Save();
         }
     }
