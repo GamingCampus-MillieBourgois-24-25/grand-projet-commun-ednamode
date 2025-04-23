@@ -1,7 +1,4 @@
-﻿// ?? RunwayManager : Orchestration des défilés joueur par joueur
-// Gère le cycle du défilé, déclenche l'UI (RunwayUIManager), les votes, le timing, la caméra, etc.
-
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,7 +8,7 @@ using Unity.Netcode.Components;
 
 public class RunwayManager : NetworkBehaviour
 {
-    #region ?? Références
+    #region Références
 
     public static RunwayManager Instance { get; private set; }
 
@@ -21,6 +18,16 @@ public class RunwayManager : NetworkBehaviour
 
     [Tooltip("Offsets et paramètres de focus caméra")]
     [SerializeField] private Vector3 cameraOffset = new Vector3(0, 2, -5);
+
+    [Header("Points de défilé")]
+    [Tooltip("Point B - Premier point de déplacement")]
+    [SerializeField] private Vector3 pointB = new Vector3(-43f, 2.15f, 117.26f);
+    [Tooltip("Point C - Deuxième point de déplacement")]
+    [SerializeField] private Vector3 pointC = new Vector3(-43f, 2.15f, 134.19f);
+
+    [Header("Paramètres de défilé")]
+    [Tooltip("Durée de la pause au point B (en secondes)")]
+    [SerializeField] private float pauseDurationAtB = 2f;
 
     [Header("Effets")]
     [Tooltip("SFX à jouer pour annoncer un joueur")]
@@ -50,9 +57,6 @@ public class RunwayManager : NetworkBehaviour
         Instance = this;
     }
 
-    /// <summary>
-    /// Débute la séquence de défilé + vote pour tous les joueurs connectés
-    /// </summary>
     public void StartRunwayPhase()
     {
         if (!IsServer) return;
@@ -65,6 +69,12 @@ public class RunwayManager : NetworkBehaviour
             .ToList();
         Debug.Log($"[RunwayManager] Joueurs connectés : {string.Join(", ", orderedPlayers)}");
 
+        if (orderedPlayers.Count == 0)
+        {
+            Debug.LogWarning("[Runway] Aucun joueur connecté, défilé annulé.");
+            return;
+        }
+
         StartCoroutine(RunwaySequenceCoroutine());
     }
 
@@ -72,8 +82,9 @@ public class RunwayManager : NetworkBehaviour
     {
         foreach (var clientId in orderedPlayers)
         {
-            AskClientToTeleport(clientId); // Téléportation du joueur sur le runway
-            StartRunwayForClientRpc(clientId);  // UI + caméra locale
+            AskClientToTeleport(clientId); // Téléportation à RunwaySpot (point A)
+            StartRunwayForClientRpc(clientId); // UI + caméra locale
+            StartParadeMovementClientRpc(clientId); // Déclencher le défilé côté client
             yield return new WaitForSeconds(runwayDurationPerPlayer);
             EndRunwayForClientRpc(clientId);
             yield return new WaitForSeconds(0.5f);
@@ -90,7 +101,6 @@ public class RunwayManager : NetworkBehaviour
         if (!IsClient) return;
 
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(clientId);
-        
 
         var targetPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
         if (targetPlayer != null)
@@ -140,7 +150,124 @@ public class RunwayManager : NetworkBehaviour
     }
     #endregion
 
-    #region Teleportation
+    #region Défilé et déplacement
+
+    [ClientRpc]
+    private void StartParadeMovementClientRpc(ulong clientId)
+    {
+        // Exécuter uniquement pour le client concerné
+        if (NetworkManager.Singleton.LocalClientId != clientId) return;
+
+        Debug.Log($"[Runway] Joueur {clientId} : Début du défilé côté client.");
+        StartCoroutine(MovePlayerThroughPoints(clientId));
+    }
+
+    private IEnumerator MovePlayerThroughPoints(ulong clientId)
+    {
+        var player = NetworkPlayerManager.Instance.GetLocalPlayer();
+        if (player == null)
+        {
+            Debug.LogWarning($"[Runway] ❌ Joueur local (clientId {clientId}) introuvable pour le défilé.");
+            yield break;
+        }
+
+        var netTransform = player.GetComponent<NetworkTransform>();
+        if (netTransform == null)
+        {
+            Debug.LogError($"[Runway] ❌ NetworkTransform non trouvé sur le joueur {clientId}.");
+            yield break;
+        }
+
+        var animator = player.GetComponent<Animator>();
+        var networkAnimator = player.GetComponent<NetworkAnimator>();
+        if (animator == null)
+        {
+            Debug.LogWarning($"[Runway] ⚠️ Animator non trouvé sur le joueur {clientId}. Les animations de marche ne seront pas jouées.");
+        }
+        else if (networkAnimator == null)
+        {
+            Debug.LogWarning($"[Runway] ⚠️ NetworkAnimator non trouvé sur le joueur {clientId}. Les animations ne seront pas synchronisées en réseau.");
+        }
+        else
+        {
+            Debug.Log($"[Runway] Animator et NetworkAnimator trouvés sur le joueur {clientId}. Vérification du paramètre IsWalking...");
+        }
+
+        Transform runwaySpot = GameObject.Find("RunwaySpot")?.transform;
+        if (runwaySpot == null)
+        {
+            Debug.LogError("[Runway] 🚫 Aucun RunwaySpot trouvé ! Impossible de démarrer le défilé.");
+            yield break;
+        }
+
+        Vector3 pointA = runwaySpot.position;
+
+        float movementDuration = (runwayDurationPerPlayer - pauseDurationAtB) / 2f;
+        if (movementDuration <= 0)
+        {
+            Debug.LogWarning($"[Runway] ⚠️ La durée de pause ({pauseDurationAtB}s) est trop longue pour runwayDurationPerPlayer ({runwayDurationPerPlayer}s). Ajustez les valeurs.");
+            movementDuration = 1f;
+        }
+
+        // Étape 1 : Téléportation au point A (RunwaySpot)
+        netTransform.Teleport(pointA, runwaySpot.rotation, player.transform.localScale);
+        Debug.Log($"[Runway] Joueur {clientId} téléporté au point A (RunwaySpot) : {pointA}");
+
+        // Étape 2 : Déplacement de A à B avec animation de marche
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+            Debug.Log($"[Runway] Joueur {clientId} : IsWalking défini à true. État actuel :" );
+        }
+        yield return StartCoroutine(MovePlayerToPosition(clientId, netTransform, pointA, pointB, movementDuration));
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", false);
+            Debug.Log($"[Runway] Joueur {clientId} : IsWalking défini à false. État actuel :");
+        }
+        Debug.Log($"[Runway] Joueur {clientId} arrivé au point B : {pointB}");
+
+        // Étape 3 : Pause au point B
+        Debug.Log($"[Runway] Joueur {clientId} en pause au point B pendant {pauseDurationAtB} secondes.");
+        yield return new WaitForSeconds(pauseDurationAtB);
+
+        // Étape 4 : Déplacement de B à C avec animation de marche
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+            Debug.Log($"[Runway] Joueur {clientId} : IsWalking défini à true. État actuel ");
+        }
+        yield return StartCoroutine(MovePlayerToPosition(clientId, netTransform, pointB, pointC, movementDuration));
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", false);
+            Debug.Log($"[Runway] Joueur {clientId} : IsWalking défini à false. État actuel : ");
+        }
+        Debug.Log($"[Runway] Joueur {clientId} arrivé au point C : {pointC}");
+    }
+
+    private IEnumerator MovePlayerToPosition(ulong clientId, NetworkTransform netTransform, Vector3 startPos, Vector3 targetPos, float duration)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / duration);
+            Vector3 newPosition = Vector3.Lerp(startPos, targetPos, t);
+
+            // Synchroniser la position via NetworkTransform
+            netTransform.Teleport(newPosition, Quaternion.identity, netTransform.transform.localScale);
+
+            yield return null;
+        }
+
+        // S'assurer que la position finale est exacte
+        netTransform.Teleport(targetPos, Quaternion.identity, netTransform.transform.localScale);
+    }
+
+    #endregion
+
+    #region Téléportation
 
     private void TeleportPlayerToRunway(ulong clientId)
     {
@@ -163,14 +290,14 @@ public class RunwayManager : NetworkBehaviour
         var netTransform = player.GetComponent<NetworkTransform>();
         netTransform.Teleport(runwaySpot.position, runwaySpot.rotation, player.transform.localScale);
 
-        Debug.Log($"[Runway] 🚶 Joueur {clientId} téléporté !");
+        Debug.Log($"[Runway] 🚶 Joueur {clientId} téléporté au RunwaySpot !");
     }
 
     [ClientRpc]
     private void TeleportClientRpc(ulong targetClientId, ulong executingClientId)
     {
         if (NetworkManager.Singleton.LocalClientId != executingClientId)
-            return; // Ce RPC est uniquement pour le client concerné
+            return;
 
         var player = NetworkPlayerManager.Instance.GetLocalPlayer();
         if (player == null)
@@ -189,7 +316,7 @@ public class RunwayManager : NetworkBehaviour
         var netTransform = player.GetComponent<NetworkTransform>();
         netTransform.Teleport(runwaySpot.position, runwaySpot.rotation, player.transform.localScale);
 
-        Debug.Log($"[Runway] ✅ Joueur local téléporté pour défiler !");
+        Debug.Log($"[Runway] ✅ Joueur local téléporté au RunwaySpot pour défiler !");
     }
 
     [ServerRpc(RequireOwnership = false)]

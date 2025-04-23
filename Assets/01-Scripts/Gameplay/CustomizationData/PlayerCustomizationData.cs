@@ -9,10 +9,26 @@ using UnityEngine;
 /// </summary>
 public class PlayerCustomizationData : NetworkBehaviour
 {
+    private static List<Item> _cachedItems;
+
+    /// <summary>
+    /// Charge et met en cache la liste des items pour éviter de multiples appels à Resources.LoadAll.
+    /// </summary>
+    private static List<Item> GetCachedItems()
+    {
+        if (_cachedItems == null)
+        {
+            _cachedItems = Resources.LoadAll<Item>("Items").ToList();
+            Debug.Log($"[PlayerCustomizationData] 🔍 {(_cachedItems.Count > 0 ? $"Chargé {_cachedItems.Count} items" : "⚠ Aucun item chargé")}");
+        }
+        return _cachedItems;
+    }
+
     [ContextMenu("🧪 LogTenue()")]
     public void LogTenue()
     {
         Debug.Log($"[CustomizationData] 🔍 Tenue du joueur {OwnerClientId}");
+        if (Data.Value.equippedItemIds == null) return;
 
         foreach (var kvp in Data.Value.equippedItemIds)
         {
@@ -26,36 +42,115 @@ public class PlayerCustomizationData : NetworkBehaviour
         }
     }
 
-
     #region 📦 Données synchronisées
-
-    public override void OnNetworkSpawn()
-    {
-        if (IsServer || IsClient)
-        {
-            Data.OnValueChanged += OnCustomizationDataChanged;
-        }
-    }
-
 
     /// <summary>
     /// Données de personnalisation (équipements) synchronisées via Netcode.
     /// </summary>
     public NetworkVariable<CustomizationData> Data =
-        new(writePerm: NetworkVariableWritePermission.Owner);
+        new(writePerm: NetworkVariableWritePermission.Server);
+
+    public override void OnNetworkSpawn()
+    {
+        Debug.Log($"[PlayerCustomizationData] 🚀 OnNetworkSpawn pour joueur {OwnerClientId} (IsServer: {IsServer}, IsClient: {IsClient})");
+
+        if (IsServer || IsClient)
+        {
+            Data.OnValueChanged += OnCustomizationDataChanged;
+        }
+
+        // Appliquer les visuels pour ce joueur
+        ApplyVisualsForPlayer();
+
+        // Si c'est un client ou l'hôte, mettre à jour tous les visuels
+        if (IsClient || IsServer)
+        {
+            UpdateAllPlayersVisuals();
+        }
+
+        // Si c'est le serveur, forcer une synchronisation initiale pour tous les clients
+        if (IsServer)
+        {
+            RefreshAllClientsClientRpc();
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer || IsClient)
+        {
+            Data.OnValueChanged -= OnCustomizationDataChanged;
+        }
+    }
+
     #endregion
 
     #region 🎮 Application des visuels
 
     /// <summary>
+    /// Applique les visuels pour ce joueur spécifique.
+    /// </summary>
+    private void ApplyVisualsForPlayer()
+    {
+        if (Data.Value.equippedItemIds == null || Data.Value.equippedItemIds.Count == 0)
+        {
+            Debug.LogWarning($"[PlayerCustomizationData] ⚠ Aucune donnée de tenue pour le joueur {OwnerClientId}");
+            return;
+        }
+
+        Debug.Log($"[PlayerCustomizationData] 🧠 Application des visuels pour le joueur {OwnerClientId}");
+
+        var handler = GetComponentInChildren<EquippedVisualsHandler>(true);
+        if (handler != null)
+        {
+            ApplyToVisuals(handler, GetCachedItems());
+        }
+        else
+        {
+            Debug.LogError($"[PlayerCustomizationData] ❌ Aucun EquippedVisualsHandler trouvé pour le joueur {OwnerClientId}");
+        }
+    }
+
+    /// <summary>
+    /// Met à jour les visuels de tous les joueurs dans la scène sur ce client.
+    /// </summary>
+    private void UpdateAllPlayersVisuals()
+    {
+        Debug.Log($"[PlayerCustomizationData] 🔄 Mise à jour des visuels pour tous les joueurs sur le client {NetworkManager.Singleton.LocalClientId}");
+
+        var allPlayers = FindObjectsOfType<PlayerCustomizationData>();
+        Debug.Log($"[PlayerCustomizationData] 🔍 {allPlayers.Length} joueurs trouvés dans la scène");
+
+        foreach (var player in allPlayers)
+        {
+            if (player.Data.Value.equippedItemIds == null || player.Data.Value.equippedItemIds.Count == 0)
+            {
+                Debug.LogWarning($"[PlayerCustomizationData] ⚠ Aucune donnée de tenue pour le joueur {player.OwnerClientId}");
+                continue;
+            }
+
+            Debug.Log($"[PlayerCustomizationData] 🎨 Application des visuels pour le joueur {player.OwnerClientId}");
+
+            var handler = player.GetComponentInChildren<EquippedVisualsHandler>(true);
+            if (handler != null)
+            {
+                player.ApplyToVisuals(handler, GetCachedItems());
+            }
+            else
+            {
+                Debug.LogError($"[PlayerCustomizationData] ❌ Aucun EquippedVisualsHandler trouvé pour le joueur {player.OwnerClientId}");
+            }
+        }
+    }
+
+    /// <summary>
     /// Applique les objets équipés à un handler visuel, basé sur les données synchronisées.
-    /// ⚠ Doit être appelé uniquement quand tous les objets sont prêts.
     /// </summary>
     public void ApplyToVisuals(EquippedVisualsHandler handler, List<Item> allItems)
     {
         if (handler == null)
         {
-            Debug.LogWarning("[PlayerCustomizationData] ⚠ Aucun handler passé pour ApplyToVisuals.");
+            Debug.LogError("[PlayerCustomizationData] ⚠ Handler null dans ApplyToVisuals.");
             return;
         }
 
@@ -64,6 +159,8 @@ public class PlayerCustomizationData : NetworkBehaviour
             Debug.LogWarning($"[ApplyToVisuals] ⚠ Aucune donnée de tenue pour le joueur {OwnerClientId}.");
             return;
         }
+
+        Debug.Log($"[ApplyToVisuals] 🔄 Application des visuels pour {OwnerClientId} avec {Data.Value.equippedItemIds.Count} items");
 
         foreach (var kvp in Data.Value.equippedItemIds)
         {
@@ -82,9 +179,10 @@ public class PlayerCustomizationData : NetworkBehaviour
                 continue;
             }
 
-            // Ajout : récupérer couleur + texture
             Data.Value.TryGetColor(slot, out var color);
             Data.Value.TryGetTexture(slot, out var textureName);
+
+            Debug.Log($"[ApplyToVisuals] 🎯 Équipement de {slot}: {itemId} (Couleur: {ColorUtility.ToHtmlStringRGBA(color)}, Texture: {textureName})");
 
             handler.Equip(slot, item.prefab, color, textureName);
         }
@@ -101,7 +199,7 @@ public class PlayerCustomizationData : NetworkBehaviour
             return;
         }
 
-        Debug.Log($"[CustomizationData] 🎯 Application locale de {itemId} dans {slotType}");
+        Debug.Log($"[CustomizationData] 🎯 Application locale de {itemId} dans {slotType} pour {OwnerClientId}");
 
         Data.Value.SetItem(slotType, itemId);
 
@@ -112,7 +210,7 @@ public class PlayerCustomizationData : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning("[CustomizationData] ⚠ Aucun EquippedVisualsHandler trouvé.");
+            Debug.LogError("[CustomizationData] ⚠ Aucun EquippedVisualsHandler trouvé.");
         }
 
         RequestEquipItemServerRpc(slotType, itemId);
@@ -124,8 +222,29 @@ public class PlayerCustomizationData : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RequestEquipItemServerRpc(SlotType slotType, string itemId)
     {
-        Debug.Log($"[PlayerCustomizationData] 🛰️ Equipement demandé : {slotType} → {itemId}");
+        Debug.Log($"[PlayerCustomizationData] 🛰️ Équipement demandé : {slotType} → {itemId} pour le joueur {OwnerClientId}");
+
+        var allItems = GetCachedItems();
+        var item = allItems.FirstOrDefault(i => i.itemId == itemId);
+        if (item == null)
+        {
+            Debug.LogWarning($"[PlayerCustomizationData] ⚠ Item {itemId} non trouvé pour {slotType}");
+            return;
+        }
+
         Data.Value.SetItem(slotType, itemId);
+
+        var handler = GetComponentInChildren<EquippedVisualsHandler>(true);
+        if (handler != null)
+        {
+            ApplyToVisuals(handler, allItems);
+        }
+        else
+        {
+            Debug.LogError($"[PlayerCustomizationData] ❌ Aucun EquippedVisualsHandler trouvé pour appliquer l'équipement sur le serveur pour {OwnerClientId}");
+        }
+
+        RefreshAllClientsClientRpc();
     }
 
     /// <summary>
@@ -143,23 +262,32 @@ public class PlayerCustomizationData : NetworkBehaviour
             return;
         }
 
-        List<Item> allItems = Resources.LoadAll<Item>("Items").ToList();
-        ApplyToVisuals(handler, allItems);
+        ApplyToVisuals(handler, GetCachedItems());
+        RefreshAllClientsClientRpc();
+    }
+
+    /// <summary>
+    /// Notifie tous les clients de mettre à jour les visuels de tous les joueurs.
+    /// </summary>
+    [ClientRpc]
+    private void RefreshAllClientsClientRpc()
+    {
+        Debug.Log($"[PlayerCustomizationData] 🔄 Rafraîchissement des visuels pour tous les joueurs sur le client {NetworkManager.Singleton.LocalClientId}");
+        UpdateAllPlayersVisuals();
     }
 
     private void OnCustomizationDataChanged(CustomizationData previousValue, CustomizationData newValue)
     {
-        var handler = GetComponentInChildren<EquippedVisualsHandler>(true);
-        if (handler == null)
+        Debug.Log($"[PlayerCustomizationData] 🔄 Données de personnalisation modifiées pour le joueur {OwnerClientId} sur client {NetworkManager.Singleton.LocalClientId}");
+
+        ApplyVisualsForPlayer();
+
+        if (IsServer)
         {
-            Debug.LogWarning("[CustomizationData] ⚠ Pas de handler pour appliquer les visuels.");
-            return;
+            Debug.Log($"[PlayerCustomizationData] 🔔 Serveur notifie tous les clients pour le joueur {OwnerClientId}");
+            RefreshAllClientsClientRpc();
         }
-
-        List<Item> allItems = Resources.LoadAll<Item>("Items").ToList();
-        ApplyToVisuals(handler, allItems);
     }
-
 
     #endregion
 }
