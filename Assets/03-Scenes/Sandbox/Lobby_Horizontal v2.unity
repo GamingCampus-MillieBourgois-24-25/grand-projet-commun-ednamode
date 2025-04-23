@@ -15113,6 +15113,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 243725640}
     - target: {fileID: 3248472179866018280, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
+      propertyPath: bounceDelay
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3248472179866018280, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
+      propertyPath: bounceHeight
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3248472179866018280, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
       propertyPath: gameobjectPanel
       value: 
       objectReference: {fileID: 243725639}
@@ -15562,6 +15570,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main Menu
       objectReference: {fileID: 0}
+    - target: {fileID: 1643546847797775729, guid: 4363a414a96c7064ea3d3c24ca1407e0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4953016876434718368, guid: 4363a414a96c7064ea3d3c24ca1407e0, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -15640,6 +15652,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4953016876434718368, guid: 4363a414a96c7064ea3d3c24ca1407e0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7101513152549728749, guid: 4363a414a96c7064ea3d3c24ca1407e0, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7688139743278358471, guid: 4363a414a96c7064ea3d3c24ca1407e0, type: 3}
