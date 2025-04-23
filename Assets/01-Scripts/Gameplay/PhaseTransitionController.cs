@@ -15,6 +15,9 @@ public class GamePhaseTransitionController : NetworkBehaviour
     [Tooltip("Délai entre chaque grande phase (en secondes)")]
     [SerializeField] private float delayBetweenPhases = 3f;
 
+    [Tooltip("Référence vers le RunwayManager pour déclencher le défilé")]
+    [SerializeField] private RunwayManager runwayManager;
+
     private GamePhaseManager _phaseManager;
 
     private void Awake()
@@ -29,11 +32,15 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
     private void Start()
     {
+        Debug.Log("[GamePhaseTransition] stqrt déclenché");
+
         _phaseManager = FindObjectOfType<GamePhaseManager>();
         if (_phaseManager == null)
             Debug.LogError("[GamePhaseTransition] Aucun GamePhaseManager trouvé dans la scène.");
+        runwayManager = FindObjectOfType<RunwayManager>(); // Ajout
+        if (runwayManager == null)
+            Debug.LogError("[GamePhaseTransition] Aucun RunwayManager trouvé dans la scène.");
     }
-
     /// <summary>
     /// Débute la séquence de phases de jeu. S'exécute côté serveur uniquement.
     /// </summary>
@@ -49,11 +56,21 @@ public class GamePhaseTransitionController : NetworkBehaviour
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
         SetPhase(GamePhaseManager.GamePhase.RunwayVoting);
+        Debug.Log("[GamePhaseTransition] couroutine ok");
 
         // 🔁 Appliquer les visuels pour tous les joueurs avant les votes/défilés
         ApplyAllPlayersVisualsClientRpc();
         yield return new WaitForSeconds(1f);
-
+        // Déclencher la phase de défilé
+        if (runwayManager != null)
+        {
+            runwayManager.StartRunwayPhase();
+            Debug.Log("[GamePhaseTransition] StartRunwayPhase déclenché");
+        }
+        else
+        {
+            Debug.LogError("[GamePhaseTransition] RunwayManager est null, impossible de déclencher StartRunwayPhase");
+        }
         var players = NetworkManager.Singleton.ConnectedClientsList.Select(c => c.PlayerObject.GetComponent<PlayerCustomizationData>()).ToList();
         foreach (var player in players)
         {

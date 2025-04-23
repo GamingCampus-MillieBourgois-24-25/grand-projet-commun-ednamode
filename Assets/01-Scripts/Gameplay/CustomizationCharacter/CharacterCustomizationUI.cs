@@ -113,7 +113,7 @@ namespace CharacterCustomization
                 _characterInstance = Instantiate(characterPrefab, Vector3.zero, Quaternion.identity);
                 Debug.Log("[CustomizableCharacterUI] Personnage instancié : " + _characterInstance.name);
 
-                // Assigner _characterInstance au CharacterParadeController
+               /* // Assigner _characterInstance au CharacterParadeController
                 if (paradeController != null)
                 {
                     paradeController.CharacterInstance = _characterInstance; // Utiliser la propriété publique
@@ -121,7 +121,7 @@ namespace CharacterCustomization
                 else
                 {
                     Debug.LogError("[CustomizableCharacterUI] paradeController n'est pas assigné !");
-                }
+                }*/
             }
             else if (characterPrefab == null)
             {

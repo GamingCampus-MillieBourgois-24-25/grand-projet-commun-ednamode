@@ -60,6 +60,7 @@ public class RunwayManager : NetworkBehaviour
             .Select(c => c.ClientId)
             .OrderBy(id => id)
             .ToList();
+        Debug.Log($"[RunwayManager] Joueurs connectés : {string.Join(", ", orderedPlayers)}");
 
         StartCoroutine(RunwaySequenceCoroutine());
     }
@@ -90,17 +91,23 @@ public class RunwayManager : NetworkBehaviour
         DeactivateAllOtherCameras();
         FocusCameraOn(clientId);
 
-        // Assigner characterInstance pour le joueur concerné
-        if (paradeController != null)
+        var networkPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
+        if (networkPlayer != null)
         {
-            var networkPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
-            if (networkPlayer != null)
+            var paradeController = networkPlayer.GetComponent<CharacterParadeController>();
+            if (paradeController != null)
             {
-                paradeController.CharacterInstance = networkPlayer.gameObject;
-                Debug.Log($"[RunwayManager] characterInstance assigné pour client {clientId}: {networkPlayer.gameObject.name}");
+                paradeController.StartParadeClientRpc();
+                Debug.Log($"[RunwayManager] Défilé déclenché pour client {clientId}");
             }
-            paradeController.StartParadeClientRpc();
-            Debug.Log($"[RunwayManager] Défilé déclenché pour client {clientId}");
+            else
+            {
+                Debug.LogError($"[RunwayManager] CharacterParadeController non trouvé sur joueur {clientId}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"[RunwayManager] NetworkPlayer non trouvé pour client {clientId}");
         }
 
         PlayIntroSFX();
@@ -110,16 +117,20 @@ public class RunwayManager : NetworkBehaviour
     private void EndRunwayForClientRpc(ulong clientId)
     {
         if (!IsClient) return;
+
         RunwayUIManager.Instance?.HideRunwayPanel();
 
-        // Arrêter le défilé
-        if (paradeController != null)
+        var networkPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
+        if (networkPlayer != null)
         {
-            paradeController.StopParadeClientRpc();
-            Debug.Log($"[RunwayManager] Défilé arrêté pour client {clientId}");
+            var paradeController = networkPlayer.GetComponent<CharacterParadeController>();
+            if (paradeController != null)
+            {
+                paradeController.StopParadeClientRpc();
+                Debug.Log($"[RunwayManager] Défilé arrêté pour client {clientId}");
+            }
         }
     }
-
     #endregion
 
     #region ?? Caméra & SFX

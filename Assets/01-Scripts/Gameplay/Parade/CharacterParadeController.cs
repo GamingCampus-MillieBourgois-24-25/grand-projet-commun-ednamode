@@ -5,9 +5,6 @@ using System.Collections;
 
 public class CharacterParadeController : NetworkBehaviour
 {
-    [Header("Référence au personnage (assignée dynamiquement)")]
-    [SerializeField] private GameObject characterInstance;
-
     [Header("Points de défilement")]
     public Vector3 pointA = new Vector3(-39f, 2.15f, 116f);
     public Vector3 pointB = new Vector3(-43f, 2.15f, 117.26f);
@@ -26,66 +23,31 @@ public class CharacterParadeController : NetworkBehaviour
     private bool isPaused = false;
     private bool isFinished = false;
 
-    public GameObject CharacterInstance
-    {
-        get => characterInstance;
-        set
-        {
-            characterInstance = value;
-            Debug.Log($"[CharacterParadeController] CharacterInstance assigné : {(characterInstance != null ? characterInstance.name : "null")}");
-            InitializeCharacter();
-        }
-    }
-
     public override void OnNetworkSpawn()
     {
         Debug.Log($"[CharacterParadeController] OnNetworkSpawn appelé, IsOwner={IsOwner}, OwnerClientId={OwnerClientId}");
         paradePoints = new Vector3[] { pointA, pointB, pointC, pointD };
-        if (characterInstance != null)
-        {
-            Debug.Log($"[CharacterParadeController] characterInstance déjà assigné dans OnNetworkSpawn : {characterInstance.name}");
-            InitializeCharacter();
-        }
-        else
-        {
-            Debug.LogWarning("[CharacterParadeController] characterInstance non assigné dans OnNetworkSpawn, tentative de récupération...");
-            // Tentative de récupération du NetworkObject du joueur
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.ConnectedClients.ContainsKey(OwnerClientId))
-            {
-                var playerObject = NetworkManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject;
-                if (playerObject != null)
-                {
-                    characterInstance = playerObject.gameObject;
-                    Debug.Log($"[CharacterParadeController] characterInstance récupéré via NetworkObject : {characterInstance.name}");
-                    InitializeCharacter();
-                }
-            }
-        }
+        InitializeCharacter();
     }
 
     private void InitializeCharacter()
     {
         Debug.Log("[CharacterParadeController] InitializeCharacter appelé");
-        if (characterInstance == null)
-        {
-            Debug.LogError("[CharacterParadeController] characterInstance est null");
-            return;
-        }
 
-        navAgent = characterInstance.GetComponent<NavMeshAgent>();
+        navAgent = GetComponent<NavMeshAgent>();
         if (navAgent == null)
         {
-            Debug.LogError("[CharacterParadeController] NavMeshAgent non trouvé sur characterInstance");
+            Debug.LogError("[CharacterParadeController] NavMeshAgent non trouvé sur ce GameObject");
             return;
         }
         navAgent.speed = navAgentSpeed;
         navAgent.stoppingDistance = 0.1f;
         Debug.Log($"[CharacterParadeController] NavMeshAgent trouvé, speed={navAgent.speed}, stoppingDistance={navAgent.stoppingDistance}");
 
-        animator = characterInstance.GetComponent<Animator>();
+        animator = GetComponent<Animator>();
         if (animator == null)
         {
-            Debug.LogError("[CharacterParadeController] Animator non trouvé sur characterInstance");
+            Debug.LogError("[CharacterParadeController] Animator non trouvé sur ce GameObject");
             return;
         }
         Debug.Log("[CharacterParadeController] Animator trouvé");
@@ -102,7 +64,7 @@ public class CharacterParadeController : NetworkBehaviour
 
         if (!isPaused && !navAgent.pathPending)
         {
-            float distanceToTarget = Vector3.Distance(characterInstance.transform.position, paradePoints[currentTargetIndex]);
+            float distanceToTarget = Vector3.Distance(transform.position, paradePoints[currentTargetIndex]);
             Debug.Log($"[CharacterParadeController] Déplacement vers cible {currentTargetIndex} ({paradePoints[currentTargetIndex]}), Distance={distanceToTarget:F3}, StoppingDistance={navAgent.stoppingDistance}, RemainingDistance={navAgent.remainingDistance:F3}");
 
             if (distanceToTarget <= navAgent.stoppingDistance + 0.3f)
@@ -139,16 +101,16 @@ public class CharacterParadeController : NetworkBehaviour
     [ClientRpc]
     public void StartParadeClientRpc()
     {
-        Debug.Log($"[CharacterParadeController] StartParadeClientRpc appelé, IsOwner={IsOwner}, characterInstance={(characterInstance != null ? characterInstance.name : "null")}, navAgent={(navAgent != null ? "présent" : "null")}");
+        Debug.Log($"[CharacterParadeController] StartParadeClientRpc appelé, IsOwner={IsOwner}, GameObject={gameObject.name}, navAgent={(navAgent != null ? "présent" : "null")}");
         if (!IsOwner)
         {
             Debug.Log("[CharacterParadeController] StartParadeClientRpc ignoré : non-owner");
             return;
         }
 
-        if (characterInstance == null || navAgent == null)
+        if (navAgent == null || animator == null)
         {
-            Debug.LogError("[CharacterParadeController] Impossible de démarrer le défilé : characterInstance ou navAgent est null");
+            Debug.LogError("[CharacterParadeController] Impossible de démarrer le défilé : navAgent ou animator est null");
             return;
         }
 
@@ -157,8 +119,10 @@ public class CharacterParadeController : NetworkBehaviour
         isFinished = false;
         currentTargetIndex = 0;
 
+        // Forcer la téléportation
+        transform.position = pointA;
         navAgent.Warp(pointA);
-        Debug.Log($"[CharacterParadeController] Téléportation à pointA={pointA}");
+        Debug.Log($"[CharacterParadeController] Téléportation à pointA={pointA}, position actuelle={transform.position}");
         navAgent.isStopped = false;
         SetNextDestination();
     }
@@ -248,7 +212,7 @@ public class CharacterParadeController : NetworkBehaviour
 
     public Vector3 GetCurrentPosition()
     {
-        Vector3 position = characterInstance != null ? characterInstance.transform.position : Vector3.zero;
+        Vector3 position = transform.position;
         Debug.Log($"[CharacterParadeController] GetCurrentPosition : {position}");
         return position;
     }

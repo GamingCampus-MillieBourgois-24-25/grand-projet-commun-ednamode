@@ -3354,6 +3354,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 136706625}
   m_CullTransparentMesh: 1
+--- !u!82 &143441759 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 713933515105271150, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
+  m_PrefabInstance: {fileID: 3854745812227227473}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &145861788
 GameObject:
   m_ObjectHideFlags: 0
@@ -15350,7 +15355,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.00030517578, y: 0}
+  m_AnchoredPosition: {x: -0.00024414062, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &691008266
@@ -31129,6 +31134,83 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1374382645}
   m_CullTransparentMesh: 1
+--- !u!1 &1377615518
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1377615521}
+  - component: {fileID: 1377615519}
+  - component: {fileID: 1377615520}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1377615519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377615518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3270562053
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &1377615520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377615518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44bff4bc8e9519f48b0f39663ef6527e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  pointA: {x: -39, y: 2.15, z: 116}
+  pointB: {x: -43, y: 2.15, z: 117.26}
+  pointC: {x: -43, y: 2.15, z: 134.19}
+  pointD: {x: -49, y: 2.15, z: 116.18}
+  pauseDurationAtC: 2
+  navAgentSpeed: 3.5
+--- !u!4 &1377615521
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377615518}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 57.840393, y: 90.87909, z: -259.7897}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1381338639
 GameObject:
   m_ObjectHideFlags: 0
@@ -47872,6 +47954,18 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 3843173778
       objectReference: {fileID: 0}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: sfxAudioSource
+      value: 
+      objectReference: {fileID: 143441759}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: paradeController
+      value: 
+      objectReference: {fileID: 1377615520}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: runwayAnnounceSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 591db53533fa7b94cb09534e0176d556, type: 3}
     - target: {fileID: 3220274018737963484, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.1315146
@@ -48305,6 +48399,10 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 1910677184
       objectReference: {fileID: 0}
+    - target: {fileID: 8256609374081343765, guid: 41d049ce1f72ae64f88296d58c6b2b34, type: 3}
+      propertyPath: runwayManager
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8462441088013454958, guid: 41d049ce1f72ae64f88296d58c6b2b34, type: 3}
       propertyPath: 'spawnPoints.Array.data[0]'
       value: 
@@ -48523,3 +48621,4 @@ SceneRoots:
   - {fileID: 8950208491779098856}
   - {fileID: 5083907865659789016}
   - {fileID: 4578096406132894529}
+  - {fileID: 1377615521}
