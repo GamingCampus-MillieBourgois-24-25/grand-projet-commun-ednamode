@@ -87,7 +87,7 @@ MonoBehaviour:
     hasCloseButton: 1
     useSpecialAnimation: 0
     specialAnimation: 0
-  - panelName: Offline Settings
+  - panelName: Menu Settings
     panelObject: {fileID: 0}
     triggerButton: {fileID: 0}
     startVisible: 0
@@ -96,7 +96,7 @@ MonoBehaviour:
     hasCloseButton: 0
     useSpecialAnimation: 1
     specialAnimation: 4
-  - panelName: Online Settings
+  - panelName: Lobby Settings
     panelObject: {fileID: 0}
     triggerButton: {fileID: 0}
     startVisible: 0
@@ -114,6 +114,24 @@ MonoBehaviour:
     hasCloseButton: 0
     useSpecialAnimation: 1
     specialAnimation: 4
+  - panelName: Runway Settings
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 0
+    useSpecialAnimation: 1
+    specialAnimation: 4
+  - panelName: Podium Settings
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 0
+    useSpecialAnimation: 1
+    specialAnimation: 4
   - panelName: Show Mail
     panelObject: {fileID: 0}
     triggerButton: {fileID: 0}
@@ -121,15 +139,6 @@ MonoBehaviour:
     closeOnOutsideClick: 1
     closeOtherPanelWhenOpened: 0
     hasCloseButton: 0
-    useSpecialAnimation: 0
-    specialAnimation: 0
-  - panelName: Show Parameters
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 0
-    hasCloseButton: 1
     useSpecialAnimation: 0
     specialAnimation: 0
   - panelName: Show Profile
@@ -141,31 +150,76 @@ MonoBehaviour:
     hasCloseButton: 1
     useSpecialAnimation: 0
     specialAnimation: 0
-  - panelName: OfflineChat
+  - panelName: Show Parameters
     panelObject: {fileID: 0}
     triggerButton: {fileID: 0}
     startVisible: 0
     closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 1
-    hasCloseButton: 0
-    useSpecialAnimation: 0
-    specialAnimation: 0
-  - panelName: OnlineChat
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 1
-    closeOtherPanelWhenOpened: 1
-    hasCloseButton: 0
-    useSpecialAnimation: 0
-    specialAnimation: 0
-  - panelName: Customization Panels
-    panelObject: {fileID: 0}
-    triggerButton: {fileID: 0}
-    startVisible: 0
-    closeOnOutsideClick: 0
     closeOtherPanelWhenOpened: 0
-    hasCloseButton: 0
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Customization Parameters
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 0
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Runway Parameters
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 0
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Menu Chat
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Lobby Chat
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Customization Chat
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Runway Chat
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
+    useSpecialAnimation: 0
+    specialAnimation: 0
+  - panelName: Podium Chat
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 1
+    closeOtherPanelWhenOpened: 1
+    hasCloseButton: 1
     useSpecialAnimation: 0
     specialAnimation: 0
   animationDuration: 0.4
