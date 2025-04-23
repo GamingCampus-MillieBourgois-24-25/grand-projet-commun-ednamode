@@ -34,6 +34,8 @@ public class GamePhaseTransitionController : NetworkBehaviour
             Debug.LogError("[GamePhaseTransition] Aucun GamePhaseManager trouvé dans la scène.");
     }
 
+    #region Phases de jeu
+
     /// <summary>
     /// Débute la séquence de phases de jeu. S'exécute côté serveur uniquement.
     /// </summary>
@@ -43,16 +45,21 @@ public class GamePhaseTransitionController : NetworkBehaviour
         StartCoroutine(PhaseSequenceCoroutine());
     }
 
+    /// <summary>
+    /// Coroutine de la séquence de phases de jeu.
+    /// </summary>
     private IEnumerator PhaseSequenceCoroutine()
     {
+        // ============= Phase d'attente ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
+        // ============= Phase de défilé ============= //
         SetPhase(GamePhaseManager.GamePhase.RunwayVoting);
 
-        // 🔁 Appliquer les visuels pour tous les joueurs avant les votes/défilés
         ApplyAllPlayersVisualsClientRpc();
         yield return new WaitForSeconds(1f);
+        RunwayManager.Instance.StartRunwayPhase();
 
         var players = NetworkManager.Singleton.ConnectedClientsList.Select(c => c.PlayerObject.GetComponent<PlayerCustomizationData>()).ToList();
         foreach (var player in players)
@@ -63,12 +70,18 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         yield return new WaitForSeconds(delayBetweenPhases);
 
+        // ============= Phase de podium ============= //
         SetPhase(GamePhaseManager.GamePhase.Podium);
+        PodiumManager.Instance.StartPodiumSequence();
         yield return new WaitForSeconds(_phaseManager.PodiumDuration);
 
+        // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
     }
 
+    /// <summary>
+    /// Change la phase de jeu et synchronise l'affichage sur tous les clients.
+    /// </summary>
     private void SetPhase(GamePhaseManager.GamePhase newPhase)
     {
         if (!IsServer) return;
@@ -76,6 +89,9 @@ public class GamePhaseTransitionController : NetworkBehaviour
         _phaseManager.CurrentPhase.Value = newPhase;
     }
 
+    /// <summary>
+    /// Synchronise la phase de jeu sur tous les clients.
+    /// </summary>
     [ClientRpc]
     private void SyncPhaseClientRpc(int phaseValue)
     {
@@ -127,6 +143,13 @@ public class GamePhaseTransitionController : NetworkBehaviour
             UIManager.Instance.ShowPanelDirect(toShow);
     }
 
+    #endregion
+
+    #region UI & Visuels
+
+    /// <summary>
+    /// Applique les visuels de tous les joueurs sur le client.
+    /// </summary>
     [ClientRpc]
     private void ApplyAllPlayersVisualsClientRpc()
     {
@@ -141,9 +164,14 @@ public class GamePhaseTransitionController : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Affiche le défilé pour le joueur spécifié.
+    /// </summary>
     [ClientRpc]
     private void ShowRunwayForClientRpc(ulong playerClientId)
     {
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(playerClientId);
     }
+
+    #endregion
 }
