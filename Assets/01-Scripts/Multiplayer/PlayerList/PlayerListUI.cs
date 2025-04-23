@@ -62,7 +62,7 @@ public class PlayerListUI : MonoBehaviour
             LayoutRebuilder.ForceRebuildLayoutImmediate(container.GetComponent<RectTransform>());
             playerEntries[player.Id] = entry;
 
-            // Animation
+            // Animation d’entrée
             Transform animRoot = entry.transform.Find("AnimatedContainer");
             if (animRoot != null)
             {
@@ -73,21 +73,19 @@ public class PlayerListUI : MonoBehaviour
                 anim.DOAnchorPosX(0, 0.4f).SetEase(Ease.OutBack);
             }
 
-            // Texte
+            // Texte du pseudo
             TMP_Text nameText = entry.GetComponentInChildren<TMP_Text>();
             if (nameText != null)
                 nameText.text = name;
 
+            // Icône de host / bouton Kick
             Transform hostPanel = entry.transform.Find("Host Panel");
             if (hostPanel != null)
             {
-                // 👑 Affiche la couronne uniquement si CE joueur est le host (vu par tous)
                 Transform crown = hostPanel.Find("Crown Image");
                 if (crown != null)
                     crown.gameObject.SetActive(isHost);
 
-                // 🔴 Affiche le bouton kick seulement si : 
-                // le joueur est AUTRE que le host, et je suis le host local
                 Button kickBtn = hostPanel.Find("Kick Button")?.GetComponent<Button>();
                 if (kickBtn != null)
                 {
@@ -105,6 +103,10 @@ public class PlayerListUI : MonoBehaviour
                     }
                 }
             }
+
+            // ✅ ➕ ICI : applique l'état ready réel du joueur
+            bool isReady = MultiplayerManager.Instance.IsPlayerReady(playerId);
+            MarkPlayerReady(playerId, isReady);
         }
     }
 
@@ -137,24 +139,24 @@ public class PlayerListUI : MonoBehaviour
             return;
         }
 
-        TMP_Text nameText = entry.GetComponentInChildren<TMP_Text>();
-        if (nameText == null) return;
+        // 🔍 Cherche la gélule d’état
+        var fill = entry.transform.Find("AnimatedContainer/ReadyPill/Fill")?.GetComponent<Image>();
+        if (fill == null)
+        {
+            Debug.LogWarning("[UI] Aucun composant 'Fill' trouvé pour ReadyPill.");
+            return;
+        }
+
+        fill.DOKill(); // stoppe les animations en cours
 
         if (isReady)
         {
-            nameText.color = Color.green;
-            nameText.transform.DOKill();
-            nameText.transform
-                .DOScale(1.0f, 0.7f)
-                .SetEase(Ease.InOutSine)
-                .SetLoops(-1, LoopType.Yoyo)
-                .SetId("ReadyPlayerPulse");
+            fill.fillAmount = 0f;
+            fill.DOFillAmount(1f, 0.4f).SetEase(Ease.OutQuad);
         }
         else
         {
-            nameText.color = Color.white;
-            nameText.transform.DOKill();
-            nameText.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack);
+            fill.DOFillAmount(0f, 0.4f).SetEase(Ease.InQuad);
         }
     }
 }

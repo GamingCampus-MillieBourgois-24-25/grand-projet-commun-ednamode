@@ -35,6 +35,8 @@ public class MultiplayerManager : NetworkBehaviour
 
     public bool IsReady { get; private set; } = false;
 
+    private SceneManager sceneManager;
+
     private async void Awake()
     {
         if (Instance != null && Instance != this)
@@ -51,6 +53,7 @@ public class MultiplayerManager : NetworkBehaviour
 
     private async void Start()
     {
+        sceneManager = SceneManager.Instance;
         isReady = false;
         await AuthGuard.EnsureSignedInAsync();
         isReady = AuthenticationService.Instance.IsSignedIn;
@@ -66,7 +69,6 @@ public class MultiplayerManager : NetworkBehaviour
             Debug.LogWarning("🕓 Attente du NetworkManager...");
             await Task.Delay(100); // ⏱️ petite pause pour éviter un while infini en frame
         }
-
 
         // ⏳ Attendre qu'on soit bien serveur et que tout soit initialisé
         await Task.Delay(500);
@@ -167,6 +169,30 @@ public class MultiplayerManager : NetworkBehaviour
 
     }
 
+    /// <summary>
+    /// Retourne le nom du joueur associé à son clientId, sinon \"Joueur {clientId}\".
+    /// </summary>
+    public string GetDisplayName(ulong clientId)
+    {
+        // Vérifie si DataSaver est initialisé et contient des données
+        if (DataSaver.Instance != null && DataSaver.Instance.dts != null)
+        {
+            string firebaseUserName = DataSaver.Instance.dts.userName;
+            string firebaseUserId = DataSaver.Instance.userId;
+            return string.IsNullOrEmpty(firebaseUserName) ? $"Joueur {firebaseUserId}" : firebaseUserName;
+            
+        }
+
+        // Si DataSaver n'est pas disponible ou les données sont manquantes, utilise les données de SessionStore
+        if (!SessionStore.Instance) return $"Joueur {clientId}";
+
+        string playerId = SessionStore.Instance.GetPlayerId(clientId);
+        string playerName = SessionStore.Instance.GetPlayerName(playerId);
+
+        return string.IsNullOrEmpty(playerName) ? $"Joueur {clientId}" : playerName;
+    }
+
+
     [ClientRpc]
     private void RefreshLobbyClientRpc()
     {
@@ -260,13 +286,14 @@ public class MultiplayerManager : NetworkBehaviour
                 return;
             }
 
-            
-
-            var playerName = "Joueur_" + UnityEngine.Random.Range(1000, 9999);
+            // Utilisation des données de DataSaver
+            string playerName = DataSaver.Instance.dts.userName;
+            string playerId = DataSaver.Instance.userId;
 
             var playerData = new Dictionary<string, PlayerDataObject>
             {
-                { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) }
+                { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                { "id", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerId) }
             };
 
             var createOptions = new CreateLobbyOptions
@@ -313,7 +340,6 @@ public class MultiplayerManager : NetworkBehaviour
         FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode(CurrentLobby.LobbyCode);
         Debug.Log($"[LOBBY] Code d'invitation du lobby : {CurrentLobby.LobbyCode}");
         Debug.Log($"[RELAY] Code de Relay : {JoinCode}");
-
     }
 
     public async void JoinLobbyByCode(string code, MultiplayerUI multiplayerUI)
@@ -322,13 +348,18 @@ public class MultiplayerManager : NetworkBehaviour
 
         try
         {
+            // Utilisation des données de DataSaver
+            string playerName = DataSaver.Instance.dts.userName;
+            string playerId = DataSaver.Instance.userId;
+
             var joinOptions = new JoinLobbyByCodeOptions
             {
                 Player = new Unity.Services.Lobbies.Models.Player(
                     id: AuthenticationService.Instance.PlayerId,
                     data: new Dictionary<string, PlayerDataObject>
                     {
-                    { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "Client_" + UnityEngine.Random.Range(0, 9999)) }
+                        { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                        { "id", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerId) }
                     }
                 )
             };
@@ -448,45 +479,30 @@ public class MultiplayerManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost)
         {
-            SubmitReadyServerRpc(isReady);
-            PlayerListUI ui = FindFirstObjectByType<PlayerListUI>();
-            if (ui != null)
-            {
-                string playerId = AuthenticationService.Instance.PlayerId;
-                ui.MarkPlayerReady(playerId, isReady);
-            }
+            string playerId = AuthenticationService.Instance.PlayerId;
+            SubmitReadyServerRpc(playerId, isReady);
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void SubmitReadyServerRpc(bool isReady, ServerRpcParams rpcParams = default)
+    private void SubmitReadyServerRpc(string playerId, bool isReady, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        Debug.Log($"[ServerRpc] Client {clientId} isReady = {isReady}");
+        Debug.Log($"[ServerRpc] {playerId} (clientId: {clientId}) isReady = {isReady}");
 
         playerReadyStates[clientId] = isReady;
-        ulong senderClientId = rpcParams.Receive.SenderClientId;
-        string playerId = SessionStore.Instance.GetPlayerId(senderClientId);
 
-        if (string.IsNullOrEmpty(playerId))
-        {
-            Debug.LogWarning($"[⚠️ ServerRpc] Impossible de récupérer playerId pour clientId = {senderClientId}. Fallback sur AuthenticationService.");
-            playerId = AuthenticationService.Instance.PlayerId;
-        }
+        // ✅ Supprime le fallback inutile ici
         UpdatePlayerReadyVisualClientRpc(playerId, isReady);
         UpdateReadyVisualClientRpc(playerId, isReady);
+
         UpdateReadyCount();
         NotifyReadyCountClientRpc(GetReadyCount(), playerReadyStates.Count);
 
         if (AllPlayersReady())
             StartCountdown();
         else
-        {
-            Debug.Log($"[ServerRpc] Pas tous les joueurs prêts. {GetReadyCount()}/{playerReadyStates.Count} prêts.");
             UIManager.Instance?.CancelCountdown();
-        }
-        UpdateReadyVisualClientRpc(playerId, isReady);
-
     }
 
     [ClientRpc]
@@ -527,15 +543,8 @@ public class MultiplayerManager : NetworkBehaviour
             if (IsHost())
             {
                 int selectedGameMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
-                string sceneToLoad = selectedGameMode switch
-                {
-                    0 => "Scene_PassMode",
-                    1 => "Scene_Sabotage",
-                    2 => "Lucie_BasicGameplay",
-                    _ => "Mato-Lobby_Horizontal"
-                };
+                GamePhaseTransitionController.Instance?.StartPhaseSequence();
 
-                NetworkManager.Singleton.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Single);
             }
         });
     }
@@ -578,7 +587,7 @@ public class MultiplayerManager : NetworkBehaviour
     {
         yield return LobbyService.Instance.RemovePlayerAsync(SessionStore.Instance.CurrentLobby.Id, AuthenticationService.Instance.PlayerId);
         NetworkManager.Singleton.Shutdown();
-        SceneManager.LoadScene("Lobby_Horizontal 1"); // à adapter si nécessaire
+        sceneManager.LoadScene("Lobby_Horizontal v2"); // à adapter si nécessaire
     }
 
 

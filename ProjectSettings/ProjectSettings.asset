@@ -143,6 +143,9 @@ PlayerSettings:
   bundleVersion: 0.1.0
   preloadedAssets:
   - {fileID: 0}
+  - {fileID: -5452445060209260446, guid: 84b22ac815dc1f34b857c3d73e369e80, type: 2}
+  - {fileID: 11400000, guid: b7236eb4ebea37547935f7109273cb01, type: 2}
+  - {fileID: 11400000, guid: 3ae6f4307b80a3f48a5456686ccdb641, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -825,7 +828,7 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    Android: DOTWEEN
+    Android: DOTWEEN;LEVELPLAY_DEPENDENCIES_INSTALLED
     EmbeddedLinux: DOTWEEN
     GameCoreScarlett: DOTWEEN
     GameCoreXboxOne: DOTWEEN
@@ -835,7 +838,7 @@ PlayerSettings:
     PS5: DOTWEEN
     QNX: DOTWEEN
     ReservedCFE: DOTWEEN
-    Standalone: DOTWEEN
+    Standalone: DOTWEEN;LEVELPLAY_DEPENDENCIES_INSTALLED
     VisionOS: DOTWEEN
     WebGL: DOTWEEN
     Windows Store Apps: DOTWEEN
@@ -955,11 +958,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: d2e28440-b262-4c42-884c-d371f0ef4342
+  cloudProjectId: 302be826-c9ae-4664-9f17-5eb1d4cdc0de
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: DripOrDrop
-  organizationId: royhugo2004
+  organizationId: onnen
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

@@ -37,8 +37,21 @@ public class FirebaseAuthManager : MonoBehaviour
     [SerializeField]
     private Text errorDisplayText; // Utilisez TMP_Text si vous utilisez TextMeshPro, sinon remplacez par Text
 
+    public static FirebaseAuthManager Instance; // Singleton
+
+
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Rend l'objet persistant entre les scènes
+        }
+        else
+        {
+            Destroy(gameObject); // Détruit les doublons
+        }
+
         InitializeFirebase();
     }
 
@@ -127,6 +140,11 @@ public class FirebaseAuthManager : MonoBehaviour
                 Debug.Log("Auto Login Success");
                 References.userName = user.DisplayName;
                 UIManagerLogin.Instance.OpenSignedInPanel();
+
+                // Chargez les données après la connexion
+                DataSaver.Instance.InitializeDataSaver();
+                Debug.Log("Données utilisateur chargées.");
+
             }
             else
             {
@@ -148,6 +166,7 @@ public class FirebaseAuthManager : MonoBehaviour
 
             if (!signedIn && user != null)
             {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("FirebaseLogin");
                 Debug.Log("Signed out " + user.UserId);
                 UIManagerLogin.Instance.OpenLoginPanel();
                 ClearLoginFieldInputText();
@@ -172,6 +191,7 @@ public class FirebaseAuthManager : MonoBehaviour
     {
         if (user != null && auth != null)
         {
+
             auth.SignOut();
 
         }
@@ -243,6 +263,9 @@ public class FirebaseAuthManager : MonoBehaviour
             {
                 References.userName = user.DisplayName;
                 UIManagerLogin.Instance.OpenSignedInPanel();
+                // Load Data
+                DataSaver.Instance.InitializeDataSaver();
+                Debug.LogError("Load Data Done");
             }
             else
             {
@@ -324,6 +347,17 @@ public class FirebaseAuthManager : MonoBehaviour
             else
             {
                 Debug.Log("Inscription réussie. Bienvenue " + user.DisplayName);
+
+                // Initialisation des données dans DataSaver
+                DataSaver.Instance.dts.userName = name;
+                DataSaver.Instance.userId = user.UserId;
+                DataSaver.Instance.dts.totalCoins = 0; // Exemple : initialisation des pièces
+                DataSaver.Instance.dts.totalJewels = 0; // Exemple : initialisation des bijoux
+                DataSaver.Instance.dts.crrLevel = 1; // Exemple : niveau initial
+                DataSaver.Instance.dts.crrLevelProgress = 0;
+                DataSaver.Instance.dts.totalLevelProgress = 100; // Exemple : progression totale initiale
+                DataSaver.Instance.SaveDataFn(); // Sauvegarde des données dans Firebase
+
                 if (user.IsEmailVerified)
                 {
                     UIManagerLogin.Instance.OpenLoginPanel();
@@ -383,7 +417,7 @@ public class FirebaseAuthManager : MonoBehaviour
 
     public void OpenGameScene()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal 1");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal v2");
     }
 
 }

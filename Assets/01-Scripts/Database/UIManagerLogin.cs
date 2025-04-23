@@ -48,9 +48,15 @@ public class UIManagerLogin : MonoBehaviour
     }
 
 
-    public void OpenGame()
+    public void OpenGameLogin()
     {
         OpenLoginPanel();
+        firebaseAuthManager.StartGameLoginProcess();
+    }
+
+    public void OpenGameRegistration()
+    {
+        OpenRegistrationPanel();
         firebaseAuthManager.StartGameLoginProcess();
     }
 

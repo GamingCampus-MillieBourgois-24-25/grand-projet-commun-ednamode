@@ -305,6 +305,10 @@ public class UIManager : MonoBehaviour
 
         _currentPanel = panelToShow;
     }
+    public void ShowPanelDirect(GameObject panel)
+    {
+        panel.SetActive(true);
+    }
 
     public void HidePanel(GameObject panel, bool instant = false)
     {
@@ -381,6 +385,20 @@ public class UIManager : MonoBehaviour
                 FinalizePanelClose(panel);
             });
     }
+
+    // Utilitaire pour masquer un panel par son nom
+    public void HidePanelByName(string panelName, bool instant = false)
+    {
+        if (_panelDict.TryGetValue(panelName, out var panel))
+        {
+            HidePanel(panel, instant);
+        }
+        else
+        {
+            Debug.LogWarning($"[UIManager] Aucun panel trouvé pour le nom : {panelName}");
+        }
+    }
+
 
     // Utilitaire final
     private void FinalizePanelClose(GameObject panel)
@@ -492,13 +510,21 @@ public class UIManager : MonoBehaviour
 
     #region ⏳ Countdown
     [Header("⏳ Compte à rebours")]
+    [Tooltip("Panel de compte à rebours à afficher.")]
     [SerializeField] private GameObject countdownPanel;
+    [Tooltip("Texte du compte à rebours à mettre à jour.")]
     [SerializeField] private TMP_Text countdownText;
+    [Tooltip("Durée du compte à rebours en secondes.")]
+    [Range(1, 30)]
+    [SerializeField] private int countdownDuration = 10;
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color alertColor = Color.red;
 
     private Coroutine countdownRoutine;
 
+    /// <summary>
+    /// Lance le compte à rebours et exécute l'action à la fin.
+    /// </summary>
     public void StartCountdown(System.Action onComplete)
     {
         if (countdownRoutine != null)
@@ -513,7 +539,7 @@ public class UIManager : MonoBehaviour
         countdownPanel.SetActive(true);
         countdownText.gameObject.SetActive(true);
 
-        for (int i = 10; i >= 0; i--)
+        for (int i = countdownDuration; i >= 0; i--)
         {
             countdownText.text = i.ToString();
             countdownText.fontSize = (i <= 3) ? 160 : 100;
@@ -521,10 +547,10 @@ public class UIManager : MonoBehaviour
 
             countdownText.transform.localScale = Vector3.one * 0.5f;
             countdownText.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack);
-            if (i <= 3 && i > 0)
+   /*         if (i <= 3 && i > 0)
             {
                 VibrationManager.Vibrate();
-            }
+            }*/
 
             yield return new WaitForSeconds(1f);
         }
@@ -535,6 +561,9 @@ public class UIManager : MonoBehaviour
         countdownRoutine = null;
     }
 
+    /// <summary>
+    /// Annule le compte à rebours en cours.
+    /// </summary>
     public void CancelCountdown()
     {
         if (countdownRoutine != null)
@@ -586,5 +615,16 @@ public class UIManager : MonoBehaviour
         rect.DOAnchorPos(Vector2.zero, animationDuration).SetEase(Ease.OutExpo);
     }
 
+    #endregion
+
+    #region SceneManagement
+    public void loadAccount()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("AccountScene");
+    }
+    public void loadShop()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Melvin_Shop");
+    }
     #endregion
 }
