@@ -410,7 +410,7 @@ public class CustomisationUIManager : NetworkBehaviour
         if (currentSelectedItem == null) return;
         var slotType = currentCategory.Item1;
         dataToSave.SetTexture(slotType, textureName);
-        customizationData.Data.Value.SetTexture(slotType, textureName);
+        //customizationData.Data.Value.SetTexture(slotType, textureName);
     }
 
 
@@ -480,7 +480,7 @@ public class CustomisationUIManager : NetworkBehaviour
 
         // Sauvegarde de la couleur dans la structure
         dataToSave.SetColor(slotType, color);
-        customizationData.Data.Value.SetColor(slotType, color);
+        //customizationData.Data.Value.SetColor(slotType, color);
         Debug.Log($"[CustomisationUI] ✅ Couleur {color} appliquée à {slotType}");
     }
 
@@ -499,7 +499,8 @@ public class CustomisationUIManager : NetworkBehaviour
 
         Debug.Log("[CustomisationUI] ✅ Commit de la tenue locale dans la NetworkVariable.");
 
-        customizationData.Data.Value = dataToSave;
+        customizationData.Data = dataToSave;
+        customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
 
     /// <summary>
@@ -508,10 +509,8 @@ public class CustomisationUIManager : NetworkBehaviour
     /// </summary>
     public void RefreshTenueGlobale()
     {
-        CommitLocalCustomization();
-        customizationData.SendRefreshServerRpc();
+        customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
-
     /// <summary>
     /// Détruit tous les enfants d’un conteneur
     /// </summary>
@@ -522,4 +521,7 @@ public class CustomisationUIManager : NetworkBehaviour
     }
 
     #endregion
+
+
+
 }

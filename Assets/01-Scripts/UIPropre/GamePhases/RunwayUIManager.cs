@@ -94,6 +94,7 @@ public class RunwayUIManager : MonoBehaviour
         timerCoroutine = StartCoroutine(TimerCountdownCoroutine(voteDuration));
     }
 
+
     public void HideRunwayPanel()
     {
         runwayPanel.SetActive(false);
