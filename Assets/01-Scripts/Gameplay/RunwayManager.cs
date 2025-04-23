@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using Unity.Netcode.Components;
 
 public class RunwayManager : NetworkBehaviour
 {
@@ -35,7 +36,7 @@ public class RunwayManager : NetworkBehaviour
 
     #endregion
 
-    #region ?? Cycle de défilé
+    #region Cycle de défilé
 
     private List<ulong> orderedPlayers;
 
@@ -56,6 +57,8 @@ public class RunwayManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        Debug.Log("[Runway] 🚀 Début de la phase de défilé !");
+
         orderedPlayers = NetworkManager.Singleton.ConnectedClientsList
             .Select(c => c.ClientId)
             .OrderBy(id => id)
@@ -69,18 +72,17 @@ public class RunwayManager : NetworkBehaviour
     {
         foreach (var clientId in orderedPlayers)
         {
-            StartRunwayForClientRpc(clientId);
+            AskClientToTeleport(clientId); // Téléportation du joueur sur le runway
+            StartRunwayForClientRpc(clientId);  // UI + caméra locale
             yield return new WaitForSeconds(runwayDurationPerPlayer);
             EndRunwayForClientRpc(clientId);
-            yield return new WaitForSeconds(0.5f); // Petite pause entre deux passages
+            yield return new WaitForSeconds(0.5f);
         }
-
-        // ?? Fin de phase : prévenir GamePhaseTransitionController ou GameManager si besoin
     }
 
     #endregion
 
-    #region ?? Déclenchements UI côté clients
+    #region Déclenchements UI côté clients
 
     [ClientRpc]
     private void StartRunwayForClientRpc(ulong clientId)
@@ -88,8 +90,13 @@ public class RunwayManager : NetworkBehaviour
         if (!IsClient) return;
 
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(clientId);
-        DeactivateAllOtherCameras();
-        FocusCameraOn(clientId);
+        
+
+        var targetPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
+        if (targetPlayer != null)
+        {
+            FindObjectOfType<RunwayCameraController>()?.StartPhotoSequence(targetPlayer.transform);
+        }
 
         var networkPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
         if (networkPlayer != null)
@@ -133,50 +140,72 @@ public class RunwayManager : NetworkBehaviour
     }
     #endregion
 
-    #region ?? Caméra & SFX
+    #region Teleportation
 
-    private void FocusCameraOn(ulong targetClientId)
+    private void TeleportPlayerToRunway(ulong clientId)
     {
-        var targetPlayer = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(targetClientId);
-        if (targetPlayer == null)
+        Debug.Log($"[Runway] Tentative de téléportation du joueur {clientId}");
+
+        var player = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
+        if (player == null)
         {
-            Debug.LogWarning($"[RunwayManager] ❌ Aucun joueur cible trouvé pour {targetClientId}");
+            Debug.LogWarning($"[Runway] ❌ Joueur {clientId} introuvable pour téléportation.");
             return;
         }
 
-        Transform lookTarget = GameObject.Find("RunwayTarget")?.transform ?? targetPlayer.transform;
-
-        var localPlayer = NetworkPlayerManager.Instance.GetLocalPlayer();
-        if (localPlayer == null)
+        Transform runwaySpot = GameObject.Find("RunwaySpot")?.transform;
+        if (runwaySpot == null)
         {
-            Debug.LogError("[RunwayManager] ❌ Aucun joueur local trouvé !");
+            Debug.LogError("[Runway] 🚫 Aucun RunwaySpot trouvé !");
             return;
         }
 
-        Camera cam = localPlayer.GetLocalCamera();
-        if (cam == null)
-        {
-            Debug.LogError("[RunwayManager] ❌ Caméra locale introuvable !");
-            return;
-        }
+        var netTransform = player.GetComponent<NetworkTransform>();
+        netTransform.Teleport(runwaySpot.position, runwaySpot.rotation, player.transform.localScale);
 
-        cam.gameObject.SetActive(true); // Force l'activation
-
-        cam.transform.DOMove(lookTarget.position + cameraOffset, 0.5f).SetEase(Ease.InOutSine);
-        cam.transform.DOLookAt(lookTarget.position + Vector3.up * 1.5f, 0.5f).SetEase(Ease.InOutSine);
-
-        Debug.Log($"[RunwayManager] 🎥 Caméra LOCALE déplacée pour observer {targetClientId}");
+        Debug.Log($"[Runway] 🚶 Joueur {clientId} téléporté !");
     }
 
-    private void DeactivateAllOtherCameras()
+    [ClientRpc]
+    private void TeleportClientRpc(ulong targetClientId, ulong executingClientId)
     {
-        foreach (var p in FindObjectsOfType<NetworkPlayer>())
+        if (NetworkManager.Singleton.LocalClientId != executingClientId)
+            return; // Ce RPC est uniquement pour le client concerné
+
+        var player = NetworkPlayerManager.Instance.GetLocalPlayer();
+        if (player == null)
         {
-            var cam = p.GetComponentInChildren<Camera>(true);
-            if (cam != null) cam.gameObject.SetActive(false);
+            Debug.LogWarning("[Runway] 🚫 Joueur local introuvable pour téléportation !");
+            return;
         }
+
+        Transform runwaySpot = GameObject.Find("RunwaySpot")?.transform;
+        if (runwaySpot == null)
+        {
+            Debug.LogError("[Runway] 🚫 Aucun RunwaySpot trouvé !");
+            return;
+        }
+
+        var netTransform = player.GetComponent<NetworkTransform>();
+        netTransform.Teleport(runwaySpot.position, runwaySpot.rotation, player.transform.localScale);
+
+        Debug.Log($"[Runway] ✅ Joueur local téléporté pour défiler !");
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    private void TeleportPlayerToRunwayServerRpc(ulong clientId)
+    {
+        TeleportPlayerToRunway(clientId);
+    }
+
+    private void AskClientToTeleport(ulong clientId)
+    {
+        TeleportClientRpc(clientId, clientId);
+    }
+
+    #endregion
+
+    #region Effets sonores
 
     private void PlayIntroSFX()
     {
@@ -186,9 +215,17 @@ public class RunwayManager : NetworkBehaviour
         }
     }
 
+    private void PlayOutroSFX()
+    {
+        if (runwayAnnounceSFX != null && sfxAudioSource != null)
+        {
+            sfxAudioSource.PlayOneShot(runwayAnnounceSFX);
+        }
+    }
+
     #endregion
 
-    #region ?? Utilitaires
+    #region Utilitaires
 
     public float GetRunwayDuration() => runwayDurationPerPlayer;
 
