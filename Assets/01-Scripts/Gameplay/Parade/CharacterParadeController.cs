@@ -6,10 +6,11 @@ using System.Collections;
 public class CharacterParadeController : NetworkBehaviour
 {
     [Header("Points de défilement")]
-    public Vector3 pointA = new Vector3(-39f, 2.15f, 116f);
-    public Vector3 pointB = new Vector3(-43f, 2.15f, 117.26f);
-    public Vector3 pointC = new Vector3(-43f, 2.15f, 134.19f);
-    public Vector3 pointD = new Vector3(-49f, 2.15f, 116.18f);
+    public Vector3 pointA = new Vector3(2.1f, 3.62279034f, 153.850006f)
+;
+    public Vector3 pointB = new Vector3(-4.17000008f, 3.62279034f, 156.330002f);
+    public Vector3 pointC = new Vector3(6.40804386f, 4f, 170.463196f);
+    public Vector3 pointD = new Vector3(-14.6999998f, 3.62279034f, 183.559998f);
 
     [Header("Paramètres de défilement")]
     [SerializeField] private float pauseDurationAtC = 2f;

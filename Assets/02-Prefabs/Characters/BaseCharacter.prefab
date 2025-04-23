@@ -349,11 +349,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  characterInstance: {fileID: 0}
-  pointA: {x: -39, y: 2.15, z: 116}
-  pointB: {x: -43, y: 2.15, z: 117.26}
-  pointC: {x: -43, y: 2.15, z: 134.19}
-  pointD: {x: -49, y: 2.15, z: 116.18}
+  pointA: {x: 2.1, y: 3.6, z: 153}
+  pointB: {x: -4, y: 3.6, z: 156}
+  pointC: {x: 6.4, y: 3.6, z: 170}
+  pointD: {x: -14, y: 3.6, z: 183}
   pauseDurationAtC: 2
   navAgentSpeed: 3.5
 --- !u!1001 &4886921824566826854
