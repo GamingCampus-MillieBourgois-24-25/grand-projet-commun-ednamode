@@ -29,6 +29,15 @@ public class PlayerCustomizationData : NetworkBehaviour
 
     #region 📦 Données synchronisées
 
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer || IsClient)
+        {
+            Data.OnValueChanged += OnCustomizationDataChanged;
+        }
+    }
+
+
     /// <summary>
     /// Données de personnalisation (équipements) synchronisées via Netcode.
     /// </summary>
@@ -131,6 +140,19 @@ public class PlayerCustomizationData : NetworkBehaviour
         if (handler == null)
         {
             Debug.LogWarning("[CustomizationData] ⚠ Pas de visuals handler pour appliquer");
+            return;
+        }
+
+        List<Item> allItems = Resources.LoadAll<Item>("Items").ToList();
+        ApplyToVisuals(handler, allItems);
+    }
+
+    private void OnCustomizationDataChanged(CustomizationData previousValue, CustomizationData newValue)
+    {
+        var handler = GetComponentInChildren<EquippedVisualsHandler>(true);
+        if (handler == null)
+        {
+            Debug.LogWarning("[CustomizationData] ⚠ Pas de handler pour appliquer les visuels.");
             return;
         }
 
