@@ -8594,7 +8594,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4929773883921338920, guid: 24c29a6b05982784c99ea7370c150b5f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1960822445}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -1998606590837601409, guid: 24c29a6b05982784c99ea7370c150b5f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1832908406}
   m_SourcePrefab: {fileID: 100100000, guid: 24c29a6b05982784c99ea7370c150b5f, type: 3}
 --- !u!4 &327291662 stripped
 Transform:
@@ -42832,6 +42835,43 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1832821325}
   m_CullTransparentMesh: 1
+--- !u!1 &1832908405 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -1998606590837601409, guid: 24c29a6b05982784c99ea7370c150b5f, type: 3}
+  m_PrefabInstance: {fileID: 327291661}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1832908406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832908405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 23800000, guid: d6c4865ce9cf5784288335f1d5635d75, type: 2}
+  m_BuildHeightMesh: 0
 --- !u!1 &1837009395
 GameObject:
   m_ObjectHideFlags: 0
@@ -50569,6 +50609,30 @@ PrefabInstance:
     - target: {fileID: 1148494663902098096, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 3843173778
+      objectReference: {fileID: 0}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointB.x
+      value: -4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointB.y
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointB.z
+      value: 182
+      objectReference: {fileID: 0}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointC.x
+      value: -14
+      objectReference: {fileID: 0}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointC.y
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2897648513508716860, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointC.z
+      value: 182
       objectReference: {fileID: 0}
     - target: {fileID: 3220274018737963484, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
       propertyPath: m_LocalPosition.x
