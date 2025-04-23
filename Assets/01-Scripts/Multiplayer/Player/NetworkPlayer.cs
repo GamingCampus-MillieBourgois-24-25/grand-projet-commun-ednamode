@@ -2,6 +2,9 @@
 using UnityEngine;
 using System.Collections;
 using Unity.Netcode.Components;
+using UnityEngine.Rendering.Universal;
+
+
 
 /// <summary>
 /// Préfab réseau du joueur. Chaque joueur est téléporté à son point de spawn et possède sa propre caméra locale instanciée dynamiquement.
@@ -90,8 +93,16 @@ public class NetworkPlayer : NetworkBehaviour
     {
         GameObject camObj = new GameObject($"LocalCamera_{OwnerClientId}");
         localCamera = camObj.AddComponent<Camera>();
-        camObj.AddComponent<AudioListener>();
 
+        // Désactiver l'AudioListener
+        AudioListener listener = camObj.AddComponent<AudioListener>();
+        listener.enabled = false;
+
+        // Activer le Post Processing
+        var camData = camObj.AddComponent<UniversalAdditionalCameraData>();
+        camData.renderPostProcessing = true;
+
+        // Paramètres classiques de la caméra
         localCamera.clearFlags = CameraClearFlags.Skybox;
         localCamera.fieldOfView = 60f;
         localCamera.nearClipPlane = 0.1f;

@@ -4,6 +4,8 @@ using CharacterCustomization;
 
 using UnityEngine;
 using System.Linq;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// Contrôleur des transitions synchronisées entre les phases du jeu (host -> clients).
@@ -14,6 +16,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
     [Tooltip("Délai entre chaque grande phase (en secondes)")]
     [SerializeField] private float delayBetweenPhases = 3f;
+
+    [Header("🎥 PostProcess Settings")]
+    [SerializeField] private Volume postProcessVolume;
+
+    private DepthOfField depthOfField;
+    private float initialFocusDistance;
 
     private GamePhaseManager _phaseManager;
 
@@ -32,6 +40,22 @@ public class GamePhaseTransitionController : NetworkBehaviour
         _phaseManager = FindObjectOfType<GamePhaseManager>();
         if (_phaseManager == null)
             Debug.LogError("[GamePhaseTransition] Aucun GamePhaseManager trouvé dans la scène.");
+
+        if (postProcessVolume == null)
+        {
+            Debug.LogError("[GamePhaseTransition] Volume PostProcess non assigné !");
+            return;
+        }
+
+        if (postProcessVolume.profile.TryGet(out depthOfField))
+        {
+            initialFocusDistance = depthOfField.focusDistance.value;
+            Debug.Log($"[PostProcess] Valeur initiale du DoF enregistrée : {initialFocusDistance}");
+        }
+        else
+        {
+            Debug.LogError("[PostProcess] Aucun DepthOfField trouvé dans le profil !");
+        }
     }
 
     #region Phases de jeu
@@ -105,6 +129,8 @@ public class GamePhaseTransitionController : NetworkBehaviour
     {
         if (_phaseManager == null) return;
 
+        HandleDepthOfField(phase);
+
         var mapping = _phaseManager.GetActivePanelMapping();
         if (mapping == null)
         {
@@ -146,6 +172,30 @@ public class GamePhaseTransitionController : NetworkBehaviour
     #endregion
 
     #region UI & Visuels
+
+    /// <summary>
+    /// Ajuste la profondeur de champ en fonction de la phase.
+    /// </summary>
+    private void HandleDepthOfField(GamePhaseManager.GamePhase phase)
+    {
+        if (depthOfField == null) return;
+
+        switch (phase)
+        {
+            case GamePhaseManager.GamePhase.Customization:
+            case GamePhaseManager.GamePhase.RunwayVoting:
+            case GamePhaseManager.GamePhase.Podium:
+                depthOfField.focusDistance.value = 5f;
+                Debug.Log("[PostProcess] DoF ajusté à 5 pour cette phase.");
+                break;
+
+            case GamePhaseManager.GamePhase.ReturnToLobby:
+            case GamePhaseManager.GamePhase.Waiting:
+                depthOfField.focusDistance.value = initialFocusDistance;
+                Debug.Log("[PostProcess] DoF restauré à la valeur initiale.");
+                break;
+        }
+    }
 
     /// <summary>
     /// Applique les visuels de tous les joueurs sur le client.

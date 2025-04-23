@@ -48474,29 +48474,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 420144422973215495, guid: c4a6ae4dd3505524390b550ca532ee8c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5083907865659789018}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4a6ae4dd3505524390b550ca532ee8c, type: 3}
---- !u!1 &5083907865659789017 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 420144422973215495, guid: c4a6ae4dd3505524390b550ca532ee8c, type: 3}
-  m_PrefabInstance: {fileID: 5083907865659789016}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5083907865659789018
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5083907865659789017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d6f7ea8c8b00ce4683ffc1eb458deaf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1001 &5105736830252220407
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -48728,6 +48707,10 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 1910677184
       objectReference: {fileID: 0}
+    - target: {fileID: 8256609374081343765, guid: 41d049ce1f72ae64f88296d58c6b2b34, type: 3}
+      propertyPath: postProcessVolume
+      value: 
+      objectReference: {fileID: 528186308}
     - target: {fileID: 8462441088013454958, guid: 41d049ce1f72ae64f88296d58c6b2b34, type: 3}
       propertyPath: 'spawnPoints.Array.data[0]'
       value: 

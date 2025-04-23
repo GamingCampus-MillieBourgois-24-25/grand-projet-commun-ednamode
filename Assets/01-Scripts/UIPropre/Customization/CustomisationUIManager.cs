@@ -91,7 +91,7 @@ public class CustomisationUIManager : NetworkBehaviour
         // 🔁 Attente que le joueur local (NetworkObject + PlayerCustomizationData) soit dispo
         while (NetworkPlayerManager.Instance.LocalPlayerData == null)
         {
-            Debug.Log("[CustomisationUI] 🔁 En attente de LocalPlayerData (joueur local)...");
+            //Debug.Log("[CustomisationUI] 🔁 En attente de LocalPlayerData (joueur local)...");
             yield return null;
         }
 

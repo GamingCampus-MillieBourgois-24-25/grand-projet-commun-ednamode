@@ -2,8 +2,11 @@
 using UnityEngine;
 using System.Collections;
 using System.Linq;
-using CharacterCustomization;
 using System.Collections.Generic;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+
+using CharacterCustomization;
 
 /// <summary>
 /// Mapping personnalisé des panels à afficher/masquer en fonction du mode de jeu.
@@ -43,7 +46,9 @@ public class GamePhaseManager : NetworkBehaviour
 
     public static GamePhaseManager Instance { get; private set; }
 
-    /// <summary>Phase actuelle du jeu.</summary>
+    /// <summary> 
+    /// Phase actuelle du jeu.
+    /// </summary>
     public enum GamePhase { Waiting, Customization, RunwayVoting, Podium, ReturnToLobby }
 
     [Tooltip("Phase du jeu en cours.")]
