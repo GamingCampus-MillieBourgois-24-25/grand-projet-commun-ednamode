@@ -89,7 +89,6 @@ public class CustomisationUIManager : NetworkBehaviour
     private void Start()
     {
         Debug.Log("[CustomisationUI] Start appelé !");
-        themeReminderText.text = $"Theme: {ThemeManager.Instance.CurrentTheme.themeName}";
         StartCoroutine(WaitForLocalPlayerThenInit());
     }
 
