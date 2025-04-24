@@ -80,6 +80,7 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         // ============= Phase de défilé ============= //
         SetPhase(GamePhaseManager.GamePhase.RunwayVoting);
+        yield return new WaitForSeconds(1f); // ⏳ Laisse le temps aux clients d’avoir les objets instanciés
 
         ApplyAllPlayersVisualsClientRpc();
         yield return new WaitForSeconds(1f);

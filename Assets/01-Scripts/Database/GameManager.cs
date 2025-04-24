@@ -2,9 +2,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class AccountManager : MonoBehaviour
 {
+    [Header("Lobby UI")]
+    public TMP_Text coinsLobbyText;
+    public TMP_Text jewelsLobbyText;
 
+
+    [Header("Profile Button")]
     [SerializeField]
     private Text messageText;
     [SerializeField]
@@ -12,7 +17,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private GameObject AreYouSurePanelLogout;
-
     public TMP_Text userNameText;
     public TMP_Text userIdText;
     public TMP_Text levelText;
@@ -24,8 +28,18 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         FillAccountData();
+        UpdateCoinAndJewelLobby();
     }
 
+
+    void UpdateCoinAndJewelLobby()
+    {
+        // Récupération des données de la sauvegarde
+        var dts = DataSaver.Instance.dts;
+        // Mise à jour des textes dans le lobby
+        coinsLobbyText.text = dts.totalCoins.ToString();
+        jewelsLobbyText.text = dts.totalJewels.ToString();
+    }
     void FillAccountData()
     {
         var dts = DataSaver.Instance.dts;

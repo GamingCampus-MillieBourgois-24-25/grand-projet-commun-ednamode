@@ -406,7 +406,23 @@ public class MultiplayerManager : NetworkBehaviour
 
         try
         {
-            CurrentLobby = await LobbyService.Instance.QuickJoinLobbyAsync();
+            // Récupération du pseudo et de l'ID utilisateur depuis DataSaver
+            string playerName = DataSaver.Instance.dts.userName;
+            string playerId = DataSaver.Instance.userId;
+
+            var quickJoinOptions = new QuickJoinLobbyOptions
+            {
+                Player = new Unity.Services.Lobbies.Models.Player(
+                    id: AuthenticationService.Instance.PlayerId,
+                    data: new Dictionary<string, PlayerDataObject>
+                    {
+                        { "name", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                        { "id", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerId) }
+                    }
+                )
+            };
+
+            CurrentLobby = await LobbyService.Instance.QuickJoinLobbyAsync(quickJoinOptions);
             SessionStore.Instance.SetLobby(CurrentLobby);
 
             string relayCode = CurrentLobby.Data?["joinCode"]?.Value;
