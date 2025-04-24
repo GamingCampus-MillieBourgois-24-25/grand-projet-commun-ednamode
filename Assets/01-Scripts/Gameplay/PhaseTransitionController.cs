@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
+using Unity.Netcode.Components;
 
 /// <summary>
 /// Contrôleur des transitions synchronisées entre les phases du jeu (host -> clients).
@@ -132,12 +133,16 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         HandleDepthOfField(phase);
 
-        var mapping = _phaseManager.GetActivePanelMapping();
-        if (mapping == null)
+        if (phase == GamePhaseManager.GamePhase.ReturnToLobby)
         {
-            Debug.LogWarning("[GamePhaseTransition] Aucun mapping actif disponible.");
+            ResetPlayersPositionAndCamera();
+            UIManager.Instance.HideAllPanels();
+            UIManager.Instance.ShowPanel("Online Panels");
             return;
         }
+
+        var mapping = _phaseManager.GetActivePanelMapping();
+        if (mapping == null) return;
 
         GameObject toHide = null;
         GameObject toShow = null;
@@ -156,11 +161,6 @@ public class GamePhaseTransitionController : NetworkBehaviour
                 toHide = mapping.podiumPanelToHide;
                 toShow = mapping.podiumPanel;
                 break;
-            case GamePhaseManager.GamePhase.ReturnToLobby:
-            case GamePhaseManager.GamePhase.Waiting:
-                UIManager.Instance.HideAllPanels();
-                UIManager.Instance.ShowPanel("Online Panels");
-                return;
         }
 
         if (toHide != null && toHide.activeSelf)
@@ -169,6 +169,27 @@ public class GamePhaseTransitionController : NetworkBehaviour
         if (toShow != null && !toShow.activeSelf)
             UIManager.Instance.ShowPanelDirect(toShow);
     }
+
+    private void ResetPlayersPositionAndCamera()
+    {
+        var players = FindObjectsOfType<NetworkPlayer>();
+        foreach (var player in players)
+        {
+            var spawnPosition = NetworkPlayerManager.Instance.GetAssignedSpawnPosition(player.OwnerClientId);
+            var netTransform = player.GetComponent<NetworkTransform>();
+            netTransform.Teleport(spawnPosition, Quaternion.identity, player.transform.localScale);
+
+            var cam = player.GetLocalCamera();
+            if (cam != null)
+            {
+                cam.transform.SetParent(player.transform);
+                cam.transform.localPosition = Vector3.zero; // Ajuste selon ta config
+                cam.transform.localRotation = Quaternion.identity;
+                Debug.Log($"[Lobby] Caméra réassignée pour le joueur {player.OwnerClientId}");
+            }
+        }
+    }
+
 
     #endregion
 
