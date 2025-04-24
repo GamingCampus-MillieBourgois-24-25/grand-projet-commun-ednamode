@@ -83,6 +83,9 @@ public class GamePhaseTransitionController : NetworkBehaviour
         SetPhase(GamePhaseManager.GamePhase.RunwayVoting);
         yield return new WaitForSeconds(1f); // ⏳ Laisse le temps aux clients d’avoir les objets instanciés
 
+        // Attendre que toutes les données de personnalisation soient synchronisées
+        yield return StartCoroutine(SyncAllPlayerCustomizations());
+
         ApplyAllPlayersVisualsClientRpc();
         yield return new WaitForSeconds(1f);
         RunwayManager.Instance.StartRunwayPhase();
@@ -103,6 +106,35 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
+    }
+
+    /// <summary>
+    /// Synchronise toutes les données de personnalisation avant d'appliquer les visuels.
+    /// </summary>
+    private IEnumerator SyncAllPlayerCustomizations()
+    {
+        var players = NetworkManager.Singleton.ConnectedClientsList.Select(c => c.PlayerObject.GetComponent<PlayerCustomizationData>()).ToList();
+        Debug.Log($"[GamePhaseTransition] Synchronisation des données pour {players.Count} joueurs.");
+
+        foreach (var player in players)
+        {
+            // Appeler SyncCustomizationDataServerRpc pour garantir que les données sont à jour
+            player.SyncCustomizationDataServerRpc(player.Data);
+            Debug.Log($"[GamePhaseTransition] Données envoyées pour joueur {player.OwnerClientId}.");
+        }
+
+        // Attendre un court délai pour laisser le temps à la synchronisation réseau
+        yield return new WaitForSeconds(0.5f);
+
+        // Vérifier que les données sont bien reçues sur les clients
+        foreach (var player in players)
+        {
+            Debug.Log($"[GamePhaseTransition] Vérification des données pour joueur {player.OwnerClientId}:");
+            foreach (var kvp in player.Data.equippedColors)
+            {
+                Debug.Log($"[GamePhaseTransition] Couleur pour {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+            }
+        }
     }
 
     /// <summary>
@@ -183,13 +215,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
             if (cam != null)
             {
                 cam.transform.SetParent(player.transform);
-                cam.transform.localPosition = Vector3.zero; // Ajuste selon ta config
+                cam.transform.localPosition = Vector3.zero;
                 cam.transform.localRotation = Quaternion.identity;
                 Debug.Log($"[Lobby] Caméra réassignée pour le joueur {player.OwnerClientId}");
             }
         }
     }
-
 
     #endregion
 
@@ -228,8 +259,15 @@ public class GamePhaseTransitionController : NetworkBehaviour
         var allItems = Resources.LoadAll<Item>("Items").ToList();
         var allPlayers = FindObjectsOfType<PlayerCustomizationData>();
 
+        Debug.Log($"[ApplyAllPlayersVisualsClientRpc] Application des visuels pour {allPlayers.Length} joueurs.");
         foreach (var playerData in allPlayers)
         {
+            Debug.Log($"[ApplyAllPlayersVisualsClientRpc] Joueur {playerData.OwnerClientId} données :");
+            foreach (var kvp in playerData.Data.equippedColors)
+            {
+                Debug.Log($"[ApplyAllPlayersVisualsClientRpc] Couleur pour {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+            }
+
             var visuals = playerData.GetComponentInChildren<EquippedVisualsHandler>(true);
             if (visuals != null)
                 playerData.ApplyToVisuals(visuals, allItems);
@@ -244,6 +282,5 @@ public class GamePhaseTransitionController : NetworkBehaviour
     {
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(playerClientId);
     }
-
-    #endregion
 }
+#endregion
