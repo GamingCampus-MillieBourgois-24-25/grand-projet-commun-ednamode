@@ -113,4 +113,42 @@ public class NetworkPlayer : NetworkBehaviour
 
         Debug.Log("[NetworkPlayer] 🎥 Caméra locale créée pour ce joueur");
     }
+
+    [ServerRpc]
+    public void RequestReturnToLobbyServerRpc()
+    {
+        TeleportToSpawnPoint();
+    }
+
+
+    public void ReturnToLobby()
+    {
+        if (IsServer)
+        {
+            TeleportToSpawnPoint();
+        }
+        else
+        {
+            RequestReturnToLobbyServerRpc();
+        }
+
+        if (IsOwner)
+        {
+            ResetCameraPosition();
+        }
+    }
+
+
+    /// <summary>
+    /// Réinitialise la position de la caméra locale au décalage défini.
+    /// </summary>
+    private void ResetCameraPosition()
+    {
+        if (localCamera != null)
+        {
+            localCamera.transform.localPosition = cameraOffset;
+            Debug.Log("[NetworkPlayer] 🎥 Caméra repositionnée après retour au lobby.");
+        }
+    }
+
 }

@@ -34,6 +34,12 @@ public class GameModePanelMapping
     public GameObject podiumPanel;
     [Tooltip("Panel à masquer en quittant la phase précédente vers le podium.")]
     public GameObject podiumPanelToHide;
+
+    [Header("🏁 Phase : Retour au lobby")]
+    [Tooltip("Panel à afficher pour la phase de retour au lobby.")]
+    public GameObject returnToLobbyPanel;
+    [Tooltip("Panel à masquer en quittant la phase précédente vers le retour au lobby.")]
+    public GameObject returnToLobbyPanelToHide;
 }
 
 /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Netcode;
@@ -578,6 +579,18 @@ public class MultiplayerManager : NetworkBehaviour
         foreach (var r in playerReadyStates.Values)
             if (r) count++;
         return count;
+    }
+
+    public void ResetAllReadyStates()
+    {
+        if (!CanWriteNetworkData()) return;
+
+        foreach (var key in playerReadyStates.Keys.ToList())
+            playerReadyStates[key] = false;
+
+        UpdateReadyCount();
+        NotifyReadyCountClientRpc(0, playerReadyStates.Count);
+        Debug.Log("[MultiplayerManager] 🔄 Tous les états Ready ont été réinitialisés.");
     }
 
 

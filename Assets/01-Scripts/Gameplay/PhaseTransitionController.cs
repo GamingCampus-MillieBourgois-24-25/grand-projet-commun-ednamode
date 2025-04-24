@@ -100,9 +100,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
         SetPhase(GamePhaseManager.GamePhase.Podium);
         PodiumManager.Instance.StartPodiumSequence();
         yield return new WaitForSeconds(_phaseManager.PodiumDuration);
+        PodiumUIManager.Instance?.HideRanking();
+        HidePodiumPanel();
 
         // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
+        ActivateReturnToLobbyPhase();
     }
 
     /// <summary>
@@ -160,6 +163,10 @@ public class GamePhaseTransitionController : NetworkBehaviour
             case GamePhaseManager.GamePhase.Podium:
                 toHide = mapping.podiumPanelToHide;
                 toShow = mapping.podiumPanel;
+                break;
+            case GamePhaseManager.GamePhase.ReturnToLobby:
+                toHide = mapping.returnToLobbyPanelToHide;
+                toShow = mapping.returnToLobbyPanel;
                 break;
         }
 
@@ -243,6 +250,48 @@ public class GamePhaseTransitionController : NetworkBehaviour
     private void ShowRunwayForClientRpc(ulong playerClientId)
     {
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(playerClientId);
+    }
+
+    #endregion
+
+    public void HidePodiumPanel()
+    {
+        var mapping = _phaseManager.GetActivePanelMapping();
+        if (mapping == null) return;
+        if (mapping.podiumPanel.activeSelf)
+            UIManager.Instance.HidePanel(mapping.podiumPanel);
+        if (mapping.returnToLobbyPanel.activeSelf)
+            UIManager.Instance.HidePanel(mapping.returnToLobbyPanel);
+    }
+
+    #region Lobby
+
+    /// <summary>
+    /// Active la phase de retour au lobby.
+    /// </summary>
+    public void ActivateReturnToLobbyPhase()
+    {
+        Debug.Log("[GameManager] 🚪 Retour au Lobby...");
+
+        // 1️⃣ Téléporte tous les joueurs
+        foreach (var player in FindObjectsOfType<NetworkPlayer>())
+        {
+            player.ReturnToLobby();
+        }
+
+        // 2️⃣ Reset des états Ready
+        if (NetworkManager.Singleton.IsServer)
+            MultiplayerManager.Instance?.ResetAllReadyStates();
+
+        FindObjectOfType<MultiplayerUI>()?.ResetReadyState();
+
+        // 3️⃣ Affiche l'UI de connexion
+        MultiplayerUI multiplayerUI = FindObjectOfType<MultiplayerUI>();
+        if (multiplayerUI != null)
+        {
+            multiplayerUI.UpdateConnectionUI(true);
+            Debug.Log("[GameManager] 🖥️ Panel de connexion affiché.");
+        }
     }
 
     #endregion
