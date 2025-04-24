@@ -7,6 +7,7 @@ using CharacterCustomization;
 using CharacterCustomizationNamespace = CharacterCustomization;
 using System.Collections;
 using Unity.Netcode;
+using DG.Tweening;
 
 /// <summary>
 /// UI de personnalisation d’un personnage local, avec gestion des catégories SlotType et GroupType,
@@ -19,6 +20,18 @@ public class CustomisationUIManager : NetworkBehaviour
     [Header("🔧 Références")]
     [SerializeField] private SlotLibrary slotLibrary;
     private PlayerCustomizationData customizationData;
+
+    [Header("🖌️ Thème")]
+    [SerializeField] private TMP_Text themeReminderText;
+
+    [Header("⏱️ Timer de Customisation")]
+    [SerializeField] private GameObject customizationTimerPanel;
+    [SerializeField] private Slider customizationSlider;
+    [SerializeField] private TMP_Text timerText;
+
+    [Header("🔊 Sounds")]
+    [SerializeField] private AudioClip countdownBeep;
+    private AudioSource audioSource;
 
     [Header("⚖️ Catégories et onglets")]
     [SerializeField] private Transform categoryButtonContainer;
@@ -51,9 +64,24 @@ public class CustomisationUIManager : NetworkBehaviour
     private HashSet<SlotType> availableSlotTypes;
 
     private EquippedVisualsHandler visualsHandler;
+
     #endregion
 
     #region 🚀 Initialisation
+
+    public static CustomisationUIManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
+        audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     /// <summary>
     /// Démarre le système de customisation : instancie le personnage, charge les items, et construit l’UI
@@ -61,6 +89,7 @@ public class CustomisationUIManager : NetworkBehaviour
     private void Start()
     {
         Debug.Log("[CustomisationUI] Start appelé !");
+        themeReminderText.text = $"Theme: {ThemeManager.Instance.CurrentTheme.themeName}";
         StartCoroutine(WaitForLocalPlayerThenInit());
     }
 
@@ -270,6 +299,109 @@ public class CustomisationUIManager : NetworkBehaviour
             btnObj.GetComponent<Button>().onClick.AddListener(() => OnCategorySelected(category));
         }
         Debug.Log($"[CustomisationUI] Génération des boutons de catégories : {categorizedItems.Count}");
+    }
+
+    #endregion
+
+    #region 🧭 Theme 
+
+    /// <summary>
+    /// Affiche le nom et l'icône du thème actuel
+    /// </summary>
+    public void DisplayCurrentTheme()
+    {
+        var theme = ThemeManager.Instance.CurrentTheme;
+        if (theme != null)
+        {
+            themeReminderText.text = theme.themeName;
+        }
+    }
+
+    #endregion
+
+    #region ⏱️ Timer de Customisation
+
+    private float timerMax = 0f;
+    private float timer = 0f;
+
+    public void StartCustomizationTimer(float duration)
+    {
+        timerMax = duration;
+        timer = duration;
+
+        customizationSlider.maxValue = 1f;
+        customizationSlider.value = 1f;
+
+        customizationTimerPanel.SetActive(true);
+        StartCoroutine(UpdateCustomizationTimer());
+    }
+
+    private IEnumerator UpdateCustomizationTimer()
+    {
+        Image fillImage = customizationSlider.fillRect.GetComponent<Image>();
+        Color baseColor = Color.green;
+
+        fillImage.color = baseColor;
+
+        bool isPulsating = false;
+        int lastSecond = Mathf.CeilToInt(timer);
+
+        while (timer > 0)
+        {
+            timer -= Time.deltaTime;
+            customizationSlider.value = timer / timerMax;
+
+            int seconds = Mathf.CeilToInt(timer);
+            timerText.text = $"{seconds}s";
+
+            // 🎨 Color shift + Pulsation
+            if (timer < 10f)
+            {
+                fillImage.color = Color.Lerp(Color.red, baseColor, timer / 10f);
+
+                if (!isPulsating)
+                {
+                    isPulsating = true;
+                    PulsateSlider(fillImage.transform);
+                }
+
+                // 🔊 Play beep once per second
+                if (seconds < lastSecond)
+                {
+                    lastSecond = seconds;
+                    PlayCountdownBeep();
+                }
+            }
+
+            yield return null;
+        }
+
+        // Fin du timer
+        customizationSlider.value = 0;
+        fillImage.transform.DOKill();
+        fillImage.transform.localScale = Vector3.one;
+
+        customizationTimerPanel.SetActive(false);
+    }
+
+    private void PulsateSlider(Transform target)
+    {
+        target.DOScale(1.1f, 0.5f)
+              .SetLoops(-1, LoopType.Yoyo)
+              .SetEase(Ease.InOutSine);
+    }
+
+    private void PlayCountdownBeep()
+    {
+        if (countdownBeep != null)
+        {
+            // 🎵 Change le pitch en fonction du temps restant
+            audioSource.pitch = Mathf.Lerp(1f, 1.5f, (10f - timer) / 10f);
+            audioSource.PlayOneShot(countdownBeep);
+
+            // Remettre le pitch à 1 après le son pour éviter d'impacter d'autres sons
+            DOVirtual.DelayedCall(countdownBeep.length, () => audioSource.pitch = 1f);
+        }
     }
 
     #endregion
@@ -521,7 +653,5 @@ public class CustomisationUIManager : NetworkBehaviour
     }
 
     #endregion
-
-
 
 }

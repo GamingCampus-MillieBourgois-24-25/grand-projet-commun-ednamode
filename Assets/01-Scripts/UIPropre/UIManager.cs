@@ -471,6 +471,32 @@ public class UIManager : MonoBehaviour
 
         _previouslyClosedPanels.Clear();
     }
+
+    public void ShowThemePanel(ThemeData theme)
+    {
+        var panel = _panelDict["ThemePanel"];
+        panel.SetActive(true);
+
+        panel.GetComponentInChildren<TMP_Text>().text = theme.themeName;
+        panel.GetComponentInChildren<Image>().sprite = theme.themeIcon;
+
+        // Animation d'apparition (ex: rotation type panorama)
+        panel.transform.localEulerAngles = new Vector3(0, 720, 0);
+        panel.transform.DORotate(Vector3.zero, 2f, RotateMode.FastBeyond360).SetEase(Ease.OutExpo);
+    }
+
+    public void ShowCategoryPanel(ThemeData.ThemeCategory category)
+    {
+        var panel = _panelDict["CategoryPanel"];
+        panel.SetActive(true);
+
+        var text = panel.GetComponentInChildren<TMP_Text>();
+        text.text = $"Category: {category}";
+
+        panel.transform.localScale = Vector3.zero;
+        panel.transform.DOScale(1f, 1f).SetEase(Ease.OutBack);
+    }
+
     #endregion
 
     #region 🖱 Outside Click Detection & Utility

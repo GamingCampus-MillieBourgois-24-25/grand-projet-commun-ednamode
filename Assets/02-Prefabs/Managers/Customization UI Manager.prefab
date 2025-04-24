@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3207166636
+  GlobalObjectIdHash: 1273725976
   InScenePlacedSourceGlobalObjectIdHash: 1273725976
   DeferredDespawnTick: 0
   Ownership: 1
@@ -72,6 +72,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   slotLibrary: {fileID: 11400000, guid: ddee382934caf604e8a9199b8118a57e, type: 2}
+  customizationTimerPanel: {fileID: 0}
+  customizationSlider: {fileID: 0}
+  timerText: {fileID: 0}
+  countdownBeep: {fileID: 8300000, guid: a4c559685d61f094bac6d26ac3d748f3, type: 3}
   categoryButtonContainer: {fileID: 0}
   categoryButtonPrefab: {fileID: 293819967451510782, guid: 5b8cfd6c8f5a2824a81cd7f64afb8f25, type: 3}
   tabItemPanel: {fileID: 0}

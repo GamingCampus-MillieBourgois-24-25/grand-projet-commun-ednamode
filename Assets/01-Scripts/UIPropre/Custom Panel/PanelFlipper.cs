@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using DG.Tweening;
 using UnityEngine.EventSystems;
+using TMPro;
+using UnityEngine.UI;
 
 public class PanelFlipper : MonoBehaviour, IPointerClickHandler
 {
@@ -14,6 +16,9 @@ public class PanelFlipper : MonoBehaviour, IPointerClickHandler
 
     private bool isFlipped = false;
     private bool isAnimating = false;
+
+    public GameObject GetFrontFace() => faceB;
+
 
     private void Start()
     {
@@ -65,4 +70,20 @@ public class PanelFlipper : MonoBehaviour, IPointerClickHandler
             transform.rotation = Quaternion.identity;
         }
     }
+
+    public void SetupFaceB(string label, Color color, Sprite icon)
+    {
+        TMP_Text text = faceB.GetComponentInChildren<TMP_Text>();
+        Image image = faceB.GetComponentInChildren<Image>();
+
+        text.text = label;
+        image.color = color;
+        if (icon != null) image.sprite = icon;
+    }
+
+    public void TriggerFlip()
+    {
+        Flip(true);  // Si Flip(bool) est la méthode interne
+    }
+
 }
