@@ -74,14 +74,8 @@ public class GamePhaseTransitionController : NetworkBehaviour
     /// </summary>
     private IEnumerator PhaseSequenceCoroutine()
     {
-        // === Phase de Révélation du Thème === //
-        SetPhase(GamePhaseManager.GamePhase.ThemeReveal);
-        ThemeManager.Instance.SelectRandomThemeServerRpc();
-        yield return new WaitForSeconds(7f);  // 3s catégorie + 4s thème
-
-        // ============= Phase de Customisation ============= //
+        // ============= Phase d'attente ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
-        CustomisationUIManager.Instance.StartCustomizationTimer(GamePhaseManager.Instance.CustomizationDuration);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
         // ============= Phase de défilé ============= //
@@ -150,10 +144,6 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         switch (phase)
         {
-            case GamePhaseManager.GamePhase.ThemeReveal:
-                toHide = mapping.themeRevealPanelToHide;
-                toShow = mapping.themeRevealPanel;
-                break;
             case GamePhaseManager.GamePhase.Customization:
                 toHide = mapping.customizationPanelToHide;
                 toShow = mapping.customizationPanel;

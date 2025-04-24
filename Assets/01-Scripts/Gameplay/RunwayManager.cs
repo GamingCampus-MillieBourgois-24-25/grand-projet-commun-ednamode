@@ -17,6 +17,9 @@ public class RunwayManager : NetworkBehaviour
     [Tooltip("Durée d'un passage de défilé par joueur (vote inclus)")]
     [SerializeField] private float runwayDurationPerPlayer = 7f;
 
+    [Tooltip("Offsets et paramètres de focus caméra")]
+    [SerializeField] private Vector3 cameraOffset = new Vector3(0, 2, -5);
+
     [Header("Points de défilé")]
     [Tooltip("Point B - Premier point de déplacement")]
     [SerializeField] private Vector3 pointB = new Vector3(-43f, 2.15f, 117.26f);
