@@ -222,6 +222,15 @@ MonoBehaviour:
     hasCloseButton: 1
     useSpecialAnimation: 0
     specialAnimation: 0
+  - panelName: Online Panels
+    panelObject: {fileID: 0}
+    triggerButton: {fileID: 0}
+    startVisible: 0
+    closeOnOutsideClick: 0
+    closeOtherPanelWhenOpened: 0
+    hasCloseButton: 0
+    useSpecialAnimation: 0
+    specialAnimation: 0
   animationDuration: 0.4
   animationEase: 27
   hiddenScale: {x: 0.85, y: 0.85, z: 1}
@@ -270,8 +279,8 @@ MonoBehaviour:
   rectPanel: {fileID: 0}
   gameobjectPanel: {fileID: 0}
   slideDuration: 0.5
-  bounceHeight: 150
-  bounceDelay: 0.8
+  bounceHeight: 100
+  bounceDelay: 1.5
 --- !u!1 &8819275691304589894
 GameObject:
   m_ObjectHideFlags: 0
