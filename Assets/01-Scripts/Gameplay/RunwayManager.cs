@@ -17,9 +17,6 @@ public class RunwayManager : NetworkBehaviour
     [Tooltip("Durée d'un passage de défilé par joueur (vote inclus)")]
     [SerializeField] private float runwayDurationPerPlayer = 7f;
 
-    [Tooltip("Offsets et paramètres de focus caméra")]
-    [SerializeField] private Vector3 cameraOffset = new Vector3(0, 2, -5);
-
     [Header("Points de défilé")]
     [Tooltip("Point B - Premier point de déplacement")]
     [SerializeField] private Vector3 pointB = new Vector3(-43f, 2.15f, 117.26f);
@@ -29,6 +26,9 @@ public class RunwayManager : NetworkBehaviour
     [Header("Paramètres de défilé")]
     [Tooltip("Durée de la pause au point B (en secondes)")]
     [SerializeField] private float pauseDurationAtB = 2f;
+
+    [Header("Point d'attente après défilé")]
+    [SerializeField] private Vector3 waitingAreaPosition = new Vector3(-30f, 2f, 140f);
 
     [Header("Effets")]
     [Tooltip("SFX à jouer pour annoncer un joueur")]
@@ -232,6 +232,9 @@ public class RunwayManager : NetworkBehaviour
         Debug.Log($"[Runway] Joueur {clientId} en pause au point B pendant {pauseDurationAtB} secondes.");
         yield return new WaitForSeconds(pauseDurationAtB);
 
+        // Détacher la caméra locale au point B
+        DetachCameraFromPlayer();
+
         // Étape 4 : Déplacement de B à C avec animation de marche
         if (animator != null)
         {
@@ -245,6 +248,21 @@ public class RunwayManager : NetworkBehaviour
             Debug.Log($"[Runway] Joueur {clientId} : IsWalking défini à false. État actuel : ");
         }
         Debug.Log($"[Runway] Joueur {clientId} arrivé au point C : {pointC}");
+
+        // Téléportation vers la zone d'attente (point D)
+        netTransform.Teleport(waitingAreaPosition, Quaternion.identity, player.transform.localScale);
+        Debug.Log($"[Runway] Joueur {clientId} téléporté à la zone d'attente après défilé.");
+    }
+
+    private void DetachCameraFromPlayer()
+    {
+        var localPlayer = NetworkPlayerManager.Instance.GetLocalPlayer();
+        var cam = localPlayer?.GetLocalCamera();
+        if (cam != null && cam.transform.parent != null)
+        {
+            cam.transform.SetParent(null);
+            Debug.Log("[Runway] 📸 Caméra détachée du joueur au point B.");
+        }
     }
 
     private IEnumerator MovePlayerToPosition(ulong clientId, NetworkTransform netTransform, Vector3 startPos, Vector3 targetPos, float duration)
