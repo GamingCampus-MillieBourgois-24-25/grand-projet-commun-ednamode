@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace CharacterCustomization
@@ -6,11 +7,14 @@ namespace CharacterCustomization
     {
         private ShoppingScript shoppingScript;
         private ItemEquipper itemEquipper;
+        private CharacterItemManager characterItemManager;
+
         protected override void Start()
         {
             base.Start();
             shoppingScript = Object.FindFirstObjectByType<ShoppingScript>();
             itemEquipper = Object.FindFirstObjectByType<ItemEquipper>();
+            characterItemManager = Object.FindFirstObjectByType<CharacterItemManager>();
             if (scriptable is Item item)
             {
                 category = item.category.ToString();
@@ -18,6 +22,11 @@ namespace CharacterCustomization
                 buttonText.text = item.price.ToString();
                 button.onClick.AddListener(() => shoppingScript.SetSelectedItemButton(this));
                 button.onClick.AddListener(() => itemEquipper.OnItemButtonClicked(item));
+                button.onClick.AddListener(() => characterItemManager.EquipItem(item));
+                if (characterItemManager == null)
+                {
+                    Debug.LogError("CharacterItemManager introuvable dans la scène !");
+                }
 
             }
             else
