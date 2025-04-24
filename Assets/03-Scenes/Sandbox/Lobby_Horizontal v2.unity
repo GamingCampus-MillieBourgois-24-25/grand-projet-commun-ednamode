@@ -16774,14 +16774,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1967792719}
     - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: panels.Array.size
-      value: 19
-      objectReference: {fileID: 0}
-    - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: panels.Array.data[18].panelName
-      value: Online Panels
-      objectReference: {fileID: 0}
-    - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
       propertyPath: panels.Array.data[0].panelObject
       value: 
       objectReference: {fileID: 1572413901}
@@ -16929,22 +16921,6 @@ PrefabInstance:
       propertyPath: panels.Array.data[17].triggerButton
       value: 
       objectReference: {fileID: 1677513823}
-    - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: panels.Array.data[18].triggerButton
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: panels.Array.data[18].hasCloseButton
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: panels.Array.data[18].closeOnOutsideClick
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: panels.Array.data[18].closeOtherPanelWhenOpened
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 554426757272805218, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1343
@@ -16993,14 +16969,6 @@ PrefabInstance:
       propertyPath: rectPanel
       value: 
       objectReference: {fileID: 243725640}
-    - target: {fileID: 3248472179866018280, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: bounceDelay
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3248472179866018280, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
-      propertyPath: bounceHeight
-      value: 100
-      objectReference: {fileID: 0}
     - target: {fileID: 3248472179866018280, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
       propertyPath: gameobjectPanel
       value: 
