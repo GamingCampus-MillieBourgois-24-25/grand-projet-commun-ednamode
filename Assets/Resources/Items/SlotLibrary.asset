@@ -38,6 +38,8 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 08b2f8b2ee77858418d2872c856108cf, type: 2}
       - {fileID: 11400000, guid: ac59f984667109841a1386b4541ce9b8, type: 2}
       - {fileID: 11400000, guid: f8d6f901190944043b26801b50ad024a, type: 2}
+      - {fileID: 11400000, guid: 5ab858afc1c2f3b4baf38d12aced2e31, type: 2}
+      - {fileID: 11400000, guid: 1777137fcb1646c4f91e6e03dc262137, type: 2}
   - Type: 9
     Groups:
     - Type: 12
