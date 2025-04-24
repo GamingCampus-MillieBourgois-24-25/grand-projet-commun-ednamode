@@ -4451,6 +4451,30 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 551020417}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &584044948 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3977187091275030838, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+  m_PrefabInstance: {fileID: 2584021807012747949}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &584044955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584044948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c186a9ec913e6ec468306fe09d5ea672, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  pointA: {x: 2.1, y: 3.6227903, z: 153.85}
+  pointB: {x: -4.17, y: 3.6227903, z: 156.33}
+  pointC: {x: 6.408044, y: 4, z: 170.4632}
+  pointD: {x: -14.7, y: 3.6227903, z: 183.56}
+  pauseDurationAtC: 2
+  navAgentSpeed: 3.5
 --- !u!1 &587098678 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5256137012405714836, guid: 04be6e400ba90cc49b744867b8e49fb2, type: 3}
@@ -14738,6 +14762,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3775052089815096700, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointB.x
+      value: -4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3775052089815096700, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointB.y
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3775052089815096700, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointB.z
+      value: 182
+      objectReference: {fileID: 0}
+    - target: {fileID: 3775052089815096700, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointC.x
+      value: -14
+      objectReference: {fileID: 0}
+    - target: {fileID: 3775052089815096700, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointC.y
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3775052089815096700, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: pointC.z
+      value: 182
+      objectReference: {fileID: 0}
+    - target: {fileID: 3775052089815096700, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      propertyPath: paradeController
+      value: 
+      objectReference: {fileID: 584044955}
     - target: {fileID: 3977187091275030838, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
       propertyPath: m_Name
       value: Runway UI Manager
@@ -14805,7 +14857,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3977187091275030838, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 584044955}
   m_SourcePrefab: {fileID: 100100000, guid: 9d5cb586bb9fc0042915f3600be54937, type: 3}
 --- !u!1001 &2609151692633465530
 PrefabInstance:
