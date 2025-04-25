@@ -16,6 +16,14 @@ using DG.Tweening;
 public class CustomisationUIManager : NetworkBehaviour
 {
     #region ✨ Data & References
+    [System.Serializable]
+    public class TextureOption
+    {
+        public string name;
+        public Texture2D texture;
+        public Sprite preview;
+    }
+
     [Header("🔧 Références")]
     [SerializeField] private SlotLibrary slotLibrary;
     private PlayerCustomizationData customizationData;
@@ -37,13 +45,24 @@ public class CustomisationUIManager : NetworkBehaviour
     [SerializeField] private GameObject categoryButtonPrefab;
 
     [SerializeField] private GameObject tabItemPanel;
-    [SerializeField] private GameObject tabColorPanel; // Panneau pour le ColorPicker
+    [SerializeField] private GameObject tabColorPanel;
+    [SerializeField] private GameObject tabTexturePanel;
     [SerializeField] private Button tabItemButton;
     [SerializeField] private Button tabColorButton;
+    [SerializeField] private Button tabTextureButton;
 
     [Header("🔹 Listes dynamiques")]
     [SerializeField] private Transform itemListContainer;
     [SerializeField] private GameObject itemButtonPrefab;
+
+    [Header("🖼️ Textures")]
+    [SerializeField] private List<TextureOption> availableTextures;
+    [SerializeField] private GameObject textureButtonPrefab;
+    [SerializeField] private Transform textureButtonContainer;
+    [SerializeField] private Sprite defaultTexturePreview;
+
+    [Header("✨ Effet de Particules")]
+    [SerializeField] private GameObject equipEffectPrefab; // Prefab du ParticleSystem
 
     private CustomizationData dataToSave;
     private Dictionary<(SlotType, GroupType?), List<Item>> categorizedItems;
@@ -56,6 +75,8 @@ public class CustomisationUIManager : NetworkBehaviour
     private HashSet<SlotType> availableSlotTypes;
 
     private EquippedVisualsHandler visualsHandler;
+    private Color _initialColor;
+    private string _initialTextureName;
 
     #endregion
 
@@ -187,6 +208,10 @@ public class CustomisationUIManager : NetworkBehaviour
 
         tabItemButton.onClick.AddListener(() => SelectTab(TabType.Item));
         tabColorButton.onClick.AddListener(() => SelectTab(TabType.Color));
+        tabTextureButton.onClick.AddListener(() => SelectTab(TabType.Texture));
+
+        InitializeTexturePanel();
+        DebugTextureLoading(); // Tester les textures au démarrage
 
         Debug.Log("[CustomisationUI] ✅ Initialisation complète du CustomisationUIManager.");
     }
@@ -268,11 +293,6 @@ public class CustomisationUIManager : NetworkBehaviour
 
     public void DisplayCurrentTheme()
     {
-        // var theme = ThemeManager.Instance.CurrentTheme;
-        // if (theme != null)
-        // {
-        //     themeReminderText.text = theme.themeName;
-        // }
     }
 
     #endregion
@@ -360,12 +380,13 @@ public class CustomisationUIManager : NetworkBehaviour
 
     #region Onglets UI
 
-    private enum TabType { Item, Color }
+    private enum TabType { Item, Color, Texture }
 
     private void SelectTab(TabType tab)
     {
         tabItemPanel?.SetActive(tab == TabType.Item);
         tabColorPanel?.SetActive(tab == TabType.Color);
+        tabTexturePanel?.SetActive(tab == TabType.Texture);
 
         switch (tab)
         {
@@ -374,6 +395,9 @@ public class CustomisationUIManager : NetworkBehaviour
                 break;
             case TabType.Color:
                 OpenColorPicker();
+                break;
+            case TabType.Texture:
+                OpenTexturePanel();
                 break;
         }
     }
@@ -424,11 +448,15 @@ public class CustomisationUIManager : NetworkBehaviour
         slot.Toggle(true);
 
         dataToSave.SetItem(slotType, item.itemId);
-        // Conserver la couleur existante si elle existe
         if (customizationData.Data.TryGetColor(slotType, out var existingColor))
         {
             dataToSave.SetColor(slotType, existingColor);
             Debug.Log($"[CustomisationUI] Couleur conservée pour {slotType}: {ColorUtility.ToHtmlStringRGBA(existingColor)}");
+        }
+        if (customizationData.Data.TryGetTexture(slotType, out var existingTexture))
+        {
+            dataToSave.SetTexture(slotType, existingTexture);
+            Debug.Log($"[CustomisationUI] Texture conservée pour {slotType}: {existingTexture}");
         }
 
         if (!customizationData.IsSpawned || customizationData.NetworkObject == null)
@@ -437,6 +465,76 @@ public class CustomisationUIManager : NetworkBehaviour
             return;
         }
         customizationData.SetItemAndApplyLocal(slotType, item.itemId, item);
+
+        // Jouer l'effet de particules
+        PlayEquipEffect(slotType);
+    }
+
+    private void PlayEquipEffect(SlotType slotType)
+    {
+        if (equipEffectPrefab == null)
+        {
+            Debug.LogWarning("[CustomisationUI] ❌ Prefab d'effet de particules non assigné dans l’inspecteur.");
+            return;
+        }
+
+        if (visualsHandler == null)
+        {
+            Debug.LogWarning("[CustomisationUI] ❌ EquippedVisualsHandler non trouvé.");
+            return;
+        }
+
+        var equippedObject = visualsHandler.GetEquippedObject(slotType);
+        if (equippedObject == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Aucun vêtement équipé pour le slot {slotType}.");
+            return;
+        }
+
+        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+        if (renderer == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
+            return;
+        }
+
+        // Instancier l’effet de particules
+        var effectInstance = Instantiate(equipEffectPrefab, equippedObject.transform);
+        Debug.Log($"[CustomisationUI] ✨ Effet de particules instancié pour {slotType}: {effectInstance.name}");
+
+        // Positionner au centre du vêtement
+        var bounds = renderer.bounds;
+        effectInstance.transform.localPosition = bounds.center - equippedObject.transform.position;
+        Debug.Log($"[CustomisationUI] Position de l’effet: {effectInstance.transform.position} (Centre des bounds: {bounds.center})");
+
+        // Obtenir le ParticleSystem
+        var particleSystem = effectInstance.GetComponent<ParticleSystem>();
+        if (particleSystem != null)
+        {
+            // Ajuster la forme pour entourer le vêtement
+            var shape = particleSystem.shape;
+            if (shape.shapeType == ParticleSystemShapeType.Sphere)
+            {
+                shape.radius = bounds.extents.magnitude * 0.5f; // Ajuster au rayon du vêtement
+                Debug.Log($"[CustomisationUI] Rayon de l’effet ajusté: {shape.radius}");
+            }
+
+            // S’assurer que l’effet se joue
+            particleSystem.Play();
+            Debug.Log($"[CustomisationUI] Effet de particules joué pour {slotType}. Durée: {particleSystem.main.duration}s");
+
+            // Détruire après la durée si Stop Action n’est pas Destroy
+            if (particleSystem.main.stopAction != ParticleSystemStopAction.Destroy)
+            {
+                Destroy(effectInstance, particleSystem.main.duration + particleSystem.main.startLifetime.constantMax);
+                Debug.Log($"[CustomisationUI] Destruction planifiée de l’effet après {particleSystem.main.duration + particleSystem.main.startLifetime.constantMax}s");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Aucun ParticleSystem trouvé sur {effectInstance.name}.");
+            Destroy(effectInstance, 5f); // Destruction par défaut après 5s
+        }
     }
 
     #endregion
@@ -448,12 +546,6 @@ public class CustomisationUIManager : NetworkBehaviour
         if (currentSelectedItem == null)
         {
             Debug.LogWarning("[CustomisationUI] Aucun item sélectionné pour la couleur.");
-            return;
-        }
-
-        if (tabColorPanel == null)
-        {
-            Debug.LogWarning("[CustomisationUI] TabColorPanel non assigné.");
             return;
         }
 
@@ -478,6 +570,18 @@ public class CustomisationUIManager : NetworkBehaviour
             return;
         }
 
+        // Sauvegarder l'état initial
+        _initialColor = renderer.material.color;
+        _initialTextureName = customizationData.Data.TryGetTexture(slotType, out var textureName) ? textureName : null;
+        Debug.Log($"[CustomisationUI] État initial sauvegardé pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
+
+        // Désactiver le panneau de textures et réinitialiser la texture
+        if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
+        dataToSave.SetTexture(slotType, null);
+        customizationData.Data = dataToSave;
+        customizationData.SyncCustomizationDataServerRpc(dataToSave);
+
+        // Charger la couleur actuelle ou par défaut
         Color currentColor = Color.white;
         if (customizationData.Data.TryGetColor(slotType, out var storedColor))
         {
@@ -487,7 +591,7 @@ public class CustomisationUIManager : NetworkBehaviour
 
         visualsHandler.ApplyColorWithoutTexture(slotType, currentColor);
 
-        tabColorPanel.SetActive(true);
+        // Créer le ColorPicker
         bool success = ColorPicker.Create(
             original: currentColor,
             message: "Choisissez une couleur pour le vêtement",
@@ -500,7 +604,11 @@ public class CustomisationUIManager : NetworkBehaviour
         if (!success)
         {
             Debug.LogWarning("[CustomisationUI] Échec de l'ouverture du ColorPicker.");
-            tabColorPanel.SetActive(false);
+            if (tabColorPanel != null) tabColorPanel.SetActive(false);
+        }
+        else
+        {
+            if (tabColorPanel != null) tabColorPanel.SetActive(true);
         }
     }
 
@@ -547,7 +655,201 @@ public class CustomisationUIManager : NetworkBehaviour
             Debug.Log($"[UI → Envoi] Couleur envoyée pour {kvp.Key} = {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
         }
 
-        if (tabColorPanel) tabColorPanel.SetActive(false);
+        if (tabColorPanel != null) tabColorPanel.SetActive(false);
+    }
+
+    #endregion
+
+    #region Textures
+
+    private void InitializeTexturePanel()
+    {
+        if (textureButtonContainer == null || textureButtonPrefab == null)
+        {
+            Debug.LogWarning("[CustomisationUI] textureButtonContainer ou textureButtonPrefab non assigné.");
+            return;
+        }
+
+        ClearContainer(textureButtonContainer);
+
+        for (int i = 0; i < availableTextures.Count; i++)
+        {
+            int index = i;
+            TextureOption option = availableTextures[i];
+            GameObject buttonObj = Instantiate(textureButtonPrefab, textureButtonContainer);
+            buttonObj.SetActive(true);
+
+            Button button = buttonObj.GetComponent<Button>();
+            if (button != null)
+            {
+                button.enabled = true;
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => ApplyTexture(index));
+            }
+            else
+            {
+                Debug.LogWarning($"[CustomisationUI] Bouton manquant sur textureButtonPrefab pour {option.name}.");
+            }
+
+            Image buttonImage = buttonObj.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.enabled = true;
+                buttonImage.sprite = option.preview != null ? option.preview : defaultTexturePreview;
+                buttonImage.preserveAspect = true;
+                buttonImage.color = Color.white;
+            }
+
+            TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
+            if (buttonText != null)
+            {
+                buttonText.enabled = true;
+                buttonText.text = option.name;
+            }
+            else
+            {
+                Debug.LogWarning($"[CustomisationUI] TextMeshProUGUI manquant sur le bouton de texture {option.name}.");
+            }
+        }
+
+        if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
+    }
+
+    private void OpenTexturePanel()
+    {
+        if (currentSelectedItem == null)
+        {
+            Debug.LogWarning("[CustomisationUI] Aucun item sélectionné pour la texture.");
+            return;
+        }
+
+        if (tabTexturePanel == null)
+        {
+            Debug.LogWarning("[CustomisationUI] TabTexturePanel non assigné.");
+            return;
+        }
+
+        if (visualsHandler == null)
+        {
+            Debug.LogWarning("[CustomisationUI] EquippedVisualsHandler non trouvé.");
+            return;
+        }
+
+        var slotType = currentCategory.Item1;
+        var equippedObject = visualsHandler.GetEquippedObject(slotType);
+        if (equippedObject == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] Aucun vêtement équipé pour le slot {slotType}.");
+            return;
+        }
+
+        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+        if (renderer == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
+            return;
+        }
+
+        // Sauvegarder l'état initial
+        _initialColor = renderer.material.color;
+        _initialTextureName = customizationData.Data.TryGetTexture(slotType, out var textureName) ? textureName : null;
+        Debug.Log($"[CustomisationUI] État initial sauvegardé pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
+
+        // Désactiver le panneau de couleurs
+        if (tabColorPanel != null) tabColorPanel.SetActive(false);
+
+        // Appliquer la texture existante si disponible
+        if (customizationData.Data.TryGetTexture(slotType, out textureName))
+        {
+            var textureOption = availableTextures.FirstOrDefault(t => t.name == textureName);
+            if (textureOption != null && textureOption.texture != null)
+            {
+                renderer.material.SetTexture("_BaseMap", textureOption.texture);
+                renderer.material.color = Color.white; // Réinitialiser la couleur pour la texture
+                Debug.Log($"[CustomisationUI] Texture existante {textureName} appliquée avec couleur réinitialisée pour {slotType}.");
+            }
+            else
+            {
+                Debug.LogWarning($"[CustomisationUI] Texture {textureName} introuvable dans availableTextures ou texture non assignée pour {slotType}.");
+            }
+        }
+
+        tabTexturePanel.SetActive(true);
+    }
+
+    private void ApplyTexture(int textureIndex)
+    {
+        if (visualsHandler == null)
+        {
+            Debug.LogWarning("[CustomisationUI] EquippedVisualsHandler non trouvé.");
+            return;
+        }
+
+        if (currentSelectedItem == null)
+        {
+            Debug.LogWarning("[CustomisationUI] Aucun item sélectionné pour la texture.");
+            return;
+        }
+
+        if (textureIndex < 0 || textureIndex >= availableTextures.Count)
+        {
+            Debug.LogWarning($"[CustomisationUI] Index de texture invalide : {textureIndex}.");
+            return;
+        }
+
+        var slotType = currentCategory.Item1;
+        var equippedObject = visualsHandler.GetEquippedObject(slotType);
+        if (equippedObject == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] Aucun vêtement équipé pour le slot {slotType}.");
+            return;
+        }
+
+        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+        if (renderer == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
+            return;
+        }
+
+        TextureOption option = availableTextures[textureIndex];
+        Debug.Log($"[CustomisationUI] Tentative d'application de la texture {option.name} pour {slotType}");
+
+        // Vérifier le matériau
+        if (renderer.material == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] Le matériau du renderer est null pour {slotType}. Création d'un nouveau matériau par défaut.");
+            renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        }
+
+        // Vérifier le shader
+        if (renderer.material.shader.name != "Universal Render Pipeline/Lit")
+        {
+            Debug.LogWarning($"[CustomisationUI] Shader non compatible pour {slotType}: {renderer.material.shader.name}. Remplacement par URP/Lit.");
+            renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        }
+
+        // Appliquer la texture directement
+        if (option.texture != null)
+        {
+            renderer.material.SetTexture("_BaseMap", option.texture);
+            renderer.material.color = Color.white; // Réinitialiser la couleur pour utiliser la _BaseMap de base
+            Debug.Log($"[CustomisationUI] Texture {option.name} appliquée avec couleur réinitialisée (Color.white) pour {slotType}.");
+        }
+        else
+        {
+            Debug.LogWarning($"[CustomisationUI] La texture {option.name} est null dans availableTextures pour {slotType}. Vérifiez l'assignation dans l'inspecteur.");
+            renderer.material.SetTexture("_BaseMap", null);
+            renderer.material.color = Color.white; // Réinitialiser la couleur même si la texture est null
+        }
+
+        // Enregistrer la texture et réinitialiser la couleur
+        dataToSave.SetTexture(slotType, option.name);
+        dataToSave.SetColor(slotType, Color.white);
+        Debug.Log($"[CustomisationUI] Texture enregistrée pour {slotType}: {option.name}, Couleur réinitialisée: {ColorUtility.ToHtmlStringRGBA(Color.white)}");
+
+        customizationData.Data = dataToSave;
+        customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
 
 
@@ -573,6 +875,78 @@ public class CustomisationUIManager : NetworkBehaviour
     {
         foreach (Transform child in container)
             Destroy(child.gameObject);
+    }
+
+    public void ResetToInitial()
+    {
+        if (currentSelectedItem == null || visualsHandler == null) return;
+
+        var slotType = currentCategory.Item1;
+        var equippedObject = visualsHandler.GetEquippedObject(slotType);
+        if (equippedObject == null) return;
+
+        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+        if (renderer == null) return;
+
+        // Restaurer l'état initial
+        if (_initialTextureName != null)
+        {
+            var textureOption = availableTextures.FirstOrDefault(t => t.name == _initialTextureName);
+            if (textureOption != null && textureOption.texture != null)
+            {
+                renderer.material.SetTexture("_BaseMap", textureOption.texture);
+                renderer.material.color = Color.white; // Réinitialiser la couleur pour la texture
+                Debug.Log($"[CustomisationUI] Texture initiale {_initialTextureName} restaurée avec couleur réinitialisée pour {slotType}.");
+            }
+            else
+            {
+                Debug.LogWarning($"[CustomisationUI] Texture initiale {_initialTextureName} introuvable ou non assignée pour {slotType}.");
+            }
+            dataToSave.SetTexture(slotType, _initialTextureName);
+            dataToSave.SetColor(slotType, _initialColor);
+        }
+        else
+        {
+            visualsHandler.ApplyColorWithoutTexture(slotType, _initialColor);
+            dataToSave.SetColor(slotType, _initialColor);
+            dataToSave.SetTexture(slotType, null);
+        }
+
+        customizationData.Data = dataToSave;
+        customizationData.SyncCustomizationDataServerRpc(dataToSave);
+        Debug.Log($"[CustomisationUI] État initial restauré pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
+
+        if (tabColorPanel != null) tabColorPanel.SetActive(false);
+        if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
+        SelectTab(TabType.Item);
+    }
+
+    // Méthode de débogage pour tester le chargement des textures
+    public void DebugTextureLoading()
+    {
+        Debug.Log("[CustomisationUI] Début du test de chargement des textures...");
+        foreach (var option in availableTextures)
+        {
+            Debug.Log($"[CustomisationUI] Vérification de la texture {option.name}:");
+            if (option.texture != null)
+            {
+                Debug.Log($"  - Texture assignée dans l'inspecteur: {option.texture.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"  - Texture NON assignée dans l'inspecteur pour {option.name}. Assignez la Texture2D dans l'inspecteur.");
+            }
+
+            var loadedTexture = Resources.Load<Texture2D>($"Textures/{option.name}");
+            if (loadedTexture != null)
+            {
+                Debug.Log($"  - Texture chargée via Resources: Textures/{option.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"  - Échec du chargement via Resources: Textures/{option.name}. Vérifiez le fichier dans Assets/Resources/Textures.");
+            }
+        }
     }
 
     #endregion
