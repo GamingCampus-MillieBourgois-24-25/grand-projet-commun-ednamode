@@ -54,7 +54,6 @@ public class PodiumManager : NetworkBehaviour
         PodiumUIManager.Instance?.ShowRanking(topPlayers);
 
         StartCoroutine(ReturnAllPlayersToSpawnAfterDelay());
-        PodiumUIManager.Instance.HideRanking();
     }
 
     private void TeleportPlayerToSpot(ulong clientId, Transform spot)

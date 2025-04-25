@@ -94,6 +94,30 @@ public class NetworkPlayerManager : MonoBehaviour
         return FindObjectsOfType<NetworkPlayer>().FirstOrDefault(p => p.IsOwner);
     }
 
+    /// <summary>
+    /// Retourne la position assignée au joueur en fonction de son clientId.
+    /// </summary>
+    public Vector3 GetAssignedSpawnPosition(ulong clientId)
+    {
+        if (occupiedSpawns.TryGetValue(clientId, out int spawnIndex))
+        {
+            if (spawnIndex >= 0 && spawnIndex < spawnPoints.Count)
+            {
+                return spawnPoints[spawnIndex].position;
+            }
+            else
+            {
+                Debug.LogWarning($"[NetworkPlayerManager] Index de spawn invalide pour client {clientId} : {spawnIndex}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[NetworkPlayerManager] Aucun spawn attribué pour client {clientId}. Attribution automatique...");
+            return AssignSpawnPoint(clientId);
+        }
+
+        return Vector3.zero;
+    }
 
     /// <summary>
     /// Retourne le Transform associé à un clientId donné
@@ -121,6 +145,25 @@ public class NetworkPlayerManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Attribue un point de spawn libre au joueur et l'enregistre.
+    /// </summary>
+    private Vector3 AssignSpawnPoint(ulong clientId)
+    {
+        for (int i = 0; i < spawnPoints.Count; i++)
+        {
+            if (!occupiedSpawns.ContainsValue(i))
+            {
+                occupiedSpawns[clientId] = i;
+                Debug.Log($"[NetworkPlayerManager] Spawn point {i} assigné au client {clientId}");
+                return spawnPoints[i].position;
+            }
+        }
+
+        Debug.LogError("[NetworkPlayerManager] Plus de points de spawn disponibles !");
+        return Vector3.zero;
+    }
+
+    /// <summary>
     /// Libère le point de spawn pour un clientId donné
     /// </summary>
     public void ReleaseSpawnPoint(ulong clientId)
@@ -131,5 +174,4 @@ public class NetworkPlayerManager : MonoBehaviour
             occupiedSpawns.Remove(clientId);
         }
     }
-
 }
