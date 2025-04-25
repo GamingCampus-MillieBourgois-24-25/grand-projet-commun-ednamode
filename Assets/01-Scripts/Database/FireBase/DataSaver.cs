@@ -216,6 +216,17 @@ public class DataSaver : MonoBehaviour
         SaveDataFn();
     }
 
+    public void GiveReward(Action<int> rewardAction, int amount)
+    {
+        if (rewardAction != null)
+        {
+            rewardAction.Invoke(amount);
+        }
+        else
+        {
+            Debug.LogWarning("Reward action is null!");
+        }
+    }
 
 
     [ContextMenu("Save")]

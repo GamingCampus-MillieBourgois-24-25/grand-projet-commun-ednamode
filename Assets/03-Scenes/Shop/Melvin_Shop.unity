@@ -3468,6 +3468,8 @@ MonoBehaviour:
   _androidGameId: 5841331
   _iOSGameId: 5841330
   _testMode: 1
+  rewardType: 1
+  rewardAmount: 10
 --- !u!4 &1768247430
 Transform:
   m_ObjectHideFlags: 0

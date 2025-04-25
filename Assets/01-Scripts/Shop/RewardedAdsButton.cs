@@ -1,27 +1,47 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Advertisements;
-
+using System;
+using System.Collections.Generic;
 public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener, IUnityAdsInitializationListener
 {
     [SerializeField] Button _showAdButton;
-    [SerializeField] string _androidAdUnitId = "Rewarded_Android";
+    [SerializeField] string _androidAdUnitId = "rewardTest";
     [SerializeField] string _iOSAdUnitId = "Rewarded_iOS";
     string _adUnitId = null; // This will remain null for unsupported platforms
 
-    [SerializeField] string _androidGameId;
-    [SerializeField] string _iOSGameId;
+    [SerializeField] string _androidGameId="5841331";
+    [SerializeField] string _iOSGameId= "5841330";
     [SerializeField] bool _testMode = true;
     private string _gameId;
 
+    public enum RewardType
+    {
+        Coins,
+        Jewels,
+        LevelProgress
+    }
+    [Header("Reward Settings")]
+    [SerializeField] private RewardType rewardType; // Type de récompense sélectionné dans l'inspecteur
+    [SerializeField] private int rewardAmount; // Montant de la récompense
+
     private DataSaver _dataSaver;
 
-    private ShoppingScript shoppingScript;
+    // Dictionnaire pour mapper les types de récompenses à des fonctions
+    private Dictionary<RewardType, Action<int>> rewardActions;
+
     void Awake()
     {
-        shoppingScript = Object.FindFirstObjectByType<ShoppingScript>();
+        // Get the DataSaver instance
         _dataSaver = DataSaver.Instance;
         InitializeAds();
+
+        rewardActions = new Dictionary<RewardType, Action<int>>
+        {
+            { RewardType.Coins, _dataSaver.addCoins },
+            { RewardType.Jewels, _dataSaver.addJewels },
+            { RewardType.LevelProgress, _dataSaver.addLevelProgress }
+        };
     }
 
     // Call this public method when you want to get an ad ready to show.
@@ -62,9 +82,16 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
         if (adUnitId.Equals(_adUnitId) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
         {
             Debug.Log("Unity Ads Rewarded Ad Completed");
-            // Grant a reward.
-            _dataSaver.addJewels(10);
-            shoppingScript.SetTexts();
+
+            if (rewardActions.TryGetValue(rewardType, out var rewardAction))
+            {
+                rewardAction.Invoke(rewardAmount);
+                Debug.Log($"Reward applied: {rewardType} +{rewardAmount}");
+            }
+            else
+            {
+                Debug.LogWarning($"No reward action found for reward type: {rewardType}");
+            }
         }
     }
 
