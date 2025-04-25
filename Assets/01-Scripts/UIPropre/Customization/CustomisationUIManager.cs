@@ -89,7 +89,6 @@ public class CustomisationUIManager : NetworkBehaviour
     private void Start()
     {
         Debug.Log("[CustomisationUI] Start appelé !");
-        themeReminderText.text = $"Theme: {ThemeManager.Instance.CurrentTheme.themeName}";
         StartCoroutine(WaitForLocalPlayerThenInit());
     }
 
@@ -310,11 +309,11 @@ public class CustomisationUIManager : NetworkBehaviour
     /// </summary>
     public void DisplayCurrentTheme()
     {
-        var theme = ThemeManager.Instance.CurrentTheme;
-        if (theme != null)
-        {
-            themeReminderText.text = theme.themeName;
-        }
+        //var theme = ThemeManager.Instance.CurrentTheme;
+        //if (theme != null)
+        //{
+        //    themeReminderText.text = theme.themeName;
+        //}
     }
 
     #endregion

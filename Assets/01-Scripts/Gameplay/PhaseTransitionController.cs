@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using Unity.Netcode;
 using CharacterCustomization;
-
+using DG.Tweening;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
+using Unity.Netcode.Components;
 
 /// <summary>
 /// Contrôleur des transitions synchronisées entre les phases du jeu (host -> clients).
@@ -19,6 +20,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
     [Header("🎥 PostProcess Settings")]
     [SerializeField] private Volume postProcessVolume;
+
+    [Header("🎵 Audio")]
+    [Tooltip("Source audio pour la musique de thème.")]
+    [SerializeField] private AudioSource themeMusicSource;
+    [Tooltip("Clip audio pour la musique de thème.")]
+    [SerializeField] private AudioClip themeMusicClip;
 
     private DepthOfField depthOfField;
     private float initialFocusDistance;
@@ -74,20 +81,17 @@ public class GamePhaseTransitionController : NetworkBehaviour
     /// </summary>
     private IEnumerator PhaseSequenceCoroutine()
     {
-        // === Phase de Révélation du Thème === //
-        SetPhase(GamePhaseManager.GamePhase.ThemeReveal);
-        ThemeManager.Instance.SelectRandomThemeServerRpc();
-        yield return new WaitForSeconds(7f);  // 3s catégorie + 4s thème
+        // ============= Phase d'Affichage du Thème ============= //
+        SetPhase(GamePhaseManager.GamePhase.ThemeDisplay);
+        PlayThemeMusic();
+        yield return StartCoroutine(ThemeManager.Instance.LaunchThemeDisplaySequence());
 
-        // ============= Phase de Customisation ============= //
+        // ============= Phase de customisation ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
-        CustomisationUIManager.Instance.StartCustomizationTimer(GamePhaseManager.Instance.CustomizationDuration);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
         // ============= Phase de défilé ============= //
         SetPhase(GamePhaseManager.GamePhase.RunwayVoting);
-        yield return new WaitForSeconds(1f); // ⏳ Laisse le temps aux clients d’avoir les objets instanciés
-
         ApplyAllPlayersVisualsClientRpc();
         yield return new WaitForSeconds(1f);
         RunwayManager.Instance.StartRunwayPhase();
@@ -105,9 +109,13 @@ public class GamePhaseTransitionController : NetworkBehaviour
         SetPhase(GamePhaseManager.GamePhase.Podium);
         PodiumManager.Instance.StartPodiumSequence();
         yield return new WaitForSeconds(_phaseManager.PodiumDuration);
+        PodiumUIManager.Instance?.HideRanking();
+        HidePodiumPanel();
 
         // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
+        ActivateReturnToLobbyPhase();
+        FadeOutMusic(themeMusicSource, 2f);
     }
 
     /// <summary>
@@ -138,21 +146,27 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         HandleDepthOfField(phase);
 
-        var mapping = _phaseManager.GetActivePanelMapping();
-        if (mapping == null)
+        AdjustPlayersScale(phase);
+
+        if (phase == GamePhaseManager.GamePhase.ReturnToLobby)
         {
-            Debug.LogWarning("[GamePhaseTransition] Aucun mapping actif disponible.");
+            ResetPlayersPositionAndCamera();
+            UIManager.Instance.HideAllPanels();
+            UIManager.Instance.ShowPanel("Online Panels");
             return;
         }
+
+        var mapping = _phaseManager.GetActivePanelMapping();
+        if (mapping == null) return;
 
         GameObject toHide = null;
         GameObject toShow = null;
 
         switch (phase)
         {
-            case GamePhaseManager.GamePhase.ThemeReveal:
-                toHide = mapping.themeRevealPanelToHide;
-                toShow = mapping.themeRevealPanel;
+            case GamePhaseManager.GamePhase.ThemeDisplay:
+                toHide = mapping.themeDisplayPanelToHide;
+                toShow = mapping.themeDisplayPanel;
                 break;
             case GamePhaseManager.GamePhase.Customization:
                 toHide = mapping.customizationPanelToHide;
@@ -167,10 +181,9 @@ public class GamePhaseTransitionController : NetworkBehaviour
                 toShow = mapping.podiumPanel;
                 break;
             case GamePhaseManager.GamePhase.ReturnToLobby:
-            case GamePhaseManager.GamePhase.Waiting:
-                UIManager.Instance.HideAllPanels();
-                UIManager.Instance.ShowPanel("Online Panels");
-                return;
+                toHide = mapping.returnToLobbyPanelToHide;
+                toShow = mapping.returnToLobbyPanel;
+                break;
         }
 
         if (toHide != null && toHide.activeSelf)
@@ -179,6 +192,27 @@ public class GamePhaseTransitionController : NetworkBehaviour
         if (toShow != null && !toShow.activeSelf)
             UIManager.Instance.ShowPanelDirect(toShow);
     }
+
+    private void ResetPlayersPositionAndCamera()
+    {
+        var players = FindObjectsOfType<NetworkPlayer>();
+        foreach (var player in players)
+        {
+            var spawnPosition = NetworkPlayerManager.Instance.GetAssignedSpawnPosition(player.OwnerClientId);
+            var netTransform = player.GetComponent<NetworkTransform>();
+            netTransform.Teleport(spawnPosition, Quaternion.identity, player.transform.localScale);
+
+            var cam = player.GetLocalCamera();
+            if (cam != null)
+            {
+                cam.transform.SetParent(player.transform);
+                cam.transform.localPosition = Vector3.zero; // Ajuste selon ta config
+                cam.transform.localRotation = Quaternion.identity;
+                Debug.Log($"[Lobby] Caméra réassignée pour le joueur {player.OwnerClientId}");
+            }
+        }
+    }
+
 
     #endregion
 
@@ -232,6 +266,110 @@ public class GamePhaseTransitionController : NetworkBehaviour
     private void ShowRunwayForClientRpc(ulong playerClientId)
     {
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(playerClientId);
+    }
+
+    #endregion
+
+    private void AdjustPlayersScale(GamePhaseManager.GamePhase phase)
+    {
+        var players = FindObjectsOfType<NetworkPlayer>();
+
+        Vector3 targetScale = (phase == GamePhaseManager.GamePhase.RunwayVoting || phase == GamePhaseManager.GamePhase.Podium)
+                                ? NetworkPlayer.EnlargedScale
+                                : NetworkPlayer.DefaultScale;
+
+        foreach (var player in players)
+        {
+            player.SetPlayerScale(targetScale);
+        }
+    }
+
+    public void HidePodiumPanel()
+    {
+        var mapping = _phaseManager.GetActivePanelMapping();
+        if (mapping == null) return;
+        if (mapping.podiumPanel.activeSelf)
+            UIManager.Instance.HidePanel(mapping.podiumPanel);
+        if (mapping.returnToLobbyPanel.activeSelf)
+            UIManager.Instance.HidePanel(mapping.returnToLobbyPanel);
+    }
+
+    #region Lobby
+
+    /// <summary>
+    /// Active la phase de retour au lobby.
+    /// </summary>
+    public void ActivateReturnToLobbyPhase()
+    {
+        Debug.Log("[GameManager] 🚪 Retour au Lobby...");
+
+        // 1️⃣ Téléporte tous les joueurs
+        foreach (var player in FindObjectsOfType<NetworkPlayer>())
+        {
+            player.ReturnToLobby();
+        }
+
+        // 2️⃣ Reset des états Ready
+        if (NetworkManager.Singleton.IsServer)
+            MultiplayerManager.Instance?.ResetAllReadyStates();
+
+        FindObjectOfType<MultiplayerUI>()?.ResetReadyState();
+
+        // 3️⃣ Affiche l'UI de connexion
+        MultiplayerUI multiplayerUI = FindObjectOfType<MultiplayerUI>();
+        if (multiplayerUI != null)
+        {
+            multiplayerUI.UpdateConnectionUI(true);
+            Debug.Log("[GameManager] 🖥️ Panel de connexion affiché.");
+        }
+    }
+
+    #endregion
+
+    #region Audio
+    private void PlayThemeMusic()
+    {
+        if (themeMusicSource == null || themeMusicClip == null)
+        {
+            Debug.LogWarning("[Audio] AudioSource ou Clip non assigné pour la musique du thème.");
+            return;
+        }
+
+        themeMusicSource.clip = themeMusicClip;
+        themeMusicSource.loop = true; // Boucle la musique
+        themeMusicSource.volume = 0f;
+        themeMusicSource.Play();
+        themeMusicSource.DOFade(1f, 1f);
+
+        Debug.Log("[Audio] 🎶 Musique du choix de thème lancée !");
+    }
+
+    private void StopThemeMusic()
+    {
+        if (themeMusicSource != null && themeMusicSource.isPlaying)
+        {
+            themeMusicSource.Stop();
+            Debug.Log("[Audio] 🎵 Musique du thème arrêtée.");
+        }
+    }
+
+    public void FadeOutMusic(AudioSource audioSource, float fadeDuration)
+    {
+        StartCoroutine(FadeOutCoroutine(audioSource, fadeDuration));
+    }
+
+    private IEnumerator FadeOutCoroutine(AudioSource audioSource, float duration)
+    {
+        float startVolume = audioSource.volume;
+
+        while (audioSource.volume > 0)
+        {
+            audioSource.volume -= startVolume * Time.deltaTime / duration;
+            yield return null;
+        }
+
+        audioSource.Stop();
+        audioSource.volume = startVolume;  // Reset pour la prochaine lecture
     }
 
     #endregion

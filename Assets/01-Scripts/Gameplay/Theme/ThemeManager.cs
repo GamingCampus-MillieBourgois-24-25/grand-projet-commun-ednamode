@@ -1,124 +1,100 @@
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
-/// <summary>
-/// Gère la sélection aléatoire des catégories et thèmes pour chaque partie.
-/// Chargement automatique des ThemeData depuis Resources.
-/// Synchronisation du thème sélectionné avec tous les clients.
-/// </summary>
 public class ThemeManager : NetworkBehaviour
 {
-    #region Singleton
-
     public static ThemeManager Instance { get; private set; }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-
-        LoadAllThemes();
-    }
-
-    #endregion
-
-    #region Variables
 
     private List<ThemeData> availableThemes = new List<ThemeData>();
 
-    private NetworkVariable<int> selectedThemeIndex = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private NetworkVariable<int> selectedThemeIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private NetworkVariable<ulong> impostorClientId = new(ulong.MaxValue, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    private ThemeData lastChosenTheme = null;
 
     public ThemeData CurrentTheme => (selectedThemeIndex.Value >= 0 && selectedThemeIndex.Value < availableThemes.Count)
                                         ? availableThemes[selectedThemeIndex.Value]
                                         : null;
 
-    #endregion
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+        LoadAllThemes();
+    }
 
-    #region Chargement Automatique
-
-    /// <summary>
-    /// Charge tous les ThemeData présents dans Resources/Themes, en excluant ceux marqués.
-    /// </summary>
     private void LoadAllThemes()
     {
         availableThemes = Resources.LoadAll<ThemeData>("Themes")
                                    .Where(t => t.hideFlags != HideFlags.DontSave)
                                    .ToList();
-
-        Debug.Log($"[ThemeManager] {availableThemes.Count} thèmes chargés automatiquement.");
+        Debug.Log($"[ThemeManager] {availableThemes.Count} thÃ¨mes chargÃ©s.");
     }
 
-    #endregion
-
-    #region Sélection Aléatoire
-
-    /// <summary>
-    /// Lance la sélection d'une catégorie puis d'un thème correspondant.
-    /// </summary>
-    [ServerRpc(RequireOwnership = false)]
-    public void SelectRandomThemeServerRpc()
+    public IEnumerator LaunchThemeDisplaySequence()
     {
-        if (availableThemes == null || availableThemes.Count == 0)
-        {
-            Debug.LogWarning("[ThemeManager] Aucun thème disponible pour la sélection.");
-            return;
-        }
+        if (IsServer)
+            SelectThemeWithImpostorLogic();
 
+        yield return new WaitForSeconds(ThemeUIManager.Instance.TotalDisplayTime);
+    }
+
+    private void SelectThemeWithImpostorLogic()
+    {
         var categories = System.Enum.GetValues(typeof(ThemeData.ThemeCategory)).Cast<ThemeData.ThemeCategory>().ToList();
-        ThemeData.ThemeCategory randomCategory = categories[Random.Range(0, categories.Count)];
+        var randomCategory = categories[Random.Range(0, categories.Count)];
 
-        ShowCategoryToClientsClientRpc(randomCategory.ToString());
+        int selectedMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
+        bool isImpostorMode = (selectedMode == 1);
 
-        List<ThemeData> themesInCategory = availableThemes.Where(t => t.category == randomCategory).ToList();
-
-        if (themesInCategory.Count == 0)
+        if (isImpostorMode)
         {
-            Debug.LogWarning($"[ThemeManager] Aucun thème trouvé pour la catégorie : {randomCategory}");
-            return;
+            var clients = NetworkManager.Singleton.ConnectedClientsList;
+            impostorClientId.Value = clients[Random.Range(0, clients.Count)].ClientId;
+            Debug.Log($"[ThemeManager] ðŸŽ­ Imposteur dÃ©signÃ© : Client {impostorClientId.Value}");
+        }
+        else
+        {
+            impostorClientId.Value = ulong.MaxValue;
         }
 
-        ThemeData chosenTheme = themesInCategory[Random.Range(0, themesInCategory.Count)];
+        var themesInCategory = availableThemes.Where(t => t.category == randomCategory).ToList();
+        var chosenTheme = GetNonRepeatingRandomTheme(themesInCategory);
         selectedThemeIndex.Value = availableThemes.IndexOf(chosenTheme);
 
-        ShowThemeToClientsClientRpc(chosenTheme.themeName);
+        Debug.Log($"[ThemeManager] CatÃ©gorie : {randomCategory} | ThÃ¨me sÃ©lectionnÃ© : {chosenTheme.themeName}");
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            bool isImpostor = isImpostorMode && client.ClientId == impostorClientId.Value;
+            ShowThemeClientRpc(client.ClientId, randomCategory.ToString(), isImpostor ? "Imposteur !" : chosenTheme.themeName);
+        }
     }
 
-    #endregion
+    private ThemeData GetNonRepeatingRandomTheme(List<ThemeData> themes)
+    {
+        if (themes.Count <= 1)
+            return themes[0];
 
-    #region RPC - Synchronisation UI
+        ThemeData chosen;
+        int attempts = 0;
+        do
+        {
+            chosen = themes[Random.Range(0, themes.Count)];
+            attempts++;
+        } while (chosen == lastChosenTheme && attempts < 10);
+
+        lastChosenTheme = chosen;
+        return chosen;
+    }
 
     [ClientRpc]
-    private void ShowCategoryToClientsClientRpc(string categoryName)
+    private void ShowThemeClientRpc(ulong targetClientId, string categoryName, string themeName)
     {
-        Debug.Log($"[ThemeManager] Catégorie sélectionnée : {categoryName}");
-        ThemeUIManager.Instance.ShowCategory(categoryName);
+        if (NetworkManager.Singleton.LocalClientId != targetClientId) return;
+        ThemeUIManager.Instance.DisplayThemeSequence(categoryName, themeName);
     }
-
-    [ClientRpc]
-    private void ShowThemeToClientsClientRpc(string themeName)
-    {
-        Debug.Log($"[ThemeManager] Thème sélectionné : {themeName}");
-        ThemeUIManager.Instance.ShowTheme(themeName);
-    }
-
-    #endregion
-
-    #region Debug
-
-#if UNITY_EDITOR
-    [ContextMenu("Afficher les thèmes chargés")]
-    private void LogThemes()
-    {
-        foreach (var theme in availableThemes)
-            Debug.Log($"- {theme.themeName} ({theme.category})");
-    }
-#endif
-
-    #endregion
 }

@@ -18,10 +18,14 @@ public class MultiplayerUI : MonoBehaviour
     [SerializeField] private TMP_InputField inputJoinCode;
 
     [Header("Boutons")]
+    [Tooltip("Bouton pour Creer une session")]
     [SerializeField] private Button buttonCreate;
+    [Tooltip("Bouton pour Join la session")]
     [SerializeField] private Button buttonJoin;
+    [Tooltip("Bouton pour Quick Join")]
     [SerializeField] private Button buttonQuickJoin;
-    [SerializeField] private Button buttonLeave;
+    [Tooltip("Boutons pour Quitter la session")]
+    [SerializeField] private Button[] leaveButtons;
 
     [Header("GameMode")]
     [Header("Style Ready")]
@@ -55,6 +59,10 @@ public class MultiplayerUI : MonoBehaviour
     [Tooltip("Objets à masquer quand connecté")]
     [SerializeField] private GameObject[] hideOnConnected;
 
+    [Header("🎵 Musique")]
+    [SerializeField] private AudioSource menuMusicSource;
+    [SerializeField] private AudioClip menuMusicClip;
+
     private bool isReady = false;
 
     private void Awake()
@@ -62,7 +70,11 @@ public class MultiplayerUI : MonoBehaviour
         buttonCreate.onClick.AddListener(OnCreateClicked);
         buttonJoin.onClick.AddListener(OnJoinClicked);
         buttonQuickJoin.onClick.AddListener(OnQuickJoinClicked);
-        buttonLeave.onClick.AddListener(OnLeaveClicked);
+        foreach (var btn in leaveButtons)
+        {
+            if (btn != null)
+                btn.onClick.AddListener(OnLeaveClicked);
+        }
 
         inputLobbyName.onValueChanged.AddListener(OnInputChanged);
         inputJoinCode.onValueChanged.AddListener(OnInputChanged);
@@ -76,6 +88,17 @@ public class MultiplayerUI : MonoBehaviour
     private void Start()
     {
         StartCoroutine(WaitForMultiplayerReady());
+
+        if (menuMusicSource != null && menuMusicClip != null)
+        {
+            menuMusicSource.clip = menuMusicClip;
+            menuMusicSource.loop = true;
+            menuMusicSource.playOnAwake = false;
+            menuMusicSource.volume = 0f;
+
+            menuMusicSource.Play();
+            menuMusicSource.DOFade(1f, 1f);  // Fade-in
+        }
 
         for (int i = 0; i < gameModeButtons.Length; i++)
         {
@@ -243,7 +266,17 @@ public class MultiplayerUI : MonoBehaviour
             NotificationManager.Instance.ShowNotification("Failed to copy", Type.Important);
         }
     }
-        #endregion
+    #endregion
+
+    public void ResetReadyState()
+    {
+        isReady = false;
+        MultiplayerManager.Instance?.SetReady(false);
+        UpdateReadyButtonUI();
+        Debug.Log("[MultiplayerUI] 🔄 Ready reset côté UI.");
+    }
+
+
     #endregion
 
     #region ANIMATION
@@ -257,7 +290,11 @@ public class MultiplayerUI : MonoBehaviour
         Debug.Log("MultiplayerUI: MultiplayerManager prêt, activation des boutons.");
 
         buttonQuickJoin.interactable = true;
-        buttonLeave.interactable = true;
+        foreach (var btn in leaveButtons)
+        {
+            if (btn != null)
+                btn.interactable = true;
+        }
 
         OnInputChanged("");
     }
@@ -289,6 +326,24 @@ public class MultiplayerUI : MonoBehaviour
             else
             {
                 AnimateShow(go);
+            }
+        }
+
+        if (menuMusicSource != null)
+        {
+            menuMusicSource.DOKill();  // Stoppe tout fade en cours
+
+            if (connected && menuMusicSource.isPlaying)
+            {
+                menuMusicSource.DOFade(0f, 1f).OnComplete(() => menuMusicSource.Stop());
+            }
+            else if (!connected && !menuMusicSource.isPlaying)
+            {
+                menuMusicSource.volume = 0f;
+                menuMusicSource.Play();
+                menuMusicSource.DOFade(1f, 1f);
+                menuMusicSource.clip = menuMusicClip;
+                menuMusicSource.loop = true;
             }
         }
     }
