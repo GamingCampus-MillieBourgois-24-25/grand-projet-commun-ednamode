@@ -31,7 +31,7 @@ public class UIManagerLogin : MonoBehaviour
     [SerializeField]
     private GameObject SignedInPanel;
 
-    [SerializeField] 
+    [SerializeField]
     private GameObject transitionCoverPanel;
 
     [SerializeField] private RectTransform startingScreenTransform;
@@ -42,7 +42,7 @@ public class UIManagerLogin : MonoBehaviour
     private void Awake()
     {
         CreateInstance();
-     
+
 
         if (firebaseAuthManager == null)
         {
@@ -52,14 +52,11 @@ public class UIManagerLogin : MonoBehaviour
 
     private void CreateInstance()
     {
-        if(Instance == null)
+        if (Instance == null)
         {
             Instance = this;
         }
     }
-
-   
-
 
     public void OpenGameLogin()
     {
@@ -83,22 +80,22 @@ public class UIManagerLogin : MonoBehaviour
         SignedInPanel.SetActive(false);
     }
 
-    public void OpenLoginPanel()
+    public async void OpenLoginPanel()
     {
         ClearUI();
-        UITransitionManager.Instance.AnimatePanelIn(loginPanel);
+        await UITransitionManager.Instance.AnimatePanelInAsync(loginPanel); // Appel à la méthode asynchrone
     }
 
-    public void OpenRegistrationPanel()
+    public async void OpenRegistrationPanel()
     {
         ClearUI();
-        UITransitionManager.Instance.AnimatePanelIn(registrationPanel);
+        await UITransitionManager.Instance.AnimatePanelInAsync(registrationPanel); // Appel à la méthode asynchrone
     }
 
-    public void ShowVerificationResponse(bool isEmailSent, string emailId, string errorMessage)
+    public async void ShowVerificationResponse(bool isEmailSent, string emailId, string errorMessage)
     {
         ClearUI();
-        UITransitionManager.Instance.AnimatePanelIn(emailVerifPanel);
+        await UITransitionManager.Instance.AnimatePanelInAsync(emailVerifPanel); // Appel à la méthode asynchrone
 
         if (isEmailSent)
         {
@@ -114,7 +111,12 @@ public class UIManagerLogin : MonoBehaviour
 
     public void OpenSignedInPanel()
     {
-        ClearUI();
+        OpentTransitionCoverPanel();
+    }
 
+    public async void OpentTransitionCoverPanel()
+    {
+        ClearUI();
+        await UITransitionManager.Instance.PlaySceneTransitionAsync(); // Appel à la méthode asynchrone
     }
 }
