@@ -61,6 +61,9 @@ public class CustomisationUIManager : NetworkBehaviour
     [SerializeField] private Transform textureButtonContainer;
     [SerializeField] private Sprite defaultTexturePreview;
 
+    [Header("✨ Effet de Particules")]
+    [SerializeField] private GameObject equipEffectPrefab; // Prefab du ParticleSystem
+
     private CustomizationData dataToSave;
     private Dictionary<(SlotType, GroupType?), List<Item>> categorizedItems;
     private Dictionary<GroupType, SlotType> redirectedGroups;
@@ -208,6 +211,7 @@ public class CustomisationUIManager : NetworkBehaviour
         tabTextureButton.onClick.AddListener(() => SelectTab(TabType.Texture));
 
         InitializeTexturePanel();
+        DebugTextureLoading(); // Tester les textures au démarrage
 
         Debug.Log("[CustomisationUI] ✅ Initialisation complète du CustomisationUIManager.");
     }
@@ -461,6 +465,76 @@ public class CustomisationUIManager : NetworkBehaviour
             return;
         }
         customizationData.SetItemAndApplyLocal(slotType, item.itemId, item);
+
+        // Jouer l'effet de particules
+        PlayEquipEffect(slotType);
+    }
+
+    private void PlayEquipEffect(SlotType slotType)
+    {
+        if (equipEffectPrefab == null)
+        {
+            Debug.LogWarning("[CustomisationUI] ❌ Prefab d'effet de particules non assigné dans l’inspecteur.");
+            return;
+        }
+
+        if (visualsHandler == null)
+        {
+            Debug.LogWarning("[CustomisationUI] ❌ EquippedVisualsHandler non trouvé.");
+            return;
+        }
+
+        var equippedObject = visualsHandler.GetEquippedObject(slotType);
+        if (equippedObject == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Aucun vêtement équipé pour le slot {slotType}.");
+            return;
+        }
+
+        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+        if (renderer == null)
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
+            return;
+        }
+
+        // Instancier l’effet de particules
+        var effectInstance = Instantiate(equipEffectPrefab, equippedObject.transform);
+        Debug.Log($"[CustomisationUI] ✨ Effet de particules instancié pour {slotType}: {effectInstance.name}");
+
+        // Positionner au centre du vêtement
+        var bounds = renderer.bounds;
+        effectInstance.transform.localPosition = bounds.center - equippedObject.transform.position;
+        Debug.Log($"[CustomisationUI] Position de l’effet: {effectInstance.transform.position} (Centre des bounds: {bounds.center})");
+
+        // Obtenir le ParticleSystem
+        var particleSystem = effectInstance.GetComponent<ParticleSystem>();
+        if (particleSystem != null)
+        {
+            // Ajuster la forme pour entourer le vêtement
+            var shape = particleSystem.shape;
+            if (shape.shapeType == ParticleSystemShapeType.Sphere)
+            {
+                shape.radius = bounds.extents.magnitude * 0.5f; // Ajuster au rayon du vêtement
+                Debug.Log($"[CustomisationUI] Rayon de l’effet ajusté: {shape.radius}");
+            }
+
+            // S’assurer que l’effet se joue
+            particleSystem.Play();
+            Debug.Log($"[CustomisationUI] Effet de particules joué pour {slotType}. Durée: {particleSystem.main.duration}s");
+
+            // Détruire après la durée si Stop Action n’est pas Destroy
+            if (particleSystem.main.stopAction != ParticleSystemStopAction.Destroy)
+            {
+                Destroy(effectInstance, particleSystem.main.duration + particleSystem.main.startLifetime.constantMax);
+                Debug.Log($"[CustomisationUI] Destruction planifiée de l’effet après {particleSystem.main.duration + particleSystem.main.startLifetime.constantMax}s");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[CustomisationUI] ❌ Aucun ParticleSystem trouvé sur {effectInstance.name}.");
+            Destroy(effectInstance, 5f); // Destruction par défaut après 5s
+        }
     }
 
     #endregion
@@ -828,7 +902,33 @@ public class CustomisationUIManager : NetworkBehaviour
         SelectTab(TabType.Item);
     }
 
-   
+    // Méthode de débogage pour tester le chargement des textures
+    public void DebugTextureLoading()
+    {
+        Debug.Log("[CustomisationUI] Début du test de chargement des textures...");
+        foreach (var option in availableTextures)
+        {
+            Debug.Log($"[CustomisationUI] Vérification de la texture {option.name}:");
+            if (option.texture != null)
+            {
+                Debug.Log($"  - Texture assignée dans l'inspecteur: {option.texture.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"  - Texture NON assignée dans l'inspecteur pour {option.name}. Assignez la Texture2D dans l'inspecteur.");
+            }
+
+            var loadedTexture = Resources.Load<Texture2D>($"Textures/{option.name}");
+            if (loadedTexture != null)
+            {
+                Debug.Log($"  - Texture chargée via Resources: Textures/{option.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"  - Échec du chargement via Resources: Textures/{option.name}. Vérifiez le fichier dans Assets/Resources/Textures.");
+            }
+        }
+    }
 
     #endregion
 }

@@ -17665,6 +17665,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1891966478}
     - target: {fileID: 3907420034889535418, guid: c4a6ae4dd3505524390b550ca532ee8c, type: 3}
+      propertyPath: equipEffectPrefab
+      value: 
+      objectReference: {fileID: 6710139492206580332, guid: 95b8d3d65b5d7f1409c4ed1723887826, type: 3}
+    - target: {fileID: 3907420034889535418, guid: c4a6ae4dd3505524390b550ca532ee8c, type: 3}
       propertyPath: itemListContainer
       value: 
       objectReference: {fileID: 1542312411}
