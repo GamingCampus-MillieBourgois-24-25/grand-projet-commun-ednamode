@@ -17,6 +17,12 @@ public class GameModePanelMapping
     [Tooltip("Nom visible uniquement dans l'inspecteur pour identifier le mode.")]
     public string modeName;
 
+    [Header("🕹️ Phase : Categorie/Theme")]
+    [Tooltip("Panel à afficher pour la phase de sélection de catégorie et thème.")]
+    public GameObject themeDisplayPanel;
+    [Tooltip("Panel à masquer en quittant la phase précédente vers la sélection de catégorie et thème.")]
+    public GameObject themeDisplayPanelToHide;
+
     [Header("🎨 Phase : Customisation")]
     [Tooltip("Panel à afficher pour la phase de customisation.")]
     public GameObject customizationPanel;
@@ -55,7 +61,7 @@ public class GamePhaseManager : NetworkBehaviour
     /// <summary> 
     /// Phase actuelle du jeu.
     /// </summary>
-    public enum GamePhase { Waiting, Customization, RunwayVoting, Podium, ReturnToLobby }
+    public enum GamePhase { Waiting, ThemeDisplay, Customization, RunwayVoting, Podium, ReturnToLobby }
 
     [Tooltip("Phase du jeu en cours.")]
     public NetworkVariable<GamePhase> CurrentPhase = new(writePerm: NetworkVariableWritePermission.Server);

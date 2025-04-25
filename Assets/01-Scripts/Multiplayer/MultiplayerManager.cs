@@ -593,7 +593,6 @@ public class MultiplayerManager : NetworkBehaviour
         Debug.Log("[MultiplayerManager] 🔄 Tous les états Ready ont été réinitialisés.");
     }
 
-
     public void UpdateReadyUI()
     {
         int ready = GetReadyCount();
