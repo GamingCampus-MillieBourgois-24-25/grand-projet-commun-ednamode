@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using DG.Tweening;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +12,8 @@ public class UIManagerLogin : MonoBehaviour
     [SerializeField]
     private FirebaseAuthManager firebaseAuthManager;
 
+    [SerializeField]
+    private GameObject StartingScreenPanel;
 
     [SerializeField]
     private GameObject loginPanel;
@@ -27,6 +31,14 @@ public class UIManagerLogin : MonoBehaviour
     [SerializeField]
     private GameObject SignedInPanel;
 
+    [SerializeField] 
+    private GameObject transitionCoverPanel;
+
+    [SerializeField] private RectTransform startingScreenTransform;
+    [SerializeField] private float startingTransitionDuration = 1f;
+    [SerializeField] private float panelTransitionDuration = 0.5f;
+
+
     private void Awake()
     {
         CreateInstance();
@@ -38,7 +50,6 @@ public class UIManagerLogin : MonoBehaviour
         }
     }
 
-
     private void CreateInstance()
     {
         if(Instance == null)
@@ -46,6 +57,8 @@ public class UIManagerLogin : MonoBehaviour
             Instance = this;
         }
     }
+
+   
 
 
     public void OpenGameLogin()
@@ -62,6 +75,7 @@ public class UIManagerLogin : MonoBehaviour
 
     public void ClearUI()
     {
+        StartingScreenPanel.SetActive(false);
         loginPanel.SetActive(false);
         registrationPanel.SetActive(false);
         emailVerifPanel.SetActive(false);
@@ -72,19 +86,19 @@ public class UIManagerLogin : MonoBehaviour
     public void OpenLoginPanel()
     {
         ClearUI();
-        loginPanel.SetActive(true);
+        UITransitionManager.Instance.AnimatePanelIn(loginPanel);
     }
 
     public void OpenRegistrationPanel()
     {
-        ClearUI();  
-        registrationPanel.SetActive(true);
+        ClearUI();
+        UITransitionManager.Instance.AnimatePanelIn(registrationPanel);
     }
 
     public void ShowVerificationResponse(bool isEmailSent, string emailId, string errorMessage)
     {
         ClearUI();
-        emailVerifPanel.SetActive(true);
+        UITransitionManager.Instance.AnimatePanelIn(emailVerifPanel);
 
         if (isEmailSent)
         {
@@ -96,12 +110,11 @@ public class UIManagerLogin : MonoBehaviour
             EmailVerifText.text = $"Error: {errorMessage}.\n" +
                 "Couldn't sent email";
         }
-
     }
 
     public void OpenSignedInPanel()
     {
         ClearUI();
-        SignedInPanel.SetActive(true);
+
     }
 }

@@ -1231,6 +1231,58 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!1 &293228652
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 293228654}
+  - component: {fileID: 293228653}
+  m_Layer: 0
+  m_Name: UiTransitionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &293228653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293228652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 163ca467173628a46adb4c46db5edb0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startingScreenPanel: {fileID: 0}
+  startingScreenTransform: {fileID: 0}
+  startingTransitionDuration: 1
+  delayBeforeHide: 1.5
+  transitionCoverPanel: {fileID: 0}
+  transitionPanelTransform: {fileID: 0}
+  sceneTransitionDuration: 0.8
+  panelTransitionDuration: 0.5
+--- !u!4 &293228654
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293228652}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1942.9896, y: 3533.4124, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &350581753
 GameObject:
   m_ObjectHideFlags: 0
@@ -1577,12 +1629,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   firebaseAuthManager: {fileID: 250628747}
+  StartingScreenPanel: {fileID: 1370811937}
   loginPanel: {fileID: 350581753}
   registrationPanel: {fileID: 770145239}
   emailVerifPanel: {fileID: 748318563}
   EmailVerifText: {fileID: 1558693348}
   EnterGamePanel: {fileID: 407393662}
   SignedInPanel: {fileID: 1286159926}
+  transitionCoverPanel: {fileID: 0}
+  startingScreenTransform: {fileID: 0}
+  startingTransitionDuration: 1
+  panelTransitionDuration: 0.5
 --- !u!850595691 &472135887
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -3676,6 +3733,7 @@ GameObject:
   - component: {fileID: 1370811940}
   - component: {fileID: 1370811939}
   - component: {fileID: 1370811941}
+  - component: {fileID: 1370811942}
   m_Layer: 5
   m_Name: StartinScreenPanel
   m_TagString: Untagged
@@ -3764,6 +3822,62 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1370811942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1370811937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1370811939}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 469082828}
+        m_TargetAssemblyTypeName: UIManagerLogin, Assembly-CSharp
+        m_MethodName: OpenGameLogin
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1433814762
 GameObject:
   m_ObjectHideFlags: 0
@@ -5875,3 +5989,4 @@ SceneRoots:
   - {fileID: 1518981133}
   - {fileID: 1873074752}
   - {fileID: 1804472388}
+  - {fileID: 293228654}
