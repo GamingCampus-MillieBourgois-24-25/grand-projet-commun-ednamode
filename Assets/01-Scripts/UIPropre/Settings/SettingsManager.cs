@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 using TMPro;
-using System.Collections;
+using System.Collections.Generic; 
 
 public class SettingsManager : MonoBehaviour
 {
@@ -13,10 +13,8 @@ public class SettingsManager : MonoBehaviour
         High
     }
 
-    [Header("Boutons de qualité")]
-    public Button highQualityButton;
-    public Button mediumQualityButton;
-    public Button lowQualityButton;
+    [Header("Dropdown de qualité")]
+    public TMP_Dropdown qualityDropdown; 
 
     [Header("Sliders de volume")]
     public Slider masterVolumeSlider;
@@ -31,15 +29,6 @@ public class SettingsManager : MonoBehaviour
     public Button musicMuteButton;
     public TextMeshProUGUI musicMuteButtonText;
 
-    [Header("Toggle de vibration")]
-    public Toggle vibrationToggle;
-
-    [Header("Feedback visuel (TextMeshPro)")]
-    public TextMeshProUGUI qualityFeedbackText;
-
-    [Header("Panneau de paramètres")]
-    public GameObject settingsPanel;
-
     [Header("Référence à l'Audio Mixer")]
     public AudioMixer audioMixer;
 
@@ -47,7 +36,6 @@ public class SettingsManager : MonoBehaviour
     private const string MASTER_MUTE_KEY = "IsMasterMuted";
     private const string SFX_MUTE_KEY = "IsSFXMuted";
     private const string MUSIC_MUTE_KEY = "IsMusicMuted";
-    private const string VIBRATION_ENABLED_KEY = "IsVibrationEnabled";
     private const string LAST_MASTER_VOLUME_KEY = "LastMasterVolume";
     private const string LAST_SFX_VOLUME_KEY = "LastSFXVolume";
     private const string LAST_MUSIC_VOLUME_KEY = "LastMusicVolume";
@@ -59,8 +47,6 @@ public class SettingsManager : MonoBehaviour
     private float lastSFXVolume = 1f;
     private float lastMusicVolume = 1f;
 
-    private bool vibrationEnabled = true;
-    private float vibrationIntensity = 1f;
 
     private void Awake()
     {
@@ -76,21 +62,22 @@ public class SettingsManager : MonoBehaviour
             return;
         }
 
+        if (qualityDropdown != null)
+        {
+            qualityDropdown.ClearOptions();
+            List<string> options = new List<string> { "High", "Medium", "Low" };
+            qualityDropdown.AddOptions(options);
+
+            // Définir la valeur initiale en fonction du niveau de qualité actuel
+            QualityLevel currentQuality = GetCurrentQuality();
+            qualityDropdown.value = (int)currentQuality; // High=0, Medium=1, Low=2
+
+            qualityDropdown.onValueChanged.AddListener(OnQualityDropdownChanged);
+        }
+        
         
 
-        if (highQualityButton != null)
-        {
-            highQualityButton.onClick.AddListener(() => SetQuality(QualityLevel.High));
-        }
-        if (mediumQualityButton != null)
-        {
-            mediumQualityButton.onClick.AddListener(() => SetQuality(QualityLevel.Medium));
-        }
-        if (lowQualityButton != null)
-        {
-            lowQualityButton.onClick.AddListener(() => SetQuality(QualityLevel.Low));
-        }
-
+        // Configuration des sliders de volume 
         if (masterVolumeSlider != null)
         {
             masterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
@@ -116,6 +103,7 @@ public class SettingsManager : MonoBehaviour
             SetMusicVolume(savedMusicVolume);
         }
 
+        // Charger les états de mute 
         isMasterMuted = PlayerPrefs.GetInt(MASTER_MUTE_KEY, 0) == 1;
         if (isMasterMuted)
         {
@@ -140,13 +128,7 @@ public class SettingsManager : MonoBehaviour
             musicVolumeSlider.value = 0f;
         }
 
-        vibrationEnabled = PlayerPrefs.GetInt(VIBRATION_ENABLED_KEY, 1) == 1;
-        if (vibrationToggle != null)
-        {
-            vibrationToggle.isOn = vibrationEnabled;
-            vibrationToggle.onValueChanged.AddListener(OnVibrationToggleChanged);
-        }
-
+        // Configuration des boutons de mute
         if (masterMuteButton != null)
         {
             masterMuteButton.onClick.AddListener(ToggleMasterMute);
@@ -161,35 +143,28 @@ public class SettingsManager : MonoBehaviour
         }
 
         UpdateMuteButtonStates();
-        UpdateButtonStates();
+        UpdateDropdownState();
     }
 
-    public void ToggleSettingsPanel()
+    // Gérer les changements dans le Dropdown
+    private void OnQualityDropdownChanged(int index)
     {
-        if (settingsPanel != null)
-        {
-            bool newState = !settingsPanel.activeSelf;
-            settingsPanel.SetActive(newState);
-            Debug.Log($"SettingsPanel défini à l'état : {newState}");
-        }
+        QualityLevel selectedQuality = (QualityLevel)index;
+        SetQuality(selectedQuality);
     }
 
     public void SetQuality(QualityLevel level)
     {
-        Debug.Log($"Application du niveau de qualité : {level}");
         switch (level)
         {
             case QualityLevel.Low:
                 QualitySettings.SetQualityLevel(2, true);
-                Debug.Log("Qualité définie sur : Low (optimisé pour mobile)");
                 break;
             case QualityLevel.Medium:
                 QualitySettings.SetQualityLevel(1, true);
-                Debug.Log("Qualité définie sur : Medium (optimisé pour mobile)");
                 break;
             case QualityLevel.High:
                 QualitySettings.SetQualityLevel(0, true);
-                Debug.Log("Qualité définie sur : High (optimisé pour mobile)");
                 break;
         }
 
@@ -198,14 +173,7 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt(QUALITY_KEY, (int)level);
         PlayerPrefs.Save();
 
-        UpdateButtonStates();
-
-        if (qualityFeedbackText != null)
-        {
-            qualityFeedbackText.text = $"Qualité définie sur : {level}\n" +
-                (level == QualityLevel.High ? "(Attention : peut consommer plus de batterie)" : "");
-            Invoke(nameof(ClearFeedbackText), 3f);
-        }
+        UpdateDropdownState();
     }
 
     private void LoadQualitySettings()
@@ -267,32 +235,14 @@ public class SettingsManager : MonoBehaviour
                 break;
         }
 
-        Debug.Log($"Optimisations appliquées pour le niveau : {level}");
     }
 
-    private void ClearFeedbackText()
+    private void UpdateDropdownState()
     {
-        if (qualityFeedbackText != null)
+        if (qualityDropdown != null)
         {
-            qualityFeedbackText.text = "";
-        }
-    }
-
-    private void UpdateButtonStates()
-    {
-        QualityLevel currentLevel = GetCurrentQuality();
-
-        if (highQualityButton != null)
-        {
-            highQualityButton.interactable = (currentLevel != QualityLevel.High);
-        }
-        if (mediumQualityButton != null)
-        {
-            mediumQualityButton.interactable = (currentLevel != QualityLevel.Medium);
-        }
-        if (lowQualityButton != null)
-        {
-            lowQualityButton.interactable = (currentLevel != QualityLevel.Low);
+            QualityLevel currentLevel = GetCurrentQuality();
+            qualityDropdown.value = (int)currentLevel;
         }
     }
 
@@ -420,90 +370,5 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
-    private void Vibrate()
-    {
-        Debug.Log("[Vibration] Tentative de déclenchement...");
-#if UNITY_IOS || UNITY_ANDROID
-        Debug.Log("[Vibration] Plateforme compatible détectée (Android/iOS).");
-        if (!vibrationEnabled)
-        {
-            Debug.Log("[Vibration] Échec : vibrations désactivées (vibrationEnabled = false).");
-            return;
-        }
-
-        // Méthode standard Unity
-        Handheld.Vibrate();
-        Debug.Log("[Vibration] Tentative avec Handheld.Vibrate()");
-
-#if UNITY_ANDROID
-        try
-        {
-            // Utiliser l'API native Android pour vibrer
-            using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-            {
-                AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                AndroidJavaObject vibrator = currentActivity.Call<AndroidJavaObject>("getSystemService", "vibrator");
-                if (vibrator != null && vibrator.Call<bool>("hasVibrator"))
-                {
-                    // Vibrer pendant 200ms (tu peux ajuster la durée)
-                    vibrator.Call("vibrate", 200L);
-                    Debug.Log("[Vibration] Vibration déclenchée via l'API native Android.");
-                }
-                else
-                {
-                    Debug.LogWarning("[Vibration] Aucun vibrateur détecté sur l'appareil via l'API native.");
-                }
-            }
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError("[Vibration] Erreur lors de l'utilisation de l'API native Android : " + e.Message);
-        }
-#endif
-#else
-           Debug.LogWarning("[Vibration] Plateforme non compatible (pas Android/iOS).");
-#endif
-    }
-
-    public void VibratePattern(params float[] delays)
-    {
-        if (!vibrationEnabled) return;
-        StartCoroutine(VibrateRoutine(delays));
-    }
-
-    private IEnumerator VibrateRoutine(float[] delays)
-    {
-        foreach (var d in delays)
-        {
-#if UNITY_IOS || UNITY_ANDROID
-            Handheld.Vibrate();
-#endif
-            yield return new WaitForSeconds(d * vibrationIntensity);
-        }
-    }
-
-    private void SetVibrationEnabled(bool enabled)
-    {
-        vibrationEnabled = enabled;
-        PlayerPrefs.SetInt(VIBRATION_ENABLED_KEY, vibrationEnabled ? 1 : 0);
-        PlayerPrefs.Save();
-        Debug.Log($"Vibrations : {(vibrationEnabled ? "Activées" : "Désactivées")}");
-    }
-
-    private void SetVibrationIntensity(float intensity)
-    {
-        vibrationIntensity = Mathf.Clamp01(intensity);
-    }
-
-    public bool IsVibrationEnabled() => vibrationEnabled;
-    public float GetVibrationIntensity() => vibrationIntensity;
-
-    private void OnVibrationToggleChanged(bool isOn)
-    {
-        SetVibrationEnabled(isOn);
-        if (isOn)
-        {
-            Vibrate();
-        }
-    }
+  
 }
