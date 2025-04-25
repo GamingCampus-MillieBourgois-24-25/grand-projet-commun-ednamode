@@ -197,7 +197,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  cameraOffset: {x: 0.85, y: 0.6, z: -2}
+  cameraOffset: {x: 0.85, y: 0.5, z: -2.6}
 --- !u!114 &619304411659798236
 MonoBehaviour:
   m_ObjectHideFlags: 0

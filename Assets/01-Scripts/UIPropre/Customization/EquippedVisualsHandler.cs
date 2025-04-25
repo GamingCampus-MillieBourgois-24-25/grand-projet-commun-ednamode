@@ -10,7 +10,8 @@ public class EquippedVisualsHandler : NetworkBehaviour
 {
     #region 🔧 Données
 
-    private readonly Dictionary<SlotType, GameObject> equippedVisuals = new();
+    public readonly Dictionary<SlotType, GameObject> equippedVisuals = new();
+
 
     [Tooltip("Nom de l'objet enfant à équiper (ex: RootBody, MeshBody, etc.)")]
     [SerializeField] private string targetMeshName = "RootBody";
@@ -22,13 +23,13 @@ public class EquippedVisualsHandler : NetworkBehaviour
     private Animator referenceAnimator;
 
     public string GetTargetMeshName() => targetMeshName;
+
     #endregion
 
     #region 🚀 Initialisation
 
     private void Awake()
     {
-        // Recherche dynamique du mesh cible pour équiper les habits
         bodyTarget = transform.Find(targetMeshName);
 
         if (bodyTarget == null)
@@ -47,7 +48,7 @@ public class EquippedVisualsHandler : NetworkBehaviour
         {
             Debug.Log($"[EquippedVisualsHandler] Animator trouvé : {referenceAnimator.name}");
         }
-            bodyTarget = referenceAnimator.transform;
+        bodyTarget = referenceAnimator.transform;
     }
 
     #endregion
@@ -56,21 +57,11 @@ public class EquippedVisualsHandler : NetworkBehaviour
 
     public void Equip(SlotType slotType, GameObject prefab)
     {
-        Equip(slotType, prefab, Color.white, null); // Appel de la version complète
+        Equip(slotType, prefab, Color.white, null);
     }
 
-    /// <summary>
-    /// Équipe un prefab (habit) dans un slot spécifique. Instancié et synchronisé si possible.
-    /// </summary>
-    /// <summary>
-    /// Équipe un prefab (habit) dans un slot spécifique. Instancié et synchronisé si possible, sans duplication.
-    /// </summary>
-    /// <summary>
-    /// Équipe un prefab (habit) dans un slot spécifique, avec couleur et texture.
-    /// </summary>
-    public void Equip(SlotType slotType, GameObject prefab, Color color, string textureName)
+    public void Equip(SlotType slotType, GameObject prefab, Color? color = null, string textureName = null)
     {
-        // 🔁 Supprime l'existant
         Unequip(slotType);
 
         if (prefab == null)
@@ -79,16 +70,13 @@ public class EquippedVisualsHandler : NetworkBehaviour
             return;
         }
 
-        // 🔧 Instanciation
         GameObject instance = Instantiate(prefab);
 
-        // 🎯 Placement hiérarchique
         instance.transform.SetParent(bodyTarget, false);
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.identity;
         instance.transform.localScale = Vector3.one;
 
-        // 🎭 Animation
         if (copyAnimatorFromParent && referenceAnimator != null)
         {
             var animator = instance.GetComponent<Animator>();
@@ -96,15 +84,15 @@ public class EquippedVisualsHandler : NetworkBehaviour
                 animator.runtimeAnimatorController = referenceAnimator.runtimeAnimatorController;
         }
 
-        // 🎨 Appliquer couleur
         foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
         {
             foreach (var mat in renderer.materials)
             {
-                if (mat != null)
-                    mat.color = color;
+                if (mat != null && color.HasValue)
+                    mat.color = color.Value;
             }
         }
+
         var skinned = instance.GetComponentInChildren<SkinnedMeshRenderer>();
         var bodySkinned = GetComponentInChildren<SkinnedMeshRenderer>();
 
@@ -118,7 +106,6 @@ public class EquippedVisualsHandler : NetworkBehaviour
             Debug.LogWarning($"[EquippedVisualsHandler] ⚠️ SkinnedMeshRenderer non trouvé pour {slotType}");
         }
 
-        // 🧵 Appliquer texture
         if (!string.IsNullOrEmpty(textureName))
         {
             Texture tex = Resources.Load<Texture>($"Textures/{textureName}");
@@ -139,13 +126,33 @@ public class EquippedVisualsHandler : NetworkBehaviour
             }
         }
 
-        // 💾 Sauvegarde
         equippedVisuals[slotType] = instance;
     }
 
-    /// <summary>
-    /// Supprime un objet visuel d’un slot si déjà équipé.
-    /// </summary>
+
+
+    public void ApplyColorWithoutTexture(SlotType slotType, Color color)
+    {
+        if (equippedVisuals.TryGetValue(slotType, out var obj) && obj != null)
+        {
+            foreach (var renderer in obj.GetComponentsInChildren<Renderer>())
+            {
+                foreach (var mat in renderer.materials)
+                {
+                    if (mat != null)
+                    {
+                        mat.color = color;
+                        mat.mainTexture = null;
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[EquippedVisualsHandler] Aucun objet équipé pour le slot {slotType}.");
+        }
+    }
+
     public void Unequip(SlotType slotType)
     {
         if (equippedVisuals.TryGetValue(slotType, out var obj) && obj != null)
@@ -163,9 +170,6 @@ public class EquippedVisualsHandler : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// Supprime tous les objets équipés actuels.
-    /// </summary>
     public void ClearAll()
     {
         foreach (var obj in equippedVisuals.Values)
@@ -184,5 +188,10 @@ public class EquippedVisualsHandler : NetworkBehaviour
         equippedVisuals.Clear();
     }
 
-    #endregion
+    public GameObject GetEquippedObject(SlotType slotType)
+    {
+        equippedVisuals.TryGetValue(slotType, out var obj);
+        return obj;
+    }
 }
+#endregion

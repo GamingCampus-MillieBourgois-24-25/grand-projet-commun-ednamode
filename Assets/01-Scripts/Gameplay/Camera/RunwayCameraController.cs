@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class RunwayCameraController : MonoBehaviour
 {
@@ -19,10 +21,37 @@ public class RunwayCameraController : MonoBehaviour
     [Tooltip("Durée du mouvement vers chaque spot.")]
     [SerializeField] private float moveDuration = 0.3f;
 
-    [Tooltip("Effet de flash à chaque position (optionnel).")]
-    [SerializeField] private GameObject flashEffectPrefab;
+    [Header("🎨 Effets")]
+    [Tooltip("Volume de post-traitement pour les effets visuels.")]
+    [SerializeField] private Volume postProcessVolume;
 
+    [Tooltip("Intensité de l'effet vignette.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float vignetteIntensity = 0.5f;
+
+    [Tooltip("Durée de l'effet vignette.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float vignetteDuration = 0.2f;
+
+    [SerializeField] private AudioClip shutterSound;
+
+    private AudioSource audioSource;
     private Camera localCam;
+    private Vignette vignette;
+
+    private void Start()
+    {
+        if (postProcessVolume != null && postProcessVolume.profile.TryGet(out Vignette v))
+        {
+            vignette = v;
+        }
+        else
+        {
+            Debug.LogWarning("[RunwayCam] ⚠️ Vignette non trouvée dans le PostProcessVolume.");
+        }
+
+        audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     public void StartPhotoSequence(Transform targetToLookAt)
     {
@@ -41,7 +70,7 @@ public class RunwayCameraController : MonoBehaviour
         foreach (var spot in cameraSpots)
         {
             MoveCameraToSpot(spot, target);
-            TriggerFlash();
+            TriggerPhotoEffect();
             yield return new WaitForSeconds(timeBetweenShots);
         }
 
@@ -62,14 +91,22 @@ public class RunwayCameraController : MonoBehaviour
         // Petit effet de zoom rapide
         localCam.fieldOfView = 50f;
         DOTween.To(() => localCam.fieldOfView, x => localCam.fieldOfView = x, 60f, 0.2f);
+        
+        // Optionnel : léger shake pour effet "impact photo"
+        localCam.transform.DOShakePosition(0.2f, 0.2f);
     }
 
-    private void TriggerFlash()
+    private void TriggerPhotoEffect()
     {
-        if (flashEffectPrefab != null)
+        if (vignette != null)
         {
-            var flash = Instantiate(flashEffectPrefab, localCam.transform);
-            Destroy(flash, 0.5f);  // Auto-destruction après effet
+            DOTween.To(() => vignette.intensity.value, x => vignette.intensity.value = x, vignetteIntensity, vignetteDuration / 2)
+                   .OnComplete(() => DOTween.To(() => vignette.intensity.value, x => vignette.intensity.value = x, 0f, vignetteDuration / 2));
+        }
+
+        if (shutterSound != null)
+        {
+            audioSource.PlayOneShot(shutterSound);
         }
     }
 }

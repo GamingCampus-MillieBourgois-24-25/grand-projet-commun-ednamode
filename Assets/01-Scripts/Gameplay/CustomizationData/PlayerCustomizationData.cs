@@ -1,19 +1,16 @@
-﻿using CharacterCustomization;
+﻿
+using CharacterCustomization;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
-/// 
-/// Stocke et applique les données de personnalisation d’un joueur réseau, de manière synchronisée.
-/// 
 public class PlayerCustomizationData : NetworkBehaviour
 {
-    [ContextMenu("🧪 LogTenue()")]
+    [ContextMenu("🔍 LogTenue()")]
     public void LogTenue()
     {
         Debug.Log($"[CustomizationData] 🔍 Tenue du joueur {OwnerClientId}");
-
         foreach (var kvp in Data.equippedItemIds)
         {
             var slot = kvp.Key;
@@ -22,20 +19,16 @@ public class PlayerCustomizationData : NetworkBehaviour
             Data.TryGetColor(slot, out var color);
             Data.TryGetTexture(slot, out var texture);
 
-            Debug.Log($"→ {slot}: {itemId} | 🎨 {ColorUtility.ToHtmlStringRGBA(color)} | 🧵 {texture}");
+            Debug.Log($"→ {slot}: {itemId} | 🎨 {ColorUtility.ToHtmlStringRGBA(color)} | 🧵 {(string.IsNullOrEmpty(texture) ? "None" : texture)}");
         }
     }
 
-    #region 📦 Données locales
-
-    /// <summary>
-    /// Données de personnalisation (locales mais synchronisées manuellement).
-    /// </summary>
-    public CustomizationData Data = new();
-
-    #endregion
-
-    #region 🎮 Application des visuels
+    public CustomizationData Data = new()
+    {
+        equippedItemIds = new Dictionary<SlotType, string>(),
+        equippedColors = new Dictionary<SlotType, Color32>(),
+        equippedTextures = new Dictionary<SlotType, string>()
+    };
 
     public override void OnNetworkSpawn()
     {
@@ -43,6 +36,7 @@ public class PlayerCustomizationData : NetworkBehaviour
         {
             Debug.Log("[CustomizationData] ✨ Joueur local initialisé avec sa personnalisation.");
         }
+        Data.EnsureInitialized();
     }
 
     public void ApplyToVisuals(EquippedVisualsHandler handler, List<Item> allItems)
@@ -57,6 +51,30 @@ public class PlayerCustomizationData : NetworkBehaviour
         {
             Debug.LogWarning($"[ApplyToVisuals] ⚠ Aucune donnée de tenue pour le joueur {OwnerClientId}.");
             return;
+        }
+
+        Debug.Log($"[ApplyToVisuals] Application des visuels pour joueur {OwnerClientId}. Données actuelles :");
+        foreach (var kvp in Data.equippedColors)
+        {
+            Debug.Log($"[ApplyToVisuals] Couleur pour {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+        }
+
+        // 🎨 Debug complet des couleurs avant d'appliquer les visuels
+        if (Data.equippedColors == null)
+        {
+            Debug.LogError($"[ApplyToVisuals] 🚨 Data.equippedColors est NULL !");
+        }
+        else if (Data.equippedColors.Count == 0)
+        {
+            Debug.LogWarning($"[ApplyToVisuals] ⚠️ Data.equippedColors est VIDE !");
+        }
+        else
+        {
+            Debug.Log($"[ApplyToVisuals] 🎨 Data.equippedColors contient {Data.equippedColors.Count} entrées :");
+            foreach (var kvp in Data.equippedColors)
+            {
+                Debug.Log($"[ApplyToVisuals] Slot: {kvp.Key}, Couleur: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+            }
         }
 
         foreach (var kvp in Data.equippedItemIds)
@@ -76,10 +94,20 @@ public class PlayerCustomizationData : NetworkBehaviour
                 continue;
             }
 
-            Data.TryGetColor(slot, out var color);
+            Color? colorOverride = null;
+            if (Data.TryGetColor(slot, out var color32))
+            {
+                colorOverride = color32;
+                Debug.Log($"[ApplyToVisuals] Couleur personnalisée appliquée pour {slot}: {ColorUtility.ToHtmlStringRGBA(color32)}");
+            }
+            else
+            {
+                Debug.Log($"[ApplyToVisuals] Aucune couleur personnalisée pour {slot}, on laisse la couleur du prefab.");
+            }
+
             Data.TryGetTexture(slot, out var textureName);
 
-            handler.Equip(slot, item.prefab, color, textureName);
+            handler.Equip(slot, item.prefab, colorOverride, textureName);
         }
     }
 
@@ -98,7 +126,9 @@ public class PlayerCustomizationData : NetworkBehaviour
         var handler = GetComponentInChildren<EquippedVisualsHandler>();
         if (handler != null)
         {
-            handler.Equip(slotType, item.prefab);
+            Color? color = null;
+            if (Data.TryGetColor(slotType, out var c)) color = c;
+            handler.Equip(slotType, item.prefab, color, null);
         }
         else
         {
@@ -111,21 +141,30 @@ public class PlayerCustomizationData : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SyncCustomizationDataServerRpc(CustomizationData data)
     {
-        Data = data;
-        UpdateVisualsOnAllClientsClientRpc(data);
+        Debug.Log($"[SyncCustomizationDataServerRpc] Synchronisation des données pour joueur {OwnerClientId}.");
+
+        data.EnsureInitialized();
+
+        // ✅ Mise à jour SANS créer de nouveaux dictionnaires
+        foreach (var kvp in data.equippedItemIds)
+            Data.equippedItemIds[kvp.Key] = kvp.Value;
+
+        foreach (var kvp in data.equippedColors)
+            Data.equippedColors[kvp.Key] = kvp.Value;
+
+        foreach (var kvp in data.equippedTextures)
+            Data.equippedTextures[kvp.Key] = kvp.Value;
+
+        // ✅ Plus de passage CustomizationData → évite le wipe !
+        UpdateVisualsOnAllClientsClientRpc();
     }
 
-    [ClientRpc]
-    private void UpdateVisualsOnAllClientsClientRpc(CustomizationData data)
-    {
-        // ❄ï¸ Bonus sécurité : ne ré-applique pas au joueur qui est le Host (qui a déjà la tenue localement)
-        if (IsHost && IsOwner)
-        {
-            Debug.Log("[CustomizationData] ❄ï¸ Host local - pas de réapplication forçée.");
-            return;
-        }
 
-        Data = data;
+    [ClientRpc]
+    private void UpdateVisualsOnAllClientsClientRpc()
+    {
+        Debug.Log($"[ClientRpc] Re-applique les visuels pour joueur {OwnerClientId}");
+
         var handler = GetComponentInChildren<EquippedVisualsHandler>(true);
         if (handler == null)
         {
@@ -136,6 +175,5 @@ public class PlayerCustomizationData : NetworkBehaviour
         List<Item> allItems = Resources.LoadAll<Item>("Items").ToList();
         ApplyToVisuals(handler, allItems);
     }
-}
 
-#endregion
+}
