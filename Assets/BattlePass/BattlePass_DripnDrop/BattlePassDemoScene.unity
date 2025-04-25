@@ -92450,7 +92450,6 @@ MonoBehaviour:
   - {fileID: 1678673365}
   - {fileID: 1500170148}
   afterPassReward: {fileID: 160830400240649303}
-  currencySystem: {fileID: 160830399954898731}
   passCurrency:
     name: Gems
     amount: 200
@@ -92564,7 +92563,6 @@ MonoBehaviour:
   seasonNameText: {fileID: 1935028548}
   seasonTimeText: {fileID: 160830401725697966}
   battlePassManager: {fileID: 160830399954898728}
-  xpBoosterManager: {fileID: 160830399954898904}
   useSetTime: 0
   useEndDate: 1
   seasonEnded: 0
@@ -108711,7 +108709,6 @@ MonoBehaviour:
   - {fileID: 473386207}
   - {fileID: 1845223825}
   afterPassReward: {fileID: 3795060891078735984}
-  currencySystem: {fileID: 3795060889859412540}
   passCurrency:
     name: Gems
     amount: 200
@@ -108753,7 +108750,6 @@ MonoBehaviour:
   seasonNameText: {fileID: 3795060890114295026}
   seasonTimeText: {fileID: 1287904563}
   battlePassManager: {fileID: 3795060889859412543}
-  xpBoosterManager: {fileID: 3795060889859412546}
   useSetTime: 1
   useEndDate: 0
   seasonEnded: 0
@@ -111840,7 +111836,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 74, y: -81.74963}
+  m_AnchoredPosition: {x: 166, y: -81.74963}
   m_SizeDelta: {x: 148.00183, y: 132}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3795060890475386957
@@ -111887,21 +111883,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3795060889859412539}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 3795060889859412545}
-        m_TargetAssemblyTypeName: UnityEngine.MonoBehaviour, UnityEngine
-        m_MethodName: StopAllCoroutines
+      - m_Target: {fileID: 3795060889859412543}
+        m_TargetAssemblyTypeName: EasyBattlePass.BattlePassManager, Assembly-CSharp
+        m_MethodName: BackToLobby
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

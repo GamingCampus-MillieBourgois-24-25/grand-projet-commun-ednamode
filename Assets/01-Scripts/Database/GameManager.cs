@@ -121,4 +121,16 @@ public class AccountManager : MonoBehaviour
             Debug.LogError("FirebaseAuthManager.Instance est null. Assurez-vous que FirebaseAuthManager est chargé.");
         }
     }
+
+    #region SceneManagement
+
+    public void loadShop()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Melvin_Shop");
+    }
+    public void loadPass()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("BattlePassDemoScene");
+    }
+    #endregion
 }

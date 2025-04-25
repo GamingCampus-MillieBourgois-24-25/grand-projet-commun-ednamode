@@ -617,15 +617,5 @@ public class UIManager : MonoBehaviour
 
     #endregion
 
-    #region SceneManagement
-    
-    public void loadShop()
-    {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Melvin_Shop");
-    }
-    public void loadPass()
-    {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("BattlePassDemoScene");
-    }
-    #endregion
+
 }
