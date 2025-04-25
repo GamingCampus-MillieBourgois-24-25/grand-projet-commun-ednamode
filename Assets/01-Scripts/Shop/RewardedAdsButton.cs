@@ -2,27 +2,26 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Advertisements;
 
-public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener
+public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener, IUnityAdsInitializationListener
 {
     [SerializeField] Button _showAdButton;
     [SerializeField] string _androidAdUnitId = "Rewarded_Android";
     [SerializeField] string _iOSAdUnitId = "Rewarded_iOS";
     string _adUnitId = null; // This will remain null for unsupported platforms
 
+    [SerializeField] string _androidGameId;
+    [SerializeField] string _iOSGameId;
+    [SerializeField] bool _testMode = true;
+    private string _gameId;
+
+    private DataSaver _dataSaver;
+
+    private ShoppingScript shoppingScript;
     void Awake()
     {
-        // Get the Ad Unit ID for the current platform:
-#if UNITY_IOS
-        _adUnitId = _iOSAdUnitId;
-#elif UNITY_ANDROID
-        _adUnitId = _androidAdUnitId;
-#endif
-
-        // Disable the button until the ad is ready to show:
-        _showAdButton.interactable = false;
-
-        // Load the ad immediately
-        LoadAd();
+        shoppingScript = Object.FindFirstObjectByType<ShoppingScript>();
+        _dataSaver = DataSaver.Instance;
+        InitializeAds();
     }
 
     // Call this public method when you want to get an ad ready to show.
@@ -64,6 +63,8 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
         {
             Debug.Log("Unity Ads Rewarded Ad Completed");
             // Grant a reward.
+            _dataSaver.addJewels(10);
+            shoppingScript.SetTexts();
         }
     }
 
@@ -87,5 +88,41 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
     {
         // Clean up the button listeners:
         _showAdButton.onClick.RemoveAllListeners();
+    }
+    public void InitializeAds()
+    {
+#if UNITY_IOS
+            _gameId = _iOSGameId;
+#elif UNITY_ANDROID
+        _gameId = _androidGameId;
+#elif UNITY_EDITOR
+        _gameId = _androidGameId; //Only for testing the functionality in the Editor
+#endif
+        if (!Advertisement.isInitialized && Advertisement.isSupported)
+        {
+            Advertisement.Initialize(_gameId, _testMode, this);
+        }
+    }
+
+
+    public void OnInitializationComplete()
+    {
+        // Get the Ad Unit ID for the current platform:
+#if UNITY_IOS
+        _adUnitId = _iOSAdUnitId;
+#elif UNITY_ANDROID
+        _adUnitId = _androidAdUnitId;
+#endif
+
+        // Disable the button until the ad is ready to show:
+        _showAdButton.interactable = false;
+
+        // Load the ad immediately
+        LoadAd();
+    }
+
+    public void OnInitializationFailed(UnityAdsInitializationError error, string message)
+    {
+        Debug.Log($"Unity Ads Initialization Failed: {error.ToString()} - {message}");
     }
 }

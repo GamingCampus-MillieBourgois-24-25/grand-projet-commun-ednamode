@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using CharacterCustomization;
 public class OfferButton : MonoBehaviour
 {
     private DataSaver dataSaver;
@@ -14,8 +15,11 @@ public class OfferButton : MonoBehaviour
     [SerializeField] private Sprite coinIcon;
     [SerializeField] private Sprite jewelIcon;
     private List<Image> icons;
+
+    private ShoppingScript shopping;
     void Awake()
     {
+        shopping = Object.FindFirstObjectByType<ShoppingScript>();
         dataSaver = DataSaver.Instance;
         textMeshProUGUIs = new List<TextMeshProUGUI>();
         foreach (var text in GetComponentsInChildren<TextMeshProUGUI>())
@@ -79,6 +83,8 @@ public class OfferButton : MonoBehaviour
             {
                 dataSaver.addCoins(coinsToObtain);
                 dataSaver.removeJewels(jewelsToSpend);
+                // Mettre à jour l'affichage des pièces et des joyaux
+                shopping.SetTexts();
                 Debug.Log("Conversion successful: " + jewelsToSpend + " jewels -> " + coinsToObtain + " coins");
             }
             else

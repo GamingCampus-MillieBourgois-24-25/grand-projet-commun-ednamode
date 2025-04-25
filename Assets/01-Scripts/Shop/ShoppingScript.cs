@@ -12,10 +12,7 @@ public class ShoppingScript : MonoBehaviour
     void Start()
     {
         _dataSaver = DataSaver.Instance;
-
-        // Acc�s direct aux propri�t�s publiques de dts
-        coinsText.text = _dataSaver.dts.totalCoins.ToString();
-        jewelsText.text = _dataSaver.dts.totalJewels.ToString();
+        SetTexts();
     }
 
     public void SetSelectedItemButton(ItemButton itemButton)
@@ -29,7 +26,11 @@ public class ShoppingScript : MonoBehaviour
         selectedItemButton = itemButton;
     }
 
-
+    public void SetTexts()
+    {
+        coinsText.text = _dataSaver.GetCoins().ToString();
+        jewelsText.text = _dataSaver.GetJewels().ToString();
+    }
     private void ProcessPurchase(int currentBalance, int price, System.Action<int> removeCurrency)
     {
         if (currentBalance >= price)

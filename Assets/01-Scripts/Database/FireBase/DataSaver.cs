@@ -162,7 +162,10 @@ public class DataSaver : MonoBehaviour
         dts.totalCoins = currentCoins - coins;
         SaveDataFn();
     }
-
+    public int GetCoins()
+    {
+        return dts.totalCoins;
+    }
     public void addJewels(int jewels)
     {
         int currentJewels = dts.totalJewels;
@@ -177,6 +180,10 @@ public class DataSaver : MonoBehaviour
         SaveDataFn();
     }
 
+    public int GetJewels()
+    {
+        return dts.totalJewels;
+    }
     public void addLevelProgress(int levelProgress)
     {
         int currentTotalProgress = dts.totalLevelProgress;

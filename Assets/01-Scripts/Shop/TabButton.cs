@@ -22,10 +22,6 @@ namespace CharacterCustomization
                 {
                     Debug.LogWarning($"Aucun sprite trouvé pour le type de catégorie : {tab.category}");
                 }
-                else
-                {
-                    Debug.Log($"Sprite trouvé pour le type de catégorie : {tab.category}");
-                }
                 button.onClick.AddListener(() => itemSorter.SortItemsByCategory(category));
             }
         }
