@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CharacterCustomization;
-using System;
 
-[Serializable]
-public class CustomizationData : INetworkSerializable
+[System.Serializable]
+public struct CustomizationData : INetworkSerializable
 {
     public Dictionary<SlotType, string> equippedItemIds;
     public Dictionary<SlotType, Color32> equippedColors;
@@ -56,7 +55,6 @@ public class CustomizationData : INetworkSerializable
             }
         }
     }
-
     private void SerializeColorDict<T>(BufferSerializer<T> serializer, ref Dictionary<SlotType, Color32> dict) where T : IReaderWriter
     {
         if (dict == null)
@@ -102,6 +100,16 @@ public class CustomizationData : INetworkSerializable
         }
     }
 
+    private void EnsureDictionariesInitialized()
+    {
+        if (equippedItemIds == null)
+            equippedItemIds = new Dictionary<SlotType, string>();
+        if (equippedColors == null)
+            equippedColors = new Dictionary<SlotType, Color32>();
+        if (equippedTextures == null)
+            equippedTextures = new Dictionary<SlotType, string>();
+    }
+
     public void SetItem(SlotType slot, string itemId)
     {
         equippedItemIds ??= new();
@@ -112,7 +120,6 @@ public class CustomizationData : INetworkSerializable
     {
         equippedColors ??= new();
         equippedColors[slot] = color;
-        Debug.Log($"[CustomizationData] 🎨 SetColor → {slot}: {ColorUtility.ToHtmlStringRGBA(color)}");
     }
 
     public void SetTexture(SlotType slot, string texture)
@@ -124,12 +131,7 @@ public class CustomizationData : INetworkSerializable
     public bool TryGetColor(SlotType slot, out Color color)
     {
         color = Color.white;
-        if (equippedColors != null && equippedColors.TryGetValue(slot, out var storedColor))
-        {
-            color = storedColor;
-            return true;
-        }
-        return false;
+        return equippedColors != null && equippedColors.TryGetValue(slot, out var c) && (color = c) != null;
     }
 
     public bool TryGetTexture(SlotType slot, out string texture)
@@ -142,12 +144,5 @@ public class CustomizationData : INetworkSerializable
     {
         itemId = null;
         return equippedItemIds != null && equippedItemIds.TryGetValue(slot, out itemId);
-    }
-
-    public void EnsureInitialized()
-    {
-        equippedItemIds ??= new();
-        equippedColors ??= new();
-        equippedTextures ??= new();
     }
 }

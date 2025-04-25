@@ -1,16 +1,19 @@
-﻿
-using CharacterCustomization;
+﻿using CharacterCustomization;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
+/// 
+/// Stocke et applique les données de personnalisation d’un joueur réseau, de manière synchronisée.
+/// 
 public class PlayerCustomizationData : NetworkBehaviour
 {
-    [ContextMenu("🔍 LogTenue()")]
+    [ContextMenu("🧪 LogTenue()")]
     public void LogTenue()
     {
         Debug.Log($"[CustomizationData] 🔍 Tenue du joueur {OwnerClientId}");
+
         foreach (var kvp in Data.equippedItemIds)
         {
             var slot = kvp.Key;
@@ -23,6 +26,11 @@ public class PlayerCustomizationData : NetworkBehaviour
         }
     }
 
+    #region 📦 Données locales
+
+    /// <summary>
+    /// Données de personnalisation (locales mais synchronisées manuellement).
+    /// </summary>
     public CustomizationData Data = new()
     {
         equippedItemIds = new Dictionary<SlotType, string>(),
@@ -30,13 +38,16 @@ public class PlayerCustomizationData : NetworkBehaviour
         equippedTextures = new Dictionary<SlotType, string>()
     };
 
+    #endregion
+
+    #region 🎮 Application des visuels
+
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
         {
             Debug.Log("[CustomizationData] ✨ Joueur local initialisé avec sa personnalisation.");
         }
-        Data.EnsureInitialized();
     }
 
     public void ApplyToVisuals(EquippedVisualsHandler handler, List<Item> allItems)
@@ -59,24 +70,6 @@ public class PlayerCustomizationData : NetworkBehaviour
             Debug.Log($"[ApplyToVisuals] Couleur pour {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
         }
 
-        // 🎨 Debug complet des couleurs avant d'appliquer les visuels
-        if (Data.equippedColors == null)
-        {
-            Debug.LogError($"[ApplyToVisuals] 🚨 Data.equippedColors est NULL !");
-        }
-        else if (Data.equippedColors.Count == 0)
-        {
-            Debug.LogWarning($"[ApplyToVisuals] ⚠️ Data.equippedColors est VIDE !");
-        }
-        else
-        {
-            Debug.Log($"[ApplyToVisuals] 🎨 Data.equippedColors contient {Data.equippedColors.Count} entrées :");
-            foreach (var kvp in Data.equippedColors)
-            {
-                Debug.Log($"[ApplyToVisuals] Slot: {kvp.Key}, Couleur: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
-            }
-        }
-
         foreach (var kvp in Data.equippedItemIds)
         {
             SlotType slot = kvp.Key;
@@ -94,20 +87,29 @@ public class PlayerCustomizationData : NetworkBehaviour
                 continue;
             }
 
-            Color? colorOverride = null;
+            Color color = Color.white;
             if (Data.TryGetColor(slot, out var color32))
             {
-                colorOverride = color32;
-                Debug.Log($"[ApplyToVisuals] Couleur personnalisée appliquée pour {slot}: {ColorUtility.ToHtmlStringRGBA(color32)}");
+                color = color32;
+                Debug.Log($"[ApplyToVisuals] Couleur appliquée pour {slot}: {ColorUtility.ToHtmlStringRGBA(color)}");
             }
             else
             {
-                Debug.Log($"[ApplyToVisuals] Aucune couleur personnalisée pour {slot}, on laisse la couleur du prefab.");
+                Debug.LogWarning($"[ApplyToVisuals] Aucune couleur trouvée pour {slot}, utilisation de blanc par défaut.");
             }
 
             Data.TryGetTexture(slot, out var textureName);
 
-            handler.Equip(slot, item.prefab, colorOverride, textureName);
+            if (string.IsNullOrEmpty(textureName))
+            {
+                handler.ApplyColorWithoutTexture(slot, color);
+                Debug.Log($"[ApplyToVisuals] Appliqué sans texture pour {slot} avec couleur {ColorUtility.ToHtmlStringRGBA(color)}");
+            }
+            else
+            {
+                handler.Equip(slot, item.prefab, color, textureName);
+                Debug.Log($"[ApplyToVisuals] Appliqué avec texture {textureName} pour {slot} avec couleur {ColorUtility.ToHtmlStringRGBA(color)}");
+            }
         }
     }
 
@@ -126,8 +128,12 @@ public class PlayerCustomizationData : NetworkBehaviour
         var handler = GetComponentInChildren<EquippedVisualsHandler>();
         if (handler != null)
         {
-            Color? color = null;
-            if (Data.TryGetColor(slotType, out var c)) color = c;
+            Color color = Color.white;
+            if (Data.TryGetColor(slotType, out var color32))
+            {
+                color = color32;
+                Debug.Log($"[SetItemAndApplyLocal] Utilisation de la couleur existante pour {slotType}: {ColorUtility.ToHtmlStringRGBA(color)}");
+            }
             handler.Equip(slotType, item.prefab, color, null);
         }
         else
@@ -142,29 +148,30 @@ public class PlayerCustomizationData : NetworkBehaviour
     public void SyncCustomizationDataServerRpc(CustomizationData data)
     {
         Debug.Log($"[SyncCustomizationDataServerRpc] Synchronisation des données pour joueur {OwnerClientId}.");
-
-        data.EnsureInitialized();
-
-        // ✅ Mise à jour SANS créer de nouveaux dictionnaires
-        foreach (var kvp in data.equippedItemIds)
-            Data.equippedItemIds[kvp.Key] = kvp.Value;
-
         foreach (var kvp in data.equippedColors)
-            Data.equippedColors[kvp.Key] = kvp.Value;
-
-        foreach (var kvp in data.equippedTextures)
-            Data.equippedTextures[kvp.Key] = kvp.Value;
-
-        // ✅ Plus de passage CustomizationData → évite le wipe !
-        UpdateVisualsOnAllClientsClientRpc();
+        {
+            Debug.Log($"[SyncCustomizationDataServerRpc] Couleur pour {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+        }
+        Data = data;
+        UpdateVisualsOnAllClientsClientRpc(data);
     }
 
-
     [ClientRpc]
-    private void UpdateVisualsOnAllClientsClientRpc()
+    private void UpdateVisualsOnAllClientsClientRpc(CustomizationData data)
     {
-        Debug.Log($"[ClientRpc] Re-applique les visuels pour joueur {OwnerClientId}");
+        if (IsHost && IsOwner)
+        {
+            Debug.Log("[CustomizationData] ❄️ Host local - pas de réapplication forçée.");
+            return;
+        }
 
+        Debug.Log($"[UpdateVisualsOnAllClientsClientRpc] Mise à jour des visuels pour joueur {OwnerClientId}.");
+        foreach (var kvp in data.equippedColors)
+        {
+            Debug.Log($"[UpdateVisualsOnAllClientsClientRpc] Couleur pour {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+        }
+
+        Data = data;
         var handler = GetComponentInChildren<EquippedVisualsHandler>(true);
         if (handler == null)
         {
@@ -175,5 +182,5 @@ public class PlayerCustomizationData : NetworkBehaviour
         List<Item> allItems = Resources.LoadAll<Item>("Items").ToList();
         ApplyToVisuals(handler, allItems);
     }
-
 }
+#endregion

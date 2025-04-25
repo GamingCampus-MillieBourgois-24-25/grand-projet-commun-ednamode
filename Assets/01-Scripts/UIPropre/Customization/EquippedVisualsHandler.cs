@@ -60,7 +60,7 @@ public class EquippedVisualsHandler : NetworkBehaviour
         Equip(slotType, prefab, Color.white, null);
     }
 
-    public void Equip(SlotType slotType, GameObject prefab, Color? color = null, string textureName = null)
+    public void Equip(SlotType slotType, GameObject prefab, Color color, string textureName)
     {
         Unequip(slotType);
 
@@ -88,11 +88,10 @@ public class EquippedVisualsHandler : NetworkBehaviour
         {
             foreach (var mat in renderer.materials)
             {
-                if (mat != null && color.HasValue)
-                    mat.color = color.Value;
+                if (mat != null)
+                    mat.color = color;
             }
         }
-
         var skinned = instance.GetComponentInChildren<SkinnedMeshRenderer>();
         var bodySkinned = GetComponentInChildren<SkinnedMeshRenderer>();
 
@@ -128,8 +127,6 @@ public class EquippedVisualsHandler : NetworkBehaviour
 
         equippedVisuals[slotType] = instance;
     }
-
-
 
     public void ApplyColorWithoutTexture(SlotType slotType, Color color)
     {

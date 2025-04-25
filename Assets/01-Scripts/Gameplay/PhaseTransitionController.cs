@@ -113,31 +113,29 @@ public class GamePhaseTransitionController : NetworkBehaviour
     /// </summary>
     private IEnumerator SyncAllPlayerCustomizations()
     {
-        var players = NetworkManager.Singleton.ConnectedClientsList
-            .Select(c => c.PlayerObject.GetComponent<PlayerCustomizationData>())
-            .ToList();
-
-        Debug.Log($"[GamePhaseTransition] 🔁 Synchronisation des données pour {players.Count} joueurs.");
-
-        yield return new WaitForSeconds(0.5f);
+        var players = NetworkManager.Singleton.ConnectedClientsList.Select(c => c.PlayerObject.GetComponent<PlayerCustomizationData>()).ToList();
+        Debug.Log($"[GamePhaseTransition] Synchronisation des données pour {players.Count} joueurs.");
 
         foreach (var player in players)
         {
-            Debug.Log($"[GamePhaseTransition] 🎨 Vérification des couleurs pour joueur {player.OwnerClientId}");
+            // Appeler SyncCustomizationDataServerRpc pour garantir que les données sont à jour
+            player.SyncCustomizationDataServerRpc(player.Data);
+            Debug.Log($"[GamePhaseTransition] Données envoyées pour joueur {player.OwnerClientId}.");
+        }
 
-            if (player.Data?.equippedColors == null || player.Data.equippedColors.Count == 0)
-            {
-                Debug.LogWarning($"⚠️ [GamePhaseTransition] Aucune couleur définie pour le joueur {player.OwnerClientId}");
-                continue;
-            }
+        // Attendre un court délai pour laisser le temps à la synchronisation réseau
+        yield return new WaitForSeconds(0.5f);
 
+        // Vérifier que les données sont bien reçues sur les clients
+        foreach (var player in players)
+        {
+            Debug.Log($"[GamePhaseTransition] Vérification des données pour joueur {player.OwnerClientId}:");
             foreach (var kvp in player.Data.equippedColors)
             {
-                Debug.Log($"→ {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+                Debug.Log($"[GamePhaseTransition] Couleur pour {kvp.Key}: {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
             }
         }
     }
-
 
     /// <summary>
     /// Change la phase de jeu et synchronise l'affichage sur tous les clients.
