@@ -14,8 +14,8 @@ public class ShoppingScript : MonoBehaviour
         _dataSaver = DataSaver.Instance;
 
         // Acc�s direct aux propri�t�s publiques de dts
-        coinsText.text = "Coins: " + _dataSaver.dts.totalCoins.ToString();
-        jewelsText.text = "Jewels: " + _dataSaver.dts.totalJewels.ToString();
+        coinsText.text = _dataSaver.dts.totalCoins.ToString();
+        jewelsText.text = _dataSaver.dts.totalJewels.ToString();
     }
 
     public void SetSelectedItemButton(ItemButton itemButton)
