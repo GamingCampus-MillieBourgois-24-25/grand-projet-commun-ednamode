@@ -208,28 +208,44 @@ public class SettingsManager : MonoBehaviour
                 QualitySettings.shadows = ShadowQuality.Disable;
                 QualitySettings.realtimeReflectionProbes = false;
                 QualitySettings.billboardsFaceCameraPosition = false;
-                Application.targetFrameRate = 30;
+                QualitySettings.pixelLightCount = 0; // Réduire les lumières en temps réel
+                QualitySettings.vSyncCount = 0; // Désactiver VSync pour éviter les blocages
+                QualitySettings.lodBias = 0.3f; // Réduire la distance des LOD
+                Application.targetFrameRate = 30; // 30 FPS pour faible performance
+                Screen.sleepTimeout = SleepTimeout.SystemSetting; // Éviter l'écran en veille
                 break;
             case QualityLevel.Medium:
-                QualitySettings.antiAliasing = 0;
+                QualitySettings.antiAliasing = 0; // Anti-aliasing coûteux sur mobile
                 QualitySettings.shadows = ShadowQuality.HardOnly;
                 QualitySettings.realtimeReflectionProbes = false;
                 QualitySettings.billboardsFaceCameraPosition = true;
+                QualitySettings.pixelLightCount = 1;
+                QualitySettings.vSyncCount = 0;
+                QualitySettings.lodBias = 0.5f;
                 Application.targetFrameRate = 60;
+                Screen.sleepTimeout = SleepTimeout.SystemSetting;
                 break;
             case QualityLevel.High:
-                QualitySettings.antiAliasing = 2;
+                QualitySettings.antiAliasing = 2; // Activer seulement sur appareils haut de gamme
                 QualitySettings.shadows = ShadowQuality.All;
                 QualitySettings.realtimeReflectionProbes = true;
                 QualitySettings.billboardsFaceCameraPosition = true;
+                QualitySettings.pixelLightCount = 2;
+                QualitySettings.vSyncCount = 0;
+                QualitySettings.lodBias = 0.7f;
                 Application.targetFrameRate = 60;
+                Screen.sleepTimeout = SleepTimeout.SystemSetting;
                 break;
             default:
                 QualitySettings.antiAliasing = 0;
                 QualitySettings.shadows = ShadowQuality.Disable;
                 QualitySettings.realtimeReflectionProbes = false;
                 QualitySettings.billboardsFaceCameraPosition = false;
+                QualitySettings.pixelLightCount = 0;
+                QualitySettings.vSyncCount = 0;
+                QualitySettings.lodBias = 0.3f;
                 Application.targetFrameRate = 30;
+                Screen.sleepTimeout = SleepTimeout.SystemSetting;
                 break;
         }
     }
