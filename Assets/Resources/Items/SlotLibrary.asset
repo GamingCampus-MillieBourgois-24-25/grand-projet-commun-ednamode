@@ -38,12 +38,11 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 08b2f8b2ee77858418d2872c856108cf, type: 2}
       - {fileID: 11400000, guid: ac59f984667109841a1386b4541ce9b8, type: 2}
       - {fileID: 11400000, guid: f8d6f901190944043b26801b50ad024a, type: 2}
-      - {fileID: 11400000, guid: 5ab858afc1c2f3b4baf38d12aced2e31, type: 2}
-      - {fileID: 11400000, guid: 1777137fcb1646c4f91e6e03dc262137, type: 2}
   - Type: 9
     Groups:
     - Type: 12
       Items:
-      - {fileID: 11400000, guid: 640bbfed431ab9f41895eaa40fbb8030, type: 2}
+      - {fileID: 11400000, guid: b29f7771fcb80ed42a73b265795cb6e6, type: 2}
       - {fileID: 11400000, guid: 531d48a0d3445c6499385110b897ff00, type: 2}
       - {fileID: 11400000, guid: be1cc39425120e041b09b6f05072682d, type: 2}
+      - {fileID: 11400000, guid: ca6a11b78a785324b9780da169be0dcd, type: 2}
