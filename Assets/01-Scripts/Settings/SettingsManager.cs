@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 using TMPro;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 
 public class SettingsManager : MonoBehaviour
 {
@@ -14,7 +14,7 @@ public class SettingsManager : MonoBehaviour
     }
 
     [Header("Dropdown de qualité")]
-    public TMP_Dropdown qualityDropdown; 
+    public TMP_Dropdown qualityDropdown;
 
     [Header("Sliders de volume")]
     public Slider masterVolumeSlider;
@@ -23,11 +23,12 @@ public class SettingsManager : MonoBehaviour
 
     [Header("Boutons de mute")]
     public Button masterMuteButton;
-    public TextMeshProUGUI masterMuteButtonText;
     public Button sfxMuteButton;
-    public TextMeshProUGUI sfxMuteButtonText;
     public Button musicMuteButton;
-    public TextMeshProUGUI musicMuteButtonText;
+
+    [Header("Icônes de mute")]
+    [SerializeField] private Sprite muteIcon; 
+    [SerializeField] private Sprite unmuteIcon; 
 
     [Header("Référence à l'Audio Mixer")]
     public AudioMixer audioMixer;
@@ -46,7 +47,6 @@ public class SettingsManager : MonoBehaviour
     private float lastMasterVolume = 1f;
     private float lastSFXVolume = 1f;
     private float lastMusicVolume = 1f;
-
 
     private void Awake()
     {
@@ -74,8 +74,6 @@ public class SettingsManager : MonoBehaviour
 
             qualityDropdown.onValueChanged.AddListener(OnQualityDropdownChanged);
         }
-        
-        
 
         // Configuration des sliders de volume 
         if (masterVolumeSlider != null)
@@ -234,7 +232,6 @@ public class SettingsManager : MonoBehaviour
                 Application.targetFrameRate = 30;
                 break;
         }
-
     }
 
     private void UpdateDropdownState()
@@ -356,19 +353,52 @@ public class SettingsManager : MonoBehaviour
 
     private void UpdateMuteButtonStates()
     {
-        if (masterMuteButtonText != null)
+        // Mettre à jour l'icône et le texte pour Master
+        if (masterMuteButton != null)
         {
-            masterMuteButtonText.text = isMasterMuted ? "Unmute" : "Mute";
+            Image buttonImage = masterMuteButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.sprite = isMasterMuted ? muteIcon : unmuteIcon;
+                buttonImage.enabled = buttonImage.sprite != null; // Désactiver si pas de sprite
+            }
+            else
+            {
+                Debug.LogWarning("Aucun composant Image trouvé sur masterMuteButton.");
+            }
         }
-        if (sfxMuteButtonText != null)
-        {
-            sfxMuteButtonText.text = isSFXMuted ? "Unmute" : "Mute";
-        }
-        if (musicMuteButtonText != null)
-        {
-            musicMuteButtonText.text = isMusicMuted ? "Unmute" : "Mute";
-        }
-    }
+       
 
-  
+        // Mettre à jour l'icône et le texte pour SFX
+        if (sfxMuteButton != null)
+        {
+            Image buttonImage = sfxMuteButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.sprite = isSFXMuted ? muteIcon : unmuteIcon;
+                buttonImage.enabled = buttonImage.sprite != null;
+            }
+            else
+            {
+                Debug.LogWarning("Aucun composant Image trouvé sur sfxMuteButton.");
+            }
+        }
+       
+
+        // Mettre à jour l'icône et le texte pour Music
+        if (musicMuteButton != null)
+        {
+            Image buttonImage = musicMuteButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.sprite = isMusicMuted ? muteIcon : unmuteIcon;
+                buttonImage.enabled = buttonImage.sprite != null;
+            }
+            else
+            {
+                Debug.LogWarning("Aucun composant Image trouvé sur musicMuteButton.");
+            }
+        }
+        
+    }
 }
