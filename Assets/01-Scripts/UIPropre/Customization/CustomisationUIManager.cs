@@ -509,11 +509,25 @@ public class CustomisationUIManager : NetworkBehaviour
         if (visualsHandler != null && currentSelectedItem != null)
         {
             visualsHandler.ApplyColorWithoutTexture(slotType, color);
-            dataToSave.SetColor(slotType, (Color32)color);
+            dataToSave.SetColor(slotType, color);
+
+            if (dataToSave.TryGetColor(slotType, out var confirmColor))
+            {
+                Debug.Log($"[UI → Confirm] Couleur bien stockée pour {slotType} = {ColorUtility.ToHtmlStringRGBA(confirmColor)}");
+            }
+            else
+            {
+                Debug.LogWarning($"[UI → ERROR] La couleur n'a PAS été stockée dans dataToSave !");
+            }
+
             dataToSave.SetTexture(slotType, null);
             Debug.Log($"[CustomisationUI] Couleur temporaire enregistrée pour {slotType}: {ColorUtility.ToHtmlStringRGBA(color)}");
+
+            // ✅ Synchronisation immédiate même pendant le glissement
+            customizationData.SyncCustomizationDataServerRpc(dataToSave);
         }
     }
+
 
     private void OnColorSelected(SlotType slotType, Color color)
     {
@@ -525,10 +539,17 @@ public class CustomisationUIManager : NetworkBehaviour
             Debug.Log($"[CustomisationUI] Couleur finale enregistrée pour {slotType}: {ColorUtility.ToHtmlStringRGBA(color)}");
         }
 
-        customizationData.Data = dataToSave;
+        // ❗ Correction ici : plus de assignation directe
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
+
+        foreach (var kvp in dataToSave.equippedColors)
+        {
+            Debug.Log($"[UI → Envoi] Couleur envoyée pour {kvp.Key} = {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
+        }
+
         if (tabColorPanel) tabColorPanel.SetActive(false);
     }
+
 
     #endregion
 
@@ -538,8 +559,7 @@ public class CustomisationUIManager : NetworkBehaviour
     {
         if (customizationData == null) return;
 
-        Debug.Log("[CustomisationUI] ✅ Commit de la tenue locale dans la NetworkVariable.");
-        customizationData.Data = dataToSave;
+        Debug.Log("[CustomisationUI] ✅ Commit de la tenue locale via ServerRpc.");
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
 
@@ -547,6 +567,7 @@ public class CustomisationUIManager : NetworkBehaviour
     {
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
+
 
     private void ClearContainer(Transform container)
     {
