@@ -31,7 +31,7 @@ public class ThemeManagerWindow : EditorWindow
 
     #region Initialisation
 
-    [MenuItem("Outils/Theme Manager 🎨")]
+    [MenuItem("Tools/Theme Manager 🎨")]
     public static void ShowWindow() => GetWindow<ThemeManagerWindow>("Gestionnaire de Thèmes");
 
     private void OnEnable()

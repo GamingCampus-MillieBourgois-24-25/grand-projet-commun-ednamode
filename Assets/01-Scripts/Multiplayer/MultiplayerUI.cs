@@ -59,6 +59,10 @@ public class MultiplayerUI : MonoBehaviour
     [Tooltip("Objets à masquer quand connecté")]
     [SerializeField] private GameObject[] hideOnConnected;
 
+    [Header("🎵 Musique")]
+    [SerializeField] private AudioSource menuMusicSource;
+    [SerializeField] private AudioClip menuMusicClip;
+
     private bool isReady = false;
 
     private void Awake()
@@ -84,6 +88,17 @@ public class MultiplayerUI : MonoBehaviour
     private void Start()
     {
         StartCoroutine(WaitForMultiplayerReady());
+
+        if (menuMusicSource != null && menuMusicClip != null)
+        {
+            menuMusicSource.clip = menuMusicClip;
+            menuMusicSource.loop = true;
+            menuMusicSource.playOnAwake = false;
+            menuMusicSource.volume = 0f;
+
+            menuMusicSource.Play();
+            menuMusicSource.DOFade(1f, 1f);  // Fade-in
+        }
 
         for (int i = 0; i < gameModeButtons.Length; i++)
         {
@@ -311,6 +326,24 @@ public class MultiplayerUI : MonoBehaviour
             else
             {
                 AnimateShow(go);
+            }
+        }
+
+        if (menuMusicSource != null)
+        {
+            menuMusicSource.DOKill();  // Stoppe tout fade en cours
+
+            if (connected && menuMusicSource.isPlaying)
+            {
+                menuMusicSource.DOFade(0f, 1f).OnComplete(() => menuMusicSource.Stop());
+            }
+            else if (!connected && !menuMusicSource.isPlaying)
+            {
+                menuMusicSource.volume = 0f;
+                menuMusicSource.Play();
+                menuMusicSource.DOFade(1f, 1f);
+                menuMusicSource.clip = menuMusicClip;
+                menuMusicSource.loop = true;
             }
         }
     }

@@ -21,8 +21,8 @@ public class NetworkPlayer : NetworkBehaviour
 
     private CharacterController controller;
     private Camera localCamera;
-
-    public Camera GetLocalCamera() => localCamera;
+    public static readonly Vector3 DefaultScale = Vector3.one;
+    public static readonly Vector3 EnlargedScale = new Vector3(3f, 3f, 3f); public Camera GetLocalCamera() => localCamera;
 
     private void Awake()
     {
@@ -68,6 +68,12 @@ public class NetworkPlayer : NetworkBehaviour
             }
         }
     }
+
+    public void SetPlayerScale(Vector3 newScale)
+    {
+        transform.localScale = newScale;
+    }
+
 
     /// <summary>
     /// Téléporte le joueur à son point de spawn défini.
