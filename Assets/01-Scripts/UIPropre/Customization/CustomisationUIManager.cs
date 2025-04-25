@@ -578,7 +578,6 @@ public class CustomisationUIManager : NetworkBehaviour
         // Désactiver le panneau de textures et réinitialiser la texture
         if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
         dataToSave.SetTexture(slotType, null);
-        customizationData.Data = dataToSave;
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
 
         // Charger la couleur actuelle ou par défaut
@@ -815,42 +814,34 @@ public class CustomisationUIManager : NetworkBehaviour
         TextureOption option = availableTextures[textureIndex];
         Debug.Log($"[CustomisationUI] Tentative d'application de la texture {option.name} pour {slotType}");
 
-        // Vérifier le matériau
-        if (renderer.material == null)
+        if (renderer.material == null || renderer.material.shader.name != "Universal Render Pipeline/Lit")
         {
-            Debug.LogWarning($"[CustomisationUI] Le matériau du renderer est null pour {slotType}. Création d'un nouveau matériau par défaut.");
+            Debug.LogWarning($"[CustomisationUI] Shader non compatible pour {slotType}. Remplacement par URP/Lit.");
             renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         }
 
-        // Vérifier le shader
-        if (renderer.material.shader.name != "Universal Render Pipeline/Lit")
-        {
-            Debug.LogWarning($"[CustomisationUI] Shader non compatible pour {slotType}: {renderer.material.shader.name}. Remplacement par URP/Lit.");
-            renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        }
-
-        // Appliquer la texture directement
         if (option.texture != null)
         {
             renderer.material.SetTexture("_BaseMap", option.texture);
-            renderer.material.color = Color.white; // Réinitialiser la couleur pour utiliser la _BaseMap de base
+            renderer.material.color = Color.white;
             Debug.Log($"[CustomisationUI] Texture {option.name} appliquée avec couleur réinitialisée (Color.white) pour {slotType}.");
         }
         else
         {
-            Debug.LogWarning($"[CustomisationUI] La texture {option.name} est null dans availableTextures pour {slotType}. Vérifiez l'assignation dans l'inspecteur.");
+            Debug.LogWarning($"[CustomisationUI] Texture {option.name} est null. Reset couleur uniquement.");
             renderer.material.SetTexture("_BaseMap", null);
-            renderer.material.color = Color.white; // Réinitialiser la couleur même si la texture est null
+            renderer.material.color = Color.white;
         }
 
-        // Enregistrer la texture et réinitialiser la couleur
+        // ✅ Met à jour localement
         dataToSave.SetTexture(slotType, option.name);
         dataToSave.SetColor(slotType, Color.white);
         Debug.Log($"[CustomisationUI] Texture enregistrée pour {slotType}: {option.name}, Couleur réinitialisée: {ColorUtility.ToHtmlStringRGBA(Color.white)}");
 
-        customizationData.Data = dataToSave;
+        // ✅ Envoi au serveur sans écrasement de Data
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
+
 
 
     #endregion
@@ -912,7 +903,6 @@ public class CustomisationUIManager : NetworkBehaviour
             dataToSave.SetTexture(slotType, null);
         }
 
-        customizationData.Data = dataToSave;
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
         Debug.Log($"[CustomisationUI] État initial restauré pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
 
