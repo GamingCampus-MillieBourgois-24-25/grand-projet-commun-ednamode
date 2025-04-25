@@ -2,23 +2,21 @@
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using System.Linq;
+using DG.Tweening;
+using System.Collections;
 
 public class PodiumUIManager : MonoBehaviour
 {
     public static PodiumUIManager Instance { get; private set; }
 
     [Header("🖥️ Références UI")]
-    [SerializeField] private GameObject podiumPanel;
-    [SerializeField] private Transform rankingContainer;
+    [SerializeField] private RectTransform podiumPanel;  // ⚠️ RectTransform pour l'animation
+    [SerializeField] private Transform rankingContainer; // Content de la ScrollView
     [SerializeField] private GameObject rankingEntryPrefab;
 
     [Header("🎨 Options d'affichage")]
-    [Tooltip("Couleur pour le 1er joueur")]
     [SerializeField] private Color firstPlaceColor = Color.yellow;
-    [Tooltip("Couleur pour le 2ème joueur")]
     [SerializeField] private Color secondPlaceColor = Color.gray;
-    [Tooltip("Couleur pour le 3ème joueur")]
     [SerializeField] private Color thirdPlaceColor = new Color(0.8f, 0.5f, 0.2f);
 
     private void Awake()
@@ -30,58 +28,99 @@ public class PodiumUIManager : MonoBehaviour
         }
         Instance = this;
 
-        podiumPanel.SetActive(false);
+        podiumPanel.gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// Affiche le classement des joueurs sur le podium avec leurs scores.
+    /// Affiche le classement avec une animation de slide depuis la droite.
     /// </summary>
     public void ShowRanking(List<(ulong clientId, float score)> rankings)
     {
-        ClearRankingUI();
-
-        for (int i = 0; i < rankings.Count; i++)
+        if (podiumPanel == null)
         {
-            var entryData = rankings[i];
-            var entryObj = Instantiate(rankingEntryPrefab, rankingContainer);
-            var texts = entryObj.GetComponentsInChildren<TMP_Text>();
-
-            string playerName = MultiplayerManager.Instance.GetDisplayName(entryData.clientId);
-            float score = Mathf.Round(entryData.score * 10f) / 10f;  // arrondi 1 décimale
-
-            texts[0].text = $"{i + 1}. {playerName}";
-            texts[1].text = $"{score} ⭐";
-
-            var bg = entryObj.GetComponent<Image>();
-            if (bg != null)
-                bg.color = GetPlaceColor(i);
+            Debug.LogError("[PodiumUI] ❌ podiumPanel n'est pas assigné !");
+            return;
         }
 
-        podiumPanel.SetActive(true);
+        ClearRankingUI();
+
+        foreach (var (clientId, score) in rankings)
+        {
+            GameObject entry = Instantiate(rankingEntryPrefab, rankingContainer);
+
+            TMP_Text[] texts = entry.GetComponentsInChildren<TMP_Text>();
+            if (texts.Length < 2)
+            {
+                Debug.LogError("[PodiumUI] Prefab mal configuré : 2 TMP_Text attendus.");
+                continue;
+            }
+
+            string playerName = MultiplayerManager.Instance.GetDisplayName(clientId);
+            float roundedScore = Mathf.Round(score * 10f) / 10f;
+
+            texts[0].text = playerName;           // Nom du joueur
+            texts[1].text = $"{roundedScore} ⭐";  // Score
+
+            Image bg = entry.GetComponent<Image>();
+            if (bg != null)
+                bg.color = GetPlaceColor(rankingContainer.childCount - 1);
+        }
+
+        // Force le layout
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rankingContainer.GetComponent<RectTransform>());
+
+        // Animation de slide depuis la droite
+        podiumPanel.gameObject.SetActive(true);
+        podiumPanel.anchoredPosition = new Vector2(Screen.width, 0);
+        podiumPanel.DOAnchorPosX(0, 0.5f).SetEase(Ease.OutCubic);
     }
 
     /// <summary>
-    /// Cache le panneau du podium.
+    /// Cache le podium avec une animation.
     /// </summary>
     public void HideRanking()
     {
-        podiumPanel.SetActive(false);
-    }
+        if (podiumPanel == null)
+        {
+            Debug.LogError("[PodiumUI] ❌ podiumPanel non assigné !");
+            podiumPanel.gameObject.SetActive(false);
+            return;
+        }
+/*
+        podiumPanel.DOKill();  // Stoppe toute animation en cours pour éviter les conflits
+
+        podiumPanel.DOAnchorPosX(Screen.width, 0.4f)
+            .SetEase(Ease.InCubic)
+            .OnComplete(() =>
+            {
+                podiumPanel.gameObject.SetActive(false);
+                Debug.Log("[PodiumUI] 🏁 Podium désactivé après animation.");
+            });
+
+        // 🛡️ Sécurité : désactive de toute façon après un délai (failsafe)
+        StartCoroutine(ForceDeactivateAfterDelay(0.5f));
+*/    }
 
     /// <summary>
-    /// Nettoie les anciennes entrées du classement.
+    /// Désactive le podium après un délai en sécurité.
     /// </summary>
-    private void ClearRankingUI()
+    private IEnumerator ForceDeactivateAfterDelay(float delay)
     {
-        foreach (Transform child in rankingContainer)
+        yield return new WaitForSeconds(delay);
+
+        if (podiumPanel.gameObject.activeSelf)
         {
-            Destroy(child.gameObject);
+            podiumPanel.gameObject.SetActive(false);
+            Debug.LogWarning("[PodiumUI] ⚠️ Podium forcé OFF après délai de sécurité.");
         }
     }
 
-    /// <summary>
-    /// Retourne une couleur en fonction du rang.
-    /// </summary>
+    private void ClearRankingUI()
+    {
+        foreach (Transform child in rankingContainer)
+            Destroy(child.gameObject);
+    }
+
     private Color GetPlaceColor(int index)
     {
         return index switch

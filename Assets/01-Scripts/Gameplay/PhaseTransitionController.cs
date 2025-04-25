@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using Unity.Netcode;
 using CharacterCustomization;
-
+using DG.Tweening;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Rendering.Universal;
@@ -20,6 +20,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
     [Header("🎥 PostProcess Settings")]
     [SerializeField] private Volume postProcessVolume;
+
+    [Header("🎵 Audio")]
+    [Tooltip("Source audio pour la musique de thème.")]
+    [SerializeField] private AudioSource themeMusicSource;
+    [Tooltip("Clip audio pour la musique de thème.")]
+    [SerializeField] private AudioClip themeMusicClip;
 
     private DepthOfField depthOfField;
     private float initialFocusDistance;
@@ -75,7 +81,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
     /// </summary>
     private IEnumerator PhaseSequenceCoroutine()
     {
-        // ============= Phase d'attente ============= //
+        // ============= Phase d'Affichage du Thème ============= //
+        SetPhase(GamePhaseManager.GamePhase.ThemeDisplay);
+        PlayThemeMusic();
+        yield return StartCoroutine(ThemeManager.Instance.LaunchThemeDisplaySequence());
+
+        // ============= Phase de customisation ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
@@ -103,9 +114,13 @@ public class GamePhaseTransitionController : NetworkBehaviour
         SetPhase(GamePhaseManager.GamePhase.Podium);
         PodiumManager.Instance.StartPodiumSequence();
         yield return new WaitForSeconds(_phaseManager.PodiumDuration);
+        PodiumUIManager.Instance?.HideRanking();
+        HidePodiumPanel();
 
         // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
+        ActivateReturnToLobbyPhase();
+        FadeOutMusic(themeMusicSource, 2f);
     }
 
     /// <summary>
@@ -167,6 +182,8 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         HandleDepthOfField(phase);
 
+        AdjustPlayersScale(phase);
+
         if (phase == GamePhaseManager.GamePhase.ReturnToLobby)
         {
             ResetPlayersPositionAndCamera();
@@ -183,6 +200,10 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         switch (phase)
         {
+            case GamePhaseManager.GamePhase.ThemeDisplay:
+                toHide = mapping.themeDisplayPanelToHide;
+                toShow = mapping.themeDisplayPanel;
+                break;
             case GamePhaseManager.GamePhase.Customization:
                 toHide = mapping.customizationPanelToHide;
                 toShow = mapping.customizationPanel;
@@ -194,6 +215,10 @@ public class GamePhaseTransitionController : NetworkBehaviour
             case GamePhaseManager.GamePhase.Podium:
                 toHide = mapping.podiumPanelToHide;
                 toShow = mapping.podiumPanel;
+                break;
+            case GamePhaseManager.GamePhase.ReturnToLobby:
+                toHide = mapping.returnToLobbyPanelToHide;
+                toShow = mapping.returnToLobbyPanel;
                 break;
         }
 
@@ -284,5 +309,111 @@ public class GamePhaseTransitionController : NetworkBehaviour
     {
         RunwayUIManager.Instance?.ShowCurrentRunwayPlayer(playerClientId);
     }
+
+
+    #endregion
+
+    private void AdjustPlayersScale(GamePhaseManager.GamePhase phase)
+    {
+        var players = FindObjectsOfType<NetworkPlayer>();
+
+        Vector3 targetScale = (phase == GamePhaseManager.GamePhase.RunwayVoting || phase == GamePhaseManager.GamePhase.Podium)
+                                ? NetworkPlayer.EnlargedScale
+                                : NetworkPlayer.DefaultScale;
+
+        foreach (var player in players)
+        {
+            player.SetPlayerScale(targetScale);
+        }
+    }
+
+    public void HidePodiumPanel()
+    {
+        var mapping = _phaseManager.GetActivePanelMapping();
+        if (mapping == null) return;
+        if (mapping.podiumPanel.activeSelf)
+            UIManager.Instance.HidePanel(mapping.podiumPanel);
+        if (mapping.returnToLobbyPanel.activeSelf)
+            UIManager.Instance.HidePanel(mapping.returnToLobbyPanel);
+    }
+
+    #region Lobby
+
+    /// <summary>
+    /// Active la phase de retour au lobby.
+    /// </summary>
+    public void ActivateReturnToLobbyPhase()
+    {
+        Debug.Log("[GameManager] 🚪 Retour au Lobby...");
+
+        // 1️⃣ Téléporte tous les joueurs
+        foreach (var player in FindObjectsOfType<NetworkPlayer>())
+        {
+            player.ReturnToLobby();
+        }
+
+        // 2️⃣ Reset des états Ready
+        if (NetworkManager.Singleton.IsServer)
+            MultiplayerManager.Instance?.ResetAllReadyStates();
+
+        FindObjectOfType<MultiplayerUI>()?.ResetReadyState();
+
+        // 3️⃣ Affiche l'UI de connexion
+        MultiplayerUI multiplayerUI = FindObjectOfType<MultiplayerUI>();
+        if (multiplayerUI != null)
+        {
+            multiplayerUI.UpdateConnectionUI(true);
+            Debug.Log("[GameManager] 🖥️ Panel de connexion affiché.");
+        }
+    }
+
+    #endregion
+
+    #region Audio
+    private void PlayThemeMusic()
+    {
+        if (themeMusicSource == null || themeMusicClip == null)
+        {
+            Debug.LogWarning("[Audio] AudioSource ou Clip non assigné pour la musique du thème.");
+            return;
+        }
+
+        themeMusicSource.clip = themeMusicClip;
+        themeMusicSource.loop = true; // Boucle la musique
+        themeMusicSource.volume = 0f;
+        themeMusicSource.Play();
+        themeMusicSource.DOFade(1f, 1f);
+
+        Debug.Log("[Audio] 🎶 Musique du choix de thème lancée !");
+    }
+
+    private void StopThemeMusic()
+    {
+        if (themeMusicSource != null && themeMusicSource.isPlaying)
+        {
+            themeMusicSource.Stop();
+            Debug.Log("[Audio] 🎵 Musique du thème arrêtée.");
+        }
+    }
+
+    public void FadeOutMusic(AudioSource audioSource, float fadeDuration)
+    {
+        StartCoroutine(FadeOutCoroutine(audioSource, fadeDuration));
+    }
+
+    private IEnumerator FadeOutCoroutine(AudioSource audioSource, float duration)
+    {
+        float startVolume = audioSource.volume;
+
+        while (audioSource.volume > 0)
+        {
+            audioSource.volume -= startVolume * Time.deltaTime / duration;
+            yield return null;
+        }
+
+        audioSource.Stop();
+        audioSource.volume = startVolume;  // Reset pour la prochaine lecture
+    }
+
+    #endregion
 }
-#endregion
