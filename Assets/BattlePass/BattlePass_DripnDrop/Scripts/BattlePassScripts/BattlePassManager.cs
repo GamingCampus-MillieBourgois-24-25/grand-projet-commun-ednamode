@@ -629,5 +629,15 @@ namespace EasyBattlePass
 
             UpdateUI();
         }
+    
+
+    #region Scene Management
+
+    public void BackToLobby()
+        {
+            // Load the lobby scene
+            SceneManager.Instance.LoadLobby();
+        }
+    #endregion
     }
 }
