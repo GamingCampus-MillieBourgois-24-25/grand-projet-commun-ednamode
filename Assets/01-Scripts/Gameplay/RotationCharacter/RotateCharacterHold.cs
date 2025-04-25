@@ -132,9 +132,14 @@ public class RotateCharacterHold : MonoBehaviour
     {
         Vector2 pointerPosition = GetPointerPosition();
         float screenWidth = Screen.width;
+        float screenHeight = Screen.height;
+
         float leftFortyPercentWidth = screenWidth * 0.4f;
-        return pointerPosition.x <= leftFortyPercentWidth;
+        float bottomEightyPercentHeight = screenHeight * 0.9f;
+
+        return pointerPosition.x <= leftFortyPercentWidth && pointerPosition.y <= bottomEightyPercentHeight;
     }
+
 
 
     private Vector2 GetPointerPosition()

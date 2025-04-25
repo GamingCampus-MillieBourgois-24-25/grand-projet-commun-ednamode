@@ -2,8 +2,10 @@ using UnityEngine;
 
 public class ShowRewardedAd : MonoBehaviour
 {
+    private DataSaver dataSaver;
     private void Start()
     {
+        dataSaver = DataSaver.Instance;
         // Initialisation du SDK IronSource avec votre clé d'application
         IronSource.Agent.init("YOUR_APP_KEY", IronSourceAdUnits.REWARDED_VIDEO);
 
@@ -44,9 +46,7 @@ public class ShowRewardedAd : MonoBehaviour
     {
         Debug.Log($"Vidéo récompensée terminée. Récompense : {placement.getRewardName()} {placement.getRewardAmount()}");
 
-        // Ajoutez ici la logique pour donner la récompense au joueur
-        // Exemple : Ajouter des pièces ou des objets
-        DataSaver.Instance.addCoins(placement.getRewardAmount());
+        dataSaver.addCoins(placement.getRewardAmount());
     }
 
     // Callback : La vidéo a été fermée

@@ -929,7 +929,8 @@ PlayerSettings:
   XboxOneOverrideIdentityName: 
   XboxOneOverrideIdentityPublisher: 
   vrEditorSettings: {}
-  cloudServicesEnabled: {}
+  cloudServicesEnabled:
+    Unity Ads: 1
   luminIcon:
     m_Name: 
     m_ModelFolderPath: 
@@ -951,11 +952,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 302be826-c9ae-4664-9f17-5eb1d4cdc0de
+  cloudProjectId: 4a55ab71-6366-4cf8-b12b-7a3c22ccf0ad
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: DripOrDrop
-  organizationId: onnen
+  organizationId: dripordrop
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

@@ -13,13 +13,19 @@ namespace CharacterCustomization
 
             if (scriptable is Tab tab)
             {
-                icon = GetComponentInChildren<Image>();
+                icon = transform.GetChild(0).GetComponent<Image>();
                 var chooseCamPoint = Object.FindFirstObjectByType<ChooseCamPoint>();
                 category = tab.category.ToString();
                 buttonImage.sprite = defaultImg;
-                Debug.Log(buttonImage != null ? "buttonImage trouvé !" : "buttonImage est null !");
-
                 icon.sprite = Resources.Load<Sprite>($"Tabs_icons/{tab.category}Icon");
+                if(icon.sprite==null)
+                {
+                    Debug.LogWarning($"Aucun sprite trouvé pour le type de catégorie : {tab.category}");
+                }
+                else
+                {
+                    Debug.Log($"Sprite trouvé pour le type de catégorie : {tab.category}");
+                }
                 button.onClick.AddListener(() => itemSorter.SortItemsByCategory(category));
             }
         }
