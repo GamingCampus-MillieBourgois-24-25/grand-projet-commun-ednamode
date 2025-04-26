@@ -29,7 +29,7 @@ public class SceneManager : MonoBehaviour
 
     public void LoadLobby()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal Hugo");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal v2");
     }
 
     public void LoadShop()

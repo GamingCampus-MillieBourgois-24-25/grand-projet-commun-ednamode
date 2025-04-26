@@ -12,14 +12,15 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance { get; private set; }
     private void Awake()
     {
-        if (Instance && Instance != this)
+        /*if (Instance && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject);*/
+
         InitializePanels();
 
         if (autoPlayIntroOnStart)

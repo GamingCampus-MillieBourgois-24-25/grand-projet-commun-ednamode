@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using DG.Tweening;
 using System.Threading.Tasks;
+using UnityEngine.UI;
 
 
 public class UITransitionManager : MonoBehaviour
@@ -56,12 +57,15 @@ public class UITransitionManager : MonoBehaviour
             .SetEase(Ease.OutBack)
             .OnComplete(() =>
             {
-                DOVirtual.DelayedCall(delayBeforeHide, () =>
-                {
-                    startingScreenPanel.SetActive(false);
-                    tcs.SetResult(true); // Transition terminée
-                });
+                Debug.Log("Écran de démarrage affiché. En attente d'un clic du joueur...");
             });
+
+        // Attendre un clic du joueur
+        startingScreenPanel.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            startingScreenPanel.SetActive(false);
+            tcs.SetResult(true); // Transition terminée après le clic
+        });
 
         await tcs.Task; // Attendre la fin de la transition
     }
