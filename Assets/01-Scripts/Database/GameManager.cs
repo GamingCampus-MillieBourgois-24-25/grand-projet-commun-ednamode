@@ -25,7 +25,6 @@ public class AccountManager : MonoBehaviour
     public TMP_Text userIdText;
     public TMP_Text levelText;
     public TMP_Text progressText;
-    public Slider progressSlider;
     public TMP_Text coinsText;
     public TMP_Text jewelsText;
 
@@ -66,7 +65,6 @@ public class AccountManager : MonoBehaviour
 
         levelText.text = $"Niveau : {dts.crrLevel}";
         progressText.text = $"Progression : {dts.crrLevelProgress}/{dts.totalLevelProgress}";
-        progressSlider.value = (float)dts.crrLevelProgress / dts.totalLevelProgress;
 
         coinsText.text = "coins : " + dts.totalCoins.ToString();
         jewelsText.text = "jewels : " + dts.totalJewels.ToString();
