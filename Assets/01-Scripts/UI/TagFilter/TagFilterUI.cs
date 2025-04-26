@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace CharacterCustomization
 {
@@ -13,7 +14,7 @@ namespace CharacterCustomization
         public Transform tagContent;         // Conteneur pour les toggles dans le panneau
 
         [Header("References")]
-        public CustomizableCharacterUI characterUI; // Référence à CustomizableCharacterUI
+        public CustomisationUIManager customisationUIManager; // Référence à CustomisationUIManager
 
         private List<string> allTags = new List<string>(); // Liste de tous les tags possibles
         private List<string> selectedTags = new List<string>(); // Tags actuellement sélectionnés
@@ -21,49 +22,126 @@ namespace CharacterCustomization
 
         private void Start()
         {
-            if (tagPanel != null) tagPanel.SetActive(false);
+            if (tagPanel != null)
+            {
+                tagPanel.SetActive(false);
+                Debug.Log("[TagFilterUI] tagPanel assigné et désactivé au démarrage.");
+            }
+            else
+            {
+                Debug.LogError("[TagFilterUI] tagPanel n'est PAS assigné dans l'inspecteur !");
+            }
 
             if (filterButton != null)
             {
                 filterButton.onClick.AddListener(OpenTagPanel);
+                Debug.Log("[TagFilterUI] filterButton assigné et événement lié.");
+            }
+            else
+            {
+                Debug.LogError("[TagFilterUI] filterButton n'est PAS assigné dans l'inspecteur !");
             }
 
+            if (customisationUIManager != null)
+            {
+                Debug.Log("[TagFilterUI] customisationUIManager assigné : " + customisationUIManager.gameObject.name);
+            }
+            else
+            {
+                Debug.LogError("[TagFilterUI] customisationUIManager n'est PAS assigné dans l'inspecteur !");
+            }
+
+            StartCoroutine(InitializeTagList());
+        }
+
+        private IEnumerator InitializeTagList()
+        {
+            Debug.Log("[TagFilterUI] Attente de l'initialisation de CustomisationUIManager...");
+            while (customisationUIManager == null || customisationUIManager.GetCategorizedItems() == null || customisationUIManager.GetCategorizedItems().Count == 0)
+            {
+                yield return null;
+            }
+            Debug.Log("[TagFilterUI] categorizedItems prêt, appel de PopulateTagList.");
             PopulateTagList();
         }
 
         private void PopulateTagList()
         {
+            if (tagContent == null || tagTogglePrefab == null)
+            {
+                Debug.LogError("[TagFilterUI] tagContent ou tagTogglePrefab n'est PAS assigné dans l'inspecteur !");
+                return;
+            }
+
+            foreach (Transform child in tagContent)
+            {
+                Destroy(child.gameObject);
+            }
+
             HashSet<string> uniqueTags = new HashSet<string>();
 
-            // Récupérer les tags directement depuis les Items dans SlotLibrary
-            if (characterUI != null && characterUI.slotLibrary != null)
+            if (customisationUIManager != null)
             {
-                foreach (var slotEntry in characterUI.slotLibrary.Slots)
+                var categorizedItems = customisationUIManager.GetCategorizedItems();
+                if (categorizedItems != null)
                 {
-                    foreach (var group in slotEntry.Groups)
+                    Debug.Log($"[TagFilterUI] Nombre de catégories trouvées : {categorizedItems.Count}");
+                    int itemCount = 0;
+                    foreach (var category in categorizedItems)
                     {
-                        foreach (var item in group.Items)
+                        Debug.Log($"[TagFilterUI] Catégorie : SlotType={category.Key.Item1}, GroupType={category.Key.Item2}, Nombre d'items : {category.Value.Count}");
+                        foreach (var item in category.Value)
                         {
-                            if (item != null && item.tags != null)
+                            itemCount++;
+                            if (item != null)
                             {
-                                foreach (var tag in item.tags)
+                                Debug.Log($"[TagFilterUI] Item : {item.itemName} (ID: {item.itemId}), Tags : {(item.tags != null ? string.Join(", ", item.tags) : "null")}");
+                                if (item.tags != null && item.tags.Count > 0)
                                 {
-                                    uniqueTags.Add(tag);
+                                    foreach (var tag in item.tags)
+                                    {
+                                        if (!string.IsNullOrEmpty(tag))
+                                        {
+                                            uniqueTags.Add(tag);
+                                            Debug.Log($"[TagFilterUI] Tag ajouté : {tag} pour l'item {item.itemName}");
+                                        }
+                                        else
+                                        {
+                                            Debug.LogWarning($"[TagFilterUI] Tag vide trouvé pour l'item {item.itemName}");
+                                        }
+                                    }
                                 }
+                                else
+                                {
+                                    Debug.LogWarning($"[TagFilterUI] Aucun tag défini pour l'item {item.itemName} ou tags est null");
+                                }
+                            }
+                            else
+                            {
+                                Debug.LogWarning("[TagFilterUI] Item null dans categorizedItems !");
                             }
                         }
                     }
+                    Debug.Log($"[TagFilterUI] Total d'items parcourus : {itemCount}");
+                }
+                else
+                {
+                    Debug.LogError("[TagFilterUI] categorizedItems est null dans PopulateTagList !");
                 }
             }
             else
             {
-                Debug.LogWarning("characterUI ou slotLibrary est null lors de PopulateTagList !");
+                Debug.LogError("[TagFilterUI] customisationUIManager est null dans PopulateTagList !");
             }
 
             allTags = new List<string>(uniqueTags);
-            Debug.Log($"Tags trouvés : {string.Join(", ", allTags)}");
+            Debug.Log($"[TagFilterUI] Tags trouvés : {string.Join(", ", allTags)}");
 
-            // Créer les toggles pour chaque tag
+            if (allTags.Count == 0)
+            {
+                Debug.LogWarning("[TagFilterUI] Aucun tag trouvé ! Vérifiez les champs 'tags' des Items dans Assets/Resources/Items/.");
+            }
+
             foreach (var tag in allTags)
             {
                 GameObject toggleObj = Instantiate(tagTogglePrefab, tagContent);
@@ -74,16 +152,24 @@ namespace CharacterCustomization
                     if (label != null)
                     {
                         label.text = tag;
+                        Debug.Log($"[TagFilterUI] Toggle créé pour tag : {tag}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[TagFilterUI] Aucun TextMeshProUGUI trouvé sur le toggle pour le tag {tag} !");
                     }
                     toggle.onValueChanged.AddListener((isOn) =>
                     {
-                        if (_isUpdatingToggles) return; // Éviter les appels pendant la mise à jour
+                        if (_isUpdatingToggles) return;
                         OnTagToggleChanged(tag, isOn);
                     });
                 }
+                else
+                {
+                    Debug.LogWarning($"[TagFilterUI] Aucun Toggle trouvé sur le prefab pour le tag {tag} !");
+                }
             }
 
-            // Réinitialiser les toggles sans déclencher d'événements
             ClearFilters();
         }
 
@@ -91,7 +177,13 @@ namespace CharacterCustomization
         {
             if (tagPanel != null)
             {
-                tagPanel.SetActive(!tagPanel.activeSelf);
+                bool isActive = !tagPanel.activeSelf;
+                tagPanel.SetActive(isActive);
+                Debug.Log($"[TagFilterUI] TagPanel {(isActive ? "activé" : "désactivé")}.");
+            }
+            else
+            {
+                Debug.LogError("[TagFilterUI] tagPanel est null dans OpenTagPanel !");
             }
         }
 
@@ -109,17 +201,21 @@ namespace CharacterCustomization
                 selectedTags.Remove(tag);
             }
 
-            Debug.Log($"Tag {tag} {(isOn ? "sélectionné" : "désélectionné")}. Tags sélectionnés : {string.Join(", ", selectedTags)}");
+            Debug.Log($"[TagFilterUI] Tag {tag} {(isOn ? "sélectionné" : "désélectionné")}. Tags sélectionnés : {string.Join(", ", selectedTags)}");
 
-            if (characterUI != null)
+            if (customisationUIManager != null)
             {
-                characterUI.ApplyTagFilter(selectedTags);
+                customisationUIManager.ApplyTagFilter(selectedTags);
+            }
+            else
+            {
+                Debug.LogWarning("[TagFilterUI] customisationUIManager est null lors de OnTagToggleChanged !");
             }
         }
 
         public void ClearFilters()
         {
-            _isUpdatingToggles = true; // Empêcher les appels à OnTagToggleChanged
+            _isUpdatingToggles = true;
             selectedTags.Clear();
             if (tagContent != null)
             {
@@ -128,12 +224,21 @@ namespace CharacterCustomization
                     toggle.isOn = false;
                 }
             }
+            else
+            {
+                Debug.LogWarning("[TagFilterUI] tagContent est null lors de ClearFilters !");
+            }
             _isUpdatingToggles = false;
 
-            Debug.Log("Filtres réinitialisés.");
-            if (characterUI != null)
+            Debug.Log("[TagFilterUI] Filtres réinitialisés.");
+
+            if (customisationUIManager != null)
             {
-                characterUI.ApplyTagFilter(selectedTags);
+                customisationUIManager.ApplyTagFilter(selectedTags);
+            }
+            else
+            {
+                Debug.LogWarning("[TagFilterUI] customisationUIManager est null lors de ClearFilters !");
             }
         }
     }

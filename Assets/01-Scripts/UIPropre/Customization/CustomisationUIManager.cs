@@ -23,7 +23,6 @@ public class CustomisationUIManager : NetworkBehaviour
         public Texture2D texture;
         public Sprite preview;
     }
-
     [Header("🔧 Références")]
     [SerializeField] private SlotLibrary slotLibrary;
     private PlayerCustomizationData customizationData;
@@ -61,6 +60,9 @@ public class CustomisationUIManager : NetworkBehaviour
     [SerializeField] private Transform textureButtonContainer;
     [SerializeField] private Sprite defaultTexturePreview;
 
+    [Header("🔍 Filtrage par Tags")]
+    [SerializeField] private TagFilterUI tagFilterUI; // Référence au composant TagFilterUI
+
     [Header("✨ Effet de Particules")]
     [SerializeField] private GameObject equipEffectPrefab; // Prefab du ParticleSystem
 
@@ -69,6 +71,7 @@ public class CustomisationUIManager : NetworkBehaviour
     private Dictionary<GroupType, SlotType> redirectedGroups;
     private (SlotType, GroupType?) currentCategory;
     private Item currentSelectedItem;
+    private List<string> selectedTags = new List<string>(); // Tags sélectionnés pour le filtrage
 
     private NetworkPlayer localPlayer;
     private CharacterCustomizationNamespace.CharacterCustomization character;
@@ -104,7 +107,11 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private void Start()
     {
-        Debug.Log("[CustomisationUI] Start appelé !");
+        if (tagFilterUI != null && tagFilterUI.tagPanel != null)
+        {
+            tagFilterUI.tagPanel.SetActive(false);
+        }
+
         StartCoroutine(WaitForLocalPlayerThenInit());
     }
 
@@ -115,24 +122,17 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private IEnumerator WaitForLocalPlayerThenInit()
     {
-        Debug.Log("[CustomisationUI] ⏳ Attente du NetworkPlayer...");
-
         while (NetworkPlayerManager.Instance == null)
             yield return null;
-
-        Debug.Log("[CustomisationUI] ✅ NetworkPlayer.Instance trouvé.");
 
         while (NetworkPlayerManager.Instance.LocalPlayerData == null)
         {
             yield return null;
         }
 
-        Debug.Log("[CustomisationUI] ✅ Joueur local prêt.");
-
         customizationData = NetworkPlayerManager.Instance.LocalPlayerData;
         if (customizationData == null)
         {
-            Debug.LogError("[CustomisationUI] ❌ PlayerCustomizationData introuvable !");
             yield break;
         }
 
@@ -142,15 +142,12 @@ public class CustomisationUIManager : NetworkBehaviour
             characterBody = NetworkPlayerManager.Instance.GetBodyRoot()?.gameObject;
             if (characterBody == null)
             {
-                Debug.Log("[CustomisationUI] ⏳ En attente du corps du joueur...");
                 yield return null;
             }
         }
-        Debug.Log("[CustomisationUI] ✅ Corps du joueur trouvé : " + characterBody.name);
 
         if (slotLibrary == null)
         {
-            Debug.LogError("[CustomisationUI] ❌ slotLibrary non assigné dans l’inspecteur !");
             yield break;
         }
 
@@ -161,38 +158,15 @@ public class CustomisationUIManager : NetworkBehaviour
         character = new CharacterCustomizationNamespace.CharacterCustomization(bodyOrMesh.gameObject, slotLibrary);
         if (character == null || character.Slots == null)
         {
-            Debug.LogError("[CustomisationUI] ❌ character ou Slots est null !");
             yield break;
         }
 
-        Debug.Log($"[CustomisationUI] ✅ CharacterCustomization créée avec {character.Slots.Length} slot(s).");
-
         visualsHandler = NetworkPlayerManager.Instance.GetLocalVisuals();
-        if (visualsHandler == null)
-            Debug.LogWarning("[CustomisationUI] ⚠️ Aucun EquippedVisualsHandler trouvé sur le joueur.");
 
         availableSlotTypes = character.Slots.Select(s => s.Type).ToHashSet();
-        Debug.Log($"[CustomisationUI] ✅ SlotTypes détectés : {availableSlotTypes.Count}");
 
-        try
-        {
-            BuildRedirectMap();
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogWarning($"[CustomisationUI] ❌ Exception dans BuildRedirectMap : {ex.Message}\n{ex.StackTrace}");
-        }
-
-        try
-        {
-            LoadItems();
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogWarning($"[CustomisationUI] ❌ Exception dans LoadItems : {ex.Message}\n{ex.StackTrace}");
-        }
-
-        Debug.Log($"[CustomisationUI] ✅ {categorizedItems.Count} catégories chargées depuis Resources/Items");
+        BuildRedirectMap();
+        LoadItems();
 
         PopulateCategoryButtons();
 
@@ -201,19 +175,12 @@ public class CustomisationUIManager : NetworkBehaviour
             currentCategory = categorizedItems.Keys.First();
             PopulateItemList();
         }
-        else
-        {
-            Debug.LogWarning("[CustomisationUI] ⚠️ Aucun item trouvé — vérifie Resources/Items.");
-        }
 
         tabItemButton.onClick.AddListener(() => SelectTab(TabType.Item));
         tabColorButton.onClick.AddListener(() => SelectTab(TabType.Color));
         tabTextureButton.onClick.AddListener(() => SelectTab(TabType.Texture));
 
         InitializeTexturePanel();
-        DebugTextureLoading(); // Tester les textures au démarrage
-
-        Debug.Log("[CustomisationUI] ✅ Initialisation complète du CustomisationUIManager.");
     }
 
     private void BuildRedirectMap()
@@ -222,13 +189,10 @@ public class CustomisationUIManager : NetworkBehaviour
 
         foreach (var entry in slotLibrary.Slots)
         {
-            Debug.Log($"[CustomisationUI] SlotEntry : {entry.Type}, Groups : {entry.Groups?.Length}");
-
             if (entry.Groups == null) continue;
 
             foreach (var group in entry.Groups)
             {
-                Debug.Log($"[CustomisationUI]   ↳ Redirige {group.Type} vers {entry.Type}");
                 if (!redirectedGroups.ContainsKey(group.Type))
                     redirectedGroups[group.Type] = entry.Type;
             }
@@ -237,16 +201,13 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private void LoadItems()
     {
-        Debug.Log("[CustomisationUI] Chargement des items depuis Resources/Items...");
         categorizedItems = new();
         var allItems = Resources.LoadAll<Item>("Items");
-        Debug.Log($"[CustomisationUI] → categorizedItems.Count = {categorizedItems.Count}");
 
         foreach (var item in allItems)
         {
             if (item == null || item.prefab == null)
             {
-                Debug.LogWarning($"[CustomisationUI] Item invalide ou prefab manquant : {item?.name}");
                 continue;
             }
 
@@ -270,13 +231,6 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private void PopulateCategoryButtons()
     {
-        Debug.Log($"[CustomisationUI] 📌 PopulateCategoryButtons() appelé");
-
-        foreach (var kvp in categorizedItems)
-        {
-            Debug.Log($"[CustomisationUI] Catégorie ajoutée : SlotType = {kvp.Key.Item1}, GroupType = {kvp.Key.Item2}, {kvp.Value.Count} item(s)");
-        }
-
         foreach (var category in categorizedItems.Keys)
         {
             var btnObj = Instantiate(categoryButtonPrefab, categoryButtonContainer);
@@ -284,7 +238,6 @@ public class CustomisationUIManager : NetworkBehaviour
             label.text = category.Item2?.ToString() ?? category.Item1.ToString();
             btnObj.GetComponent<Button>().onClick.AddListener(() => OnCategorySelected(category));
         }
-        Debug.Log($"[CustomisationUI] Génération des boutons de catégories : {categorizedItems.Count}");
     }
 
     #endregion
@@ -409,7 +362,10 @@ public class CustomisationUIManager : NetworkBehaviour
     private void OnCategorySelected((SlotType, GroupType?) category)
     {
         currentCategory = category;
-        Debug.Log($"[CustomisationUI] Catégorie sélectionnée : {category}");
+        if (tagFilterUI != null)
+        {
+            tagFilterUI.ClearFilters();
+        }
         SelectTab(TabType.Item);
     }
 
@@ -419,19 +375,40 @@ public class CustomisationUIManager : NetworkBehaviour
 
         if (!categorizedItems.ContainsKey(currentCategory))
         {
-            Debug.LogWarning($"[CustomisationUI] Aucune entrée pour {currentCategory}");
             return;
         }
 
         var items = categorizedItems[currentCategory];
-        Debug.Log($"[CustomisationUI] Affichage de {items.Count} items pour {currentCategory}");
+        var filteredItems = items.Where(item =>
+            selectedTags.Count == 0 || item.tags.Any(tag => selectedTags.Contains(tag))
+        ).ToList();
 
-        foreach (var item in items)
+        foreach (var item in filteredItems)
         {
             var btnObj = Instantiate(itemButtonPrefab, itemListContainer);
             btnObj.SetActive(true);
+
+            // Configurer le texte du bouton
             var label = btnObj.GetComponentInChildren<TMP_Text>();
             if (label) label.text = item.itemName;
+
+            // Configurer l'icône du bouton
+            var buttonImage = btnObj.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                buttonImage.sprite = item.icon != null ? item.icon : null;
+                buttonImage.enabled = item.icon != null;
+            }
+            else
+            {
+                var iconImage = btnObj.transform.Find("Icon")?.GetComponent<Image>();
+                if (iconImage != null)
+                {
+                    iconImage.sprite = item.icon != null ? item.icon : null;
+                    iconImage.enabled = item.icon != null;
+                }
+            }
+
             btnObj.GetComponent<Button>().onClick.AddListener(() => EquipItem(item));
         }
     }
@@ -451,90 +428,78 @@ public class CustomisationUIManager : NetworkBehaviour
         if (customizationData.Data.TryGetColor(slotType, out var existingColor))
         {
             dataToSave.SetColor(slotType, existingColor);
-            Debug.Log($"[CustomisationUI] Couleur conservée pour {slotType}: {ColorUtility.ToHtmlStringRGBA(existingColor)}");
         }
         if (customizationData.Data.TryGetTexture(slotType, out var existingTexture))
         {
             dataToSave.SetTexture(slotType, existingTexture);
-            Debug.Log($"[CustomisationUI] Texture conservée pour {slotType}: {existingTexture}");
         }
 
         if (!customizationData.IsSpawned || customizationData.NetworkObject == null)
         {
-            Debug.LogWarning("[CustomisationUI] ❌ Impossible d’envoyer un ServerRpc car le NetworkObject n’est pas prêt.");
             return;
         }
         customizationData.SetItemAndApplyLocal(slotType, item.itemId, item);
 
-        // Jouer l'effet de particules
         PlayEquipEffect(slotType);
     }
 
     private void PlayEquipEffect(SlotType slotType)
     {
-        if (equipEffectPrefab == null)
+        if (equipEffectPrefab == null || visualsHandler == null)
         {
-            Debug.LogWarning("[CustomisationUI] ❌ Prefab d'effet de particules non assigné dans l’inspecteur.");
-            return;
-        }
-
-        if (visualsHandler == null)
-        {
-            Debug.LogWarning("[CustomisationUI] ❌ EquippedVisualsHandler non trouvé.");
             return;
         }
 
         var equippedObject = visualsHandler.GetEquippedObject(slotType);
         if (equippedObject == null)
         {
-            Debug.LogWarning($"[CustomisationUI] ❌ Aucun vêtement équipé pour le slot {slotType}.");
             return;
         }
 
         var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
         if (renderer == null)
         {
-            Debug.LogWarning($"[CustomisationUI] ❌ Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
             return;
         }
 
-        // Instancier l’effet de particules
         var effectInstance = Instantiate(equipEffectPrefab, equippedObject.transform);
-        Debug.Log($"[CustomisationUI] ✨ Effet de particules instancié pour {slotType}: {effectInstance.name}");
-
-        // Positionner au centre du vêtement
         var bounds = renderer.bounds;
         effectInstance.transform.localPosition = bounds.center - equippedObject.transform.position;
-        Debug.Log($"[CustomisationUI] Position de l’effet: {effectInstance.transform.position} (Centre des bounds: {bounds.center})");
 
-        // Obtenir le ParticleSystem
         var particleSystem = effectInstance.GetComponent<ParticleSystem>();
         if (particleSystem != null)
         {
-            // Ajuster la forme pour entourer le vêtement
             var shape = particleSystem.shape;
             if (shape.shapeType == ParticleSystemShapeType.Sphere)
             {
-                shape.radius = bounds.extents.magnitude * 0.5f; // Ajuster au rayon du vêtement
-                Debug.Log($"[CustomisationUI] Rayon de l’effet ajusté: {shape.radius}");
+                shape.radius = bounds.extents.magnitude * 0.5f;
             }
 
-            // S’assurer que l’effet se joue
             particleSystem.Play();
-            Debug.Log($"[CustomisationUI] Effet de particules joué pour {slotType}. Durée: {particleSystem.main.duration}s");
-
-            // Détruire après la durée si Stop Action n’est pas Destroy
             if (particleSystem.main.stopAction != ParticleSystemStopAction.Destroy)
             {
                 Destroy(effectInstance, particleSystem.main.duration + particleSystem.main.startLifetime.constantMax);
-                Debug.Log($"[CustomisationUI] Destruction planifiée de l’effet après {particleSystem.main.duration + particleSystem.main.startLifetime.constantMax}s");
             }
         }
         else
         {
-            Debug.LogWarning($"[CustomisationUI] ❌ Aucun ParticleSystem trouvé sur {effectInstance.name}.");
-            Destroy(effectInstance, 5f); // Destruction par défaut après 5s
+            Destroy(effectInstance, 5f);
         }
+    }
+
+    #endregion
+
+    #region Filtrage par Tags
+
+    public Dictionary<(SlotType, GroupType?), List<Item>> GetCategorizedItems()
+    {
+        return categorizedItems;
+    }
+
+    public void ApplyTagFilter(List<string> tags)
+    {
+        selectedTags = new List<string>(tags);
+        PopulateItemList();
     }
 
     #endregion
@@ -543,15 +508,8 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private void OpenColorPicker()
     {
-        if (currentSelectedItem == null)
+        if (currentSelectedItem == null || visualsHandler == null)
         {
-            Debug.LogWarning("[CustomisationUI] Aucun item sélectionné pour la couleur.");
-            return;
-        }
-
-        if (visualsHandler == null)
-        {
-            Debug.LogWarning("[CustomisationUI] EquippedVisualsHandler non trouvé.");
             return;
         }
 
@@ -559,38 +517,30 @@ public class CustomisationUIManager : NetworkBehaviour
         var equippedObject = visualsHandler.GetEquippedObject(slotType);
         if (equippedObject == null)
         {
-            Debug.LogWarning($"[CustomisationUI] Aucun vêtement équipé pour le slot {slotType}.");
             return;
         }
 
         var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
         if (renderer == null)
         {
-            Debug.LogWarning($"[CustomisationUI] Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
             return;
         }
 
-        // Sauvegarder l'état initial
         _initialColor = renderer.material.color;
         _initialTextureName = customizationData.Data.TryGetTexture(slotType, out var textureName) ? textureName : null;
-        Debug.Log($"[CustomisationUI] État initial sauvegardé pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
 
-        // Désactiver le panneau de textures et réinitialiser la texture
         if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
         dataToSave.SetTexture(slotType, null);
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
 
-        // Charger la couleur actuelle ou par défaut
         Color currentColor = Color.white;
         if (customizationData.Data.TryGetColor(slotType, out var storedColor))
         {
             currentColor = storedColor;
-            Debug.Log($"[CustomisationUI] Couleur chargée pour {slotType}: {ColorUtility.ToHtmlStringRGBA(currentColor)}");
         }
 
         visualsHandler.ApplyColorWithoutTexture(slotType, currentColor);
 
-        // Créer le ColorPicker
         bool success = ColorPicker.Create(
             original: currentColor,
             message: "Choisissez une couleur pour le vêtement",
@@ -602,7 +552,6 @@ public class CustomisationUIManager : NetworkBehaviour
 
         if (!success)
         {
-            Debug.LogWarning("[CustomisationUI] Échec de l'ouverture du ColorPicker.");
             if (tabColorPanel != null) tabColorPanel.SetActive(false);
         }
         else
@@ -617,24 +566,10 @@ public class CustomisationUIManager : NetworkBehaviour
         {
             visualsHandler.ApplyColorWithoutTexture(slotType, color);
             dataToSave.SetColor(slotType, color);
-
-            if (dataToSave.TryGetColor(slotType, out var confirmColor))
-            {
-                Debug.Log($"[UI → Confirm] Couleur bien stockée pour {slotType} = {ColorUtility.ToHtmlStringRGBA(confirmColor)}");
-            }
-            else
-            {
-                Debug.LogWarning($"[UI → ERROR] La couleur n'a PAS été stockée dans dataToSave !");
-            }
-
             dataToSave.SetTexture(slotType, null);
-            Debug.Log($"[CustomisationUI] Couleur temporaire enregistrée pour {slotType}: {ColorUtility.ToHtmlStringRGBA(color)}");
-
-            // ✅ Synchronisation immédiate même pendant le glissement
             customizationData.SyncCustomizationDataServerRpc(dataToSave);
         }
     }
-
 
     private void OnColorSelected(SlotType slotType, Color color)
     {
@@ -643,16 +578,9 @@ public class CustomisationUIManager : NetworkBehaviour
             visualsHandler.ApplyColorWithoutTexture(slotType, color);
             dataToSave.SetColor(slotType, (Color32)color);
             dataToSave.SetTexture(slotType, null);
-            Debug.Log($"[CustomisationUI] Couleur finale enregistrée pour {slotType}: {ColorUtility.ToHtmlStringRGBA(color)}");
         }
 
-        // ❗ Correction ici : plus de assignation directe
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
-
-        foreach (var kvp in dataToSave.equippedColors)
-        {
-            Debug.Log($"[UI → Envoi] Couleur envoyée pour {kvp.Key} = {ColorUtility.ToHtmlStringRGBA(kvp.Value)}");
-        }
 
         if (tabColorPanel != null) tabColorPanel.SetActive(false);
     }
@@ -665,7 +593,6 @@ public class CustomisationUIManager : NetworkBehaviour
     {
         if (textureButtonContainer == null || textureButtonPrefab == null)
         {
-            Debug.LogWarning("[CustomisationUI] textureButtonContainer ou textureButtonPrefab non assigné.");
             return;
         }
 
@@ -685,10 +612,6 @@ public class CustomisationUIManager : NetworkBehaviour
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() => ApplyTexture(index));
             }
-            else
-            {
-                Debug.LogWarning($"[CustomisationUI] Bouton manquant sur textureButtonPrefab pour {option.name}.");
-            }
 
             Image buttonImage = buttonObj.GetComponent<Image>();
             if (buttonImage != null)
@@ -705,10 +628,6 @@ public class CustomisationUIManager : NetworkBehaviour
                 buttonText.enabled = true;
                 buttonText.text = option.name;
             }
-            else
-            {
-                Debug.LogWarning($"[CustomisationUI] TextMeshProUGUI manquant sur le bouton de texture {option.name}.");
-            }
         }
 
         if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
@@ -716,21 +635,8 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private void OpenTexturePanel()
     {
-        if (currentSelectedItem == null)
+        if (currentSelectedItem == null || tabTexturePanel == null || visualsHandler == null)
         {
-            Debug.LogWarning("[CustomisationUI] Aucun item sélectionné pour la texture.");
-            return;
-        }
-
-        if (tabTexturePanel == null)
-        {
-            Debug.LogWarning("[CustomisationUI] TabTexturePanel non assigné.");
-            return;
-        }
-
-        if (visualsHandler == null)
-        {
-            Debug.LogWarning("[CustomisationUI] EquippedVisualsHandler non trouvé.");
             return;
         }
 
@@ -738,38 +644,27 @@ public class CustomisationUIManager : NetworkBehaviour
         var equippedObject = visualsHandler.GetEquippedObject(slotType);
         if (equippedObject == null)
         {
-            Debug.LogWarning($"[CustomisationUI] Aucun vêtement équipé pour le slot {slotType}.");
             return;
         }
 
         var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
         if (renderer == null)
         {
-            Debug.LogWarning($"[CustomisationUI] Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
             return;
         }
 
-        // Sauvegarder l'état initial
         _initialColor = renderer.material.color;
         _initialTextureName = customizationData.Data.TryGetTexture(slotType, out var textureName) ? textureName : null;
-        Debug.Log($"[CustomisationUI] État initial sauvegardé pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
 
-        // Désactiver le panneau de couleurs
         if (tabColorPanel != null) tabColorPanel.SetActive(false);
 
-        // Appliquer la texture existante si disponible
         if (customizationData.Data.TryGetTexture(slotType, out textureName))
         {
             var textureOption = availableTextures.FirstOrDefault(t => t.name == textureName);
             if (textureOption != null && textureOption.texture != null)
             {
                 renderer.material.SetTexture("_BaseMap", textureOption.texture);
-                renderer.material.color = Color.white; // Réinitialiser la couleur pour la texture
-                Debug.Log($"[CustomisationUI] Texture existante {textureName} appliquée avec couleur réinitialisée pour {slotType}.");
-            }
-            else
-            {
-                Debug.LogWarning($"[CustomisationUI] Texture {textureName} introuvable dans availableTextures ou texture non assignée pour {slotType}.");
+                renderer.material.color = Color.white;
             }
         }
 
@@ -778,21 +673,13 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private void ApplyTexture(int textureIndex)
     {
-        if (visualsHandler == null)
+        if (visualsHandler == null || currentSelectedItem == null)
         {
-            Debug.LogWarning("[CustomisationUI] EquippedVisualsHandler non trouvé.");
-            return;
-        }
-
-        if (currentSelectedItem == null)
-        {
-            Debug.LogWarning("[CustomisationUI] Aucun item sélectionné pour la texture.");
             return;
         }
 
         if (textureIndex < 0 || textureIndex >= availableTextures.Count)
         {
-            Debug.LogWarning($"[CustomisationUI] Index de texture invalide : {textureIndex}.");
             return;
         }
 
@@ -800,23 +687,19 @@ public class CustomisationUIManager : NetworkBehaviour
         var equippedObject = visualsHandler.GetEquippedObject(slotType);
         if (equippedObject == null)
         {
-            Debug.LogWarning($"[CustomisationUI] Aucun vêtement équipé pour le slot {slotType}.");
             return;
         }
 
         var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
         if (renderer == null)
         {
-            Debug.LogWarning($"[CustomisationUI] Aucun SkinnedMeshRenderer trouvé pour le vêtement dans le slot {slotType}.");
             return;
         }
 
         TextureOption option = availableTextures[textureIndex];
-        Debug.Log($"[CustomisationUI] Tentative d'application de la texture {option.name} pour {slotType}");
 
         if (renderer.material == null || renderer.material.shader.name != "Universal Render Pipeline/Lit")
         {
-            Debug.LogWarning($"[CustomisationUI] Shader non compatible pour {slotType}. Remplacement par URP/Lit.");
             renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         }
 
@@ -824,25 +707,17 @@ public class CustomisationUIManager : NetworkBehaviour
         {
             renderer.material.SetTexture("_BaseMap", option.texture);
             renderer.material.color = Color.white;
-            Debug.Log($"[CustomisationUI] Texture {option.name} appliquée avec couleur réinitialisée (Color.white) pour {slotType}.");
         }
         else
         {
-            Debug.LogWarning($"[CustomisationUI] Texture {option.name} est null. Reset couleur uniquement.");
             renderer.material.SetTexture("_BaseMap", null);
             renderer.material.color = Color.white;
         }
 
-        // ✅ Met à jour localement
         dataToSave.SetTexture(slotType, option.name);
         dataToSave.SetColor(slotType, Color.white);
-        Debug.Log($"[CustomisationUI] Texture enregistrée pour {slotType}: {option.name}, Couleur réinitialisée: {ColorUtility.ToHtmlStringRGBA(Color.white)}");
-
-        // ✅ Envoi au serveur sans écrasement de Data
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
-
-
 
     #endregion
 
@@ -851,8 +726,6 @@ public class CustomisationUIManager : NetworkBehaviour
     public void CommitLocalCustomization()
     {
         if (customizationData == null) return;
-
-        Debug.Log("[CustomisationUI] ✅ Commit de la tenue locale via ServerRpc.");
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
 
@@ -860,7 +733,6 @@ public class CustomisationUIManager : NetworkBehaviour
     {
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
-
 
     private void ClearContainer(Transform container)
     {
@@ -879,19 +751,13 @@ public class CustomisationUIManager : NetworkBehaviour
         var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
         if (renderer == null) return;
 
-        // Restaurer l'état initial
         if (_initialTextureName != null)
         {
             var textureOption = availableTextures.FirstOrDefault(t => t.name == _initialTextureName);
             if (textureOption != null && textureOption.texture != null)
             {
                 renderer.material.SetTexture("_BaseMap", textureOption.texture);
-                renderer.material.color = Color.white; // Réinitialiser la couleur pour la texture
-                Debug.Log($"[CustomisationUI] Texture initiale {_initialTextureName} restaurée avec couleur réinitialisée pour {slotType}.");
-            }
-            else
-            {
-                Debug.LogWarning($"[CustomisationUI] Texture initiale {_initialTextureName} introuvable ou non assignée pour {slotType}.");
+                renderer.material.color = Color.white;
             }
             dataToSave.SetTexture(slotType, _initialTextureName);
             dataToSave.SetColor(slotType, _initialColor);
@@ -904,40 +770,10 @@ public class CustomisationUIManager : NetworkBehaviour
         }
 
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
-        Debug.Log($"[CustomisationUI] État initial restauré pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
 
         if (tabColorPanel != null) tabColorPanel.SetActive(false);
         if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
         SelectTab(TabType.Item);
     }
-
-    // Méthode de débogage pour tester le chargement des textures
-    public void DebugTextureLoading()
-    {
-        Debug.Log("[CustomisationUI] Début du test de chargement des textures...");
-        foreach (var option in availableTextures)
-        {
-            Debug.Log($"[CustomisationUI] Vérification de la texture {option.name}:");
-            if (option.texture != null)
-            {
-                Debug.Log($"  - Texture assignée dans l'inspecteur: {option.texture.name}");
-            }
-            else
-            {
-                Debug.LogWarning($"  - Texture NON assignée dans l'inspecteur pour {option.name}. Assignez la Texture2D dans l'inspecteur.");
-            }
-
-            var loadedTexture = Resources.Load<Texture2D>($"Textures/{option.name}");
-            if (loadedTexture != null)
-            {
-                Debug.Log($"  - Texture chargée via Resources: Textures/{option.name}");
-            }
-            else
-            {
-                Debug.LogWarning($"  - Échec du chargement via Resources: Textures/{option.name}. Vérifiez le fichier dans Assets/Resources/Textures.");
-            }
-        }
-    }
-
-    #endregion
 }
+#endregion
