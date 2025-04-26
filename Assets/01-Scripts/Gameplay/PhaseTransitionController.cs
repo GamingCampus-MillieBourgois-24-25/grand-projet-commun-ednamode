@@ -75,6 +75,10 @@ public class GamePhaseTransitionController : NetworkBehaviour
     /// </summary>
     private IEnumerator PhaseSequenceCoroutine()
     {
+        SetPhase(GamePhaseManager.GamePhase.ThemeDisplay);
+        ThemeUIManager.Instance.DisplayThemeSequence();
+        yield return new WaitForSeconds(5f);
+
         // ============= Phase d'attente ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
@@ -181,6 +185,10 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         switch (phase)
         {
+            case GamePhaseManager.GamePhase.ThemeDisplay:
+                toHide = mapping.themeDisplayPanelToHide;
+                toShow = mapping.themeDisplayPanel;
+                break;
             case GamePhaseManager.GamePhase.Customization:
                 toHide = mapping.customizationPanelToHide;
                 toShow = mapping.customizationPanel;

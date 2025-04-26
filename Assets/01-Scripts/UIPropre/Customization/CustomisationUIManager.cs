@@ -570,220 +570,221 @@ public class CustomisationUIManager : NetworkBehaviour
             dataToSave.SetTexture(slotType, null);
             customizationData.SyncCustomizationDataServerRpc(dataToSave);
         }
-
-    private void OnColorSelected(SlotType slotType, Color color)
-    {
-        if (visualsHandler != null && currentSelectedItem != null)
-        {
-            visualsHandler.ApplyColorWithoutTexture(slotType, color);
-            dataToSave.SetColor(slotType, (Color32)color);
-            dataToSave.SetTexture(slotType, null);
-        }
-
-        customizationData.SyncCustomizationDataServerRpc(dataToSave);
-
-        if (tabColorPanel != null) tabColorPanel.SetActive(false);
     }
-
-    #endregion
-
-    #region Textures
-
-    private void InitializeTexturePanel()
-    {
-        if (textureButtonContainer == null || textureButtonPrefab == null)
+        private void OnColorSelected(SlotType slotType, Color color)
         {
-            return;
-        }
-
-        ClearContainer(textureButtonContainer);
-
-        for (int i = 0; i < availableTextures.Count; i++)
-        {
-            int index = i;
-            TextureOption option = availableTextures[i];
-            GameObject buttonObj = Instantiate(textureButtonPrefab, textureButtonContainer);
-            buttonObj.SetActive(true);
-
-            Button button = buttonObj.GetComponent<Button>();
-            if (button != null)
+            if (visualsHandler != null && currentSelectedItem != null)
             {
-                button.enabled = true;
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(() => ApplyTexture(index));
+                visualsHandler.ApplyColorWithoutTexture(slotType, color);
+                dataToSave.SetColor(slotType, (Color32)color);
+                dataToSave.SetTexture(slotType, null);
             }
 
-            Image buttonImage = buttonObj.GetComponent<Image>();
-            if (buttonImage != null)
+            customizationData.SyncCustomizationDataServerRpc(dataToSave);
+
+            if (tabColorPanel != null) tabColorPanel.SetActive(false);
+        }
+
+        #endregion
+
+        #region Textures
+
+        private void InitializeTexturePanel()
+        {
+            if (textureButtonContainer == null || textureButtonPrefab == null)
             {
-                buttonImage.enabled = true;
-                buttonImage.sprite = option.preview != null ? option.preview : defaultTexturePreview;
-                buttonImage.preserveAspect = true;
-                buttonImage.color = Color.white;
+                return;
             }
 
-            TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
-            if (buttonText != null)
+            ClearContainer(textureButtonContainer);
+
+            for (int i = 0; i < availableTextures.Count; i++)
             {
-                buttonText.enabled = true;
-                buttonText.text = option.name;
+                int index = i;
+                TextureOption option = availableTextures[i];
+                GameObject buttonObj = Instantiate(textureButtonPrefab, textureButtonContainer);
+                buttonObj.SetActive(true);
+
+                Button button = buttonObj.GetComponent<Button>();
+                if (button != null)
+                {
+                    button.enabled = true;
+                    button.onClick.RemoveAllListeners();
+                    button.onClick.AddListener(() => ApplyTexture(index));
+                }
+
+                Image buttonImage = buttonObj.GetComponent<Image>();
+                if (buttonImage != null)
+                {
+                    buttonImage.enabled = true;
+                    buttonImage.sprite = option.preview != null ? option.preview : defaultTexturePreview;
+                    buttonImage.preserveAspect = true;
+                    buttonImage.color = Color.white;
+                }
+
+                TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
+                if (buttonText != null)
+                {
+                    buttonText.enabled = true;
+                    buttonText.text = option.name;
+                }
             }
+
+            if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
         }
 
-        if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
-    }
-
-    private void OpenTexturePanel()
-    {
-        if (currentSelectedItem == null || tabTexturePanel == null || visualsHandler == null)
+        private void OpenTexturePanel()
         {
-            return;
-        }
-
-        var slotType = currentCategory.Item1;
-        var equippedObject = visualsHandler.GetEquippedObject(slotType);
-        if (equippedObject == null)
-        {
-            return;
-        }
-
-        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
-        if (renderer == null)
-        {
-            return;
-        }
-
-        _initialColor = renderer.material.color;
-        _initialTextureName = customizationData.Data.TryGetTexture(slotType, out var textureName) ? textureName : null;
-
-        if (tabColorPanel != null) tabColorPanel.SetActive(false);
-
-        if (customizationData.Data.TryGetTexture(slotType, out textureName))
-        {
-            var textureOption = availableTextures.FirstOrDefault(t => t.name == textureName);
-            if (textureOption != null && textureOption.texture != null)
+            if (currentSelectedItem == null || tabTexturePanel == null || visualsHandler == null)
             {
-                renderer.material.SetTexture("_BaseMap", textureOption.texture);
+                return;
+            }
+
+            var slotType = currentCategory.Item1;
+            var equippedObject = visualsHandler.GetEquippedObject(slotType);
+            if (equippedObject == null)
+            {
+                return;
+            }
+
+            var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (renderer == null)
+            {
+                return;
+            }
+
+            _initialColor = renderer.material.color;
+            _initialTextureName = customizationData.Data.TryGetTexture(slotType, out var textureName) ? textureName : null;
+
+            if (tabColorPanel != null) tabColorPanel.SetActive(false);
+
+            if (customizationData.Data.TryGetTexture(slotType, out textureName))
+            {
+                var textureOption = availableTextures.FirstOrDefault(t => t.name == textureName);
+                if (textureOption != null && textureOption.texture != null)
+                {
+                    renderer.material.SetTexture("_BaseMap", textureOption.texture);
+                    renderer.material.color = Color.white;
+                }
+            }
+
+            tabTexturePanel.SetActive(true);
+        }
+
+        private void ApplyTexture(int textureIndex)
+        {
+            if (visualsHandler == null || currentSelectedItem == null)
+            {
+                return;
+            }
+
+            if (textureIndex < 0 || textureIndex >= availableTextures.Count)
+            {
+                return;
+            }
+
+            var slotType = currentCategory.Item1;
+            var equippedObject = visualsHandler.GetEquippedObject(slotType);
+            if (equippedObject == null)
+            {
+                return;
+            }
+
+            var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (renderer == null)
+            {
+                return;
+            }
+
+            TextureOption option = availableTextures[textureIndex];
+
+            // Vérifier le matériau
+            if (renderer.material == null)
+            {
+                renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            }
+
+            // Vérifier le shader
+            if (renderer.material.shader.name != "Universal Render Pipeline/Lit")
+            {
+                Debug.LogWarning($"[CustomisationUI] Shader non compatible pour {slotType}: {renderer.material.shader.name}. Remplacement par URP/Lit.");
+                renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            }
+
+            // Appliquer la texture directement
+            if (option.texture != null)
+            {
+                renderer.material.SetTexture("_BaseMap", option.texture);
                 renderer.material.color = Color.white;
             }
-        }
-
-        tabTexturePanel.SetActive(true);
-    }
-
-    private void ApplyTexture(int textureIndex)
-    {
-        if (visualsHandler == null || currentSelectedItem == null)
-        {
-            return;
-        }
-
-        if (textureIndex < 0 || textureIndex >= availableTextures.Count)
-        {
-            return;
-        }
-
-        var slotType = currentCategory.Item1;
-        var equippedObject = visualsHandler.GetEquippedObject(slotType);
-        if (equippedObject == null)
-        {
-            return;
-        }
-
-        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
-        if (renderer == null)
-        {
-            return;
-        }
-
-        TextureOption option = availableTextures[textureIndex];
-
-        // Vérifier le matériau
-        if (renderer.material == null)
-        {
-            renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        }
-
-        // Vérifier le shader
-        if (renderer.material.shader.name != "Universal Render Pipeline/Lit")
-        {
-            Debug.LogWarning($"[CustomisationUI] Shader non compatible pour {slotType}: {renderer.material.shader.name}. Remplacement par URP/Lit.");
-            renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        }
-
-        // Appliquer la texture directement
-        if (option.texture != null)
-        {
-            renderer.material.SetTexture("_BaseMap", option.texture);
-            renderer.material.color = Color.white;
-        }
-        else
-        {
-            renderer.material.SetTexture("_BaseMap", null);
-            renderer.material.color = Color.white; // Réinitialiser la couleur même si la texture est null
-        }
-
-        dataToSave.SetTexture(slotType, option.name);
-        dataToSave.SetColor(slotType, Color.white);
-        customizationData.SyncCustomizationDataServerRpc(dataToSave);
-    }
-
-    #endregion
-
-    #region Utilitaires
-
-    public void CommitLocalCustomization()
-    {
-        if (customizationData == null) return;
-        customizationData.SyncCustomizationDataServerRpc(dataToSave);
-    }
-
-    public void RefreshTenueGlobale()
-    {
-        customizationData.SyncCustomizationDataServerRpc(dataToSave);
-    }
-
-    private void ClearContainer(Transform container)
-    {
-        foreach (Transform child in container)
-            Destroy(child.gameObject);
-    }
-
-    public void ResetToInitial()
-    {
-        if (currentSelectedItem == null || visualsHandler == null) return;
-
-        var slotType = currentCategory.Item1;
-        var equippedObject = visualsHandler.GetEquippedObject(slotType);
-        if (equippedObject == null) return;
-
-        var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
-        if (renderer == null) return;
-
-        if (_initialTextureName != null)
-        {
-            var textureOption = availableTextures.FirstOrDefault(t => t.name == _initialTextureName);
-            if (textureOption != null && textureOption.texture != null)
+            else
             {
-                renderer.material.SetTexture("_BaseMap", textureOption.texture);
-                renderer.material.color = Color.white;
+                renderer.material.SetTexture("_BaseMap", null);
+                renderer.material.color = Color.white; // Réinitialiser la couleur même si la texture est null
             }
-            dataToSave.SetTexture(slotType, _initialTextureName);
-            dataToSave.SetColor(slotType, _initialColor);
+
+            dataToSave.SetTexture(slotType, option.name);
+            dataToSave.SetColor(slotType, Color.white);
+            customizationData.SyncCustomizationDataServerRpc(dataToSave);
         }
-        else
+
+        #endregion
+
+        #region Utilitaires
+
+        public void CommitLocalCustomization()
         {
-            visualsHandler.ApplyColorWithoutTexture(slotType, _initialColor);
-            dataToSave.SetColor(slotType, _initialColor);
-            dataToSave.SetTexture(slotType, null);
+            if (customizationData == null) return;
+            customizationData.SyncCustomizationDataServerRpc(dataToSave);
         }
 
-        customizationData.Data = dataToSave;
-        customizationData.SyncCustomizationDataServerRpc(dataToSave);
+        public void RefreshTenueGlobale()
+        {
+            customizationData.SyncCustomizationDataServerRpc(dataToSave);
+        }
 
-        if (tabColorPanel != null) tabColorPanel.SetActive(false);
-        if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
-        SelectTab(TabType.Item);
+        private void ClearContainer(Transform container)
+        {
+            foreach (Transform child in container)
+                Destroy(child.gameObject);
+        }
+
+        public void ResetToInitial()
+        {
+            if (currentSelectedItem == null || visualsHandler == null) return;
+
+            var slotType = currentCategory.Item1;
+            var equippedObject = visualsHandler.GetEquippedObject(slotType);
+            if (equippedObject == null) return;
+
+            var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (renderer == null) return;
+
+            if (_initialTextureName != null)
+            {
+                var textureOption = availableTextures.FirstOrDefault(t => t.name == _initialTextureName);
+                if (textureOption != null && textureOption.texture != null)
+                {
+                    renderer.material.SetTexture("_BaseMap", textureOption.texture);
+                    renderer.material.color = Color.white;
+                }
+                dataToSave.SetTexture(slotType, _initialTextureName);
+                dataToSave.SetColor(slotType, _initialColor);
+            }
+            else
+            {
+                visualsHandler.ApplyColorWithoutTexture(slotType, _initialColor);
+                dataToSave.SetColor(slotType, _initialColor);
+                dataToSave.SetTexture(slotType, null);
+            }
+
+            customizationData.Data = dataToSave;
+            customizationData.SyncCustomizationDataServerRpc(dataToSave);
+
+            if (tabColorPanel != null) tabColorPanel.SetActive(false);
+            if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
+            SelectTab(TabType.Item);
+        }
     }
-}
+
 #endregion

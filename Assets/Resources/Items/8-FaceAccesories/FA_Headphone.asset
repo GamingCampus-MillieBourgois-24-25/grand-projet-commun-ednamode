@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 8000
   itemName: Headphone
-  icon: {fileID: 21300004, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: 298d3355655d4bf4bb1603140025e9e2, type: 3}
   prefab: {fileID: 8885864406222687154, guid: a1742c66ad9daff41889c1a586217fb8, type: 3}
   price: 0
   category: 0
