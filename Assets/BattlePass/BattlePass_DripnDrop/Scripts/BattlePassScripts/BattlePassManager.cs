@@ -73,17 +73,24 @@ namespace EasyBattlePass
         {
             if (seasonEndedPass || seasonOffline) return;
 
+            // Ajouter l'XP au DataSaver
+            DataSaver.Instance.addLevelProgress(amount);
+
+            // Synchroniser l'XP avec le Battle Pass
+            int currentXP = DataSaver.Instance.dts.crrLevelProgress;
+            int totalXP = DataSaver.Instance.dts.totalLevelProgress;
+
+            xp = currentXP;
+            totalXp = totalXP;
+
             if (level == maxLevelPaid && paidUnlocked)
             {
                 if (hasAfterPassRewards) AddXpAfterPass(amount);
             }
             else if (level < maxLevelFree || paidUnlocked)
             {
-                xp += amount;
                 buyingTier = false;
             }
-
-            totalXp += amount;
 
             while (level < xpToNextLevel.Length && xp >= xpToNextLevel[level] && level < maxLevelPaid)
             {
@@ -123,6 +130,8 @@ namespace EasyBattlePass
             {
                 if (passCurrency.name == "Coins") dataSaver.removeCoins(passCurrency.amount);
                 else dataSaver.removeJewels(passCurrency.amount);
+
+
 
                 EncryptionManager.SaveInt("_paidVersion", 1);
                 paidVersionButton.SetActive(false);

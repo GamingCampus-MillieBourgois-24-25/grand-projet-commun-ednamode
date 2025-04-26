@@ -117,13 +117,13 @@ public class DataSaver : MonoBehaviour
 
     private IEnumerator LoadDataEnum()
     {
-        Debug.Log("Tentative de r�cup�ration des donn�es depuis Firebase...");
+        Debug.Log("Tentative de récupération des données depuis Firebase...");
         var serverData = dbRef.Child("users").Child(userId).GetValueAsync();
         yield return new WaitUntil(() => serverData.IsCompleted);
 
         if (serverData.Exception != null)
         {
-            Debug.LogError($"Erreur lors de la r�cup�ration des donn�es : {serverData.Exception.Message}");
+            Debug.LogError($"Erreur lors de la récupération des données : {serverData.Exception.Message}");
             yield break;
         }
 
@@ -132,10 +132,9 @@ public class DataSaver : MonoBehaviour
 
         if (!string.IsNullOrEmpty(jsonData))
         {
-            Debug.Log($"Donn�es r�cup�r�es : {jsonData}");
+            Debug.Log($"Données récupérées : {jsonData}");
             dataToSave loadedData = JsonUtility.FromJson<dataToSave>(jsonData);
 
-            // Remplacement des setters par des acc�s directs aux propri�t�s
             dts.userName = loadedData.userName;
             dts.totalCoins = loadedData.totalCoins;
             dts.totalJewels = loadedData.totalJewels;
@@ -144,11 +143,16 @@ public class DataSaver : MonoBehaviour
             dts.totalLevelProgress = loadedData.totalLevelProgress;
             dts.unlockedClothes = loadedData.unlockedClothes;
 
-            Debug.Log("Donn�es appliqu�es avec succ�s.");
+            // Charger les données du Battle Pass
+            dts.battlePassLevel = loadedData.battlePassLevel;
+            dts.battlePassProgress = loadedData.battlePassProgress;
+            dts.battlePassTotalProgress = loadedData.battlePassTotalProgress;
+
+            Debug.Log("Données appliquées avec succès.");
         }
         else
         {
-            Debug.LogWarning("Aucune donn�e trouv�e pour cet utilisateur.");
+            Debug.LogWarning("Aucune donnée trouvée pour cet utilisateur.");
         }
     }
     #endregion
@@ -248,6 +252,52 @@ public class DataSaver : MonoBehaviour
         return dts.unlockedClothes.Contains(itemId);
     }*/
     #endregion
+
+    #region Battle Pass Management
+
+    public void AddBattlePassProgress(int progress)
+    {
+        int currentProgress = dts.battlePassProgress;
+        dts.battlePassProgress = currentProgress + progress;
+        CheckForBattlePassLevelUp(progress);
+        SaveDataFn();
+    }
+
+    public void CheckForBattlePassLevelUp(int progress)
+    {
+        int currentProgress = dts.battlePassProgress;
+
+        if (currentProgress >= dts.battlePassTotalProgress)
+        {
+            int currentLevel = dts.battlePassLevel;
+            dts.battlePassLevel = currentLevel + 1;
+
+            int overflowProgress = currentProgress - dts.battlePassTotalProgress;
+            dts.battlePassProgress = overflowProgress;
+
+            // Augmenter la progression totale requise pour le niveau suivant
+            dts.battlePassTotalProgress += 100; // Par exemple, chaque niveau nécessite 100 points supplémentaires
+        }
+
+        SaveDataFn();
+    }
+
+    public int GetBattlePassLevel()
+    {
+        return dts.battlePassLevel;
+    }
+
+    public int GetBattlePassProgress()
+    {
+        return dts.battlePassProgress;
+    }
+
+    public int GetBattlePassTotalProgress()
+    {
+        return dts.battlePassTotalProgress;
+    }
+
+    #endregion
 }
 
 [Serializable]
@@ -260,6 +310,11 @@ public class dataToSave
     public int crrLevelProgress;
     public int totalLevelProgress;
     public List<Item> unlockedClothes = new List<Item>(); // Remplacement par une liste d'Item
+
+    // Ajout des données pour le Battle Pass
+    public int battlePassLevel;
+    public int battlePassProgress;
+    public int battlePassTotalProgress;
 }
 
 

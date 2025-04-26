@@ -2782,6 +2782,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbef467f20fceba4a83a99772c47da16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  coinsLobbyText: {fileID: 0}
+  jewelsLobbyText: {fileID: 0}
+  levelLobbyText: {fileID: 0}
+  levelProgressText: {fileID: 0}
+  imageFillwithProgress: {fileID: 0}
   messageText: {fileID: 0}
   AreYouSurePanelMenu: {fileID: 14702179}
   AreYouSurePanelLogout: {fileID: 1763974609}
@@ -2789,7 +2794,6 @@ MonoBehaviour:
   userIdText: {fileID: 1943136255}
   levelText: {fileID: 122377764}
   progressText: {fileID: 124412920}
-  progressSlider: {fileID: 1384006877}
   coinsText: {fileID: 886951125}
   jewelsText: {fileID: 388130101}
 --- !u!4 &1967867540
