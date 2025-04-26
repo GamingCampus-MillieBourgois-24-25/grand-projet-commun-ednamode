@@ -7,6 +7,10 @@ public class AccountManager : MonoBehaviour
     [Header("Lobby UI")]
     public TMP_Text coinsLobbyText;
     public TMP_Text jewelsLobbyText;
+    public TMP_Text levelLobbyText;
+    public TMP_Text levelProgressText;
+    public Image imageFillwithProgress;
+
 
 
     [Header("Profile Button")]
@@ -29,6 +33,7 @@ public class AccountManager : MonoBehaviour
     {
         FillAccountData();
         UpdateCoinAndJewelLobby();
+        UpdateLevelLobby();
     }
 
 
@@ -40,6 +45,17 @@ public class AccountManager : MonoBehaviour
         coinsLobbyText.text = dts.totalCoins.ToString();
         jewelsLobbyText.text = dts.totalJewels.ToString();
     }
+
+    void UpdateLevelLobby()
+    {
+        // Récupération des données de la sauvegarde
+        var dts = DataSaver.Instance.dts;
+        // Mise à jour des textes dans le lobby
+        levelLobbyText.text = dts.crrLevel.ToString();
+        levelProgressText.text = dts.crrLevelProgress.ToString() + "exp / " + dts.totalLevelProgress.ToString()+ "exp";
+        imageFillwithProgress.fillAmount = (float)dts.crrLevelProgress / (float)dts.totalLevelProgress;
+    }
+
     void FillAccountData()
     {
         var dts = DataSaver.Instance.dts;
@@ -105,4 +121,16 @@ public class AccountManager : MonoBehaviour
             Debug.LogError("FirebaseAuthManager.Instance est null. Assurez-vous que FirebaseAuthManager est chargé.");
         }
     }
+
+    #region SceneManagement
+
+    public void loadShop()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Melvin_Shop");
+    }
+    public void loadPass()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("BattlePassDemoScene");
+    }
+    #endregion
 }

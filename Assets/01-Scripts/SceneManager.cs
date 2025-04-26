@@ -26,4 +26,20 @@ public class SceneManager : MonoBehaviour
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
+
+    public void LoadLobby()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal Hugo");
+    }
+
+    public void LoadShop()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Melvin_Shop");
+    }
+
+    public void LoadLogin()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("FirebaseLogin");
+    }
+
 }

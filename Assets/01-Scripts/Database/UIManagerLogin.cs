@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using DG.Tweening;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +12,8 @@ public class UIManagerLogin : MonoBehaviour
     [SerializeField]
     private FirebaseAuthManager firebaseAuthManager;
 
+    [SerializeField]
+    private GameObject StartingScreenPanel;
 
     [SerializeField]
     private GameObject loginPanel;
@@ -27,10 +31,18 @@ public class UIManagerLogin : MonoBehaviour
     [SerializeField]
     private GameObject SignedInPanel;
 
+    [SerializeField]
+    private GameObject transitionCoverPanel;
+
+    [SerializeField] private RectTransform startingScreenTransform;
+    [SerializeField] private float startingTransitionDuration = 1f;
+    [SerializeField] private float panelTransitionDuration = 0.5f;
+
+
     private void Awake()
     {
         CreateInstance();
-     
+
 
         if (firebaseAuthManager == null)
         {
@@ -38,15 +50,13 @@ public class UIManagerLogin : MonoBehaviour
         }
     }
 
-
     private void CreateInstance()
     {
-        if(Instance == null)
+        if (Instance == null)
         {
             Instance = this;
         }
     }
-
 
     public void OpenGameLogin()
     {
@@ -62,6 +72,7 @@ public class UIManagerLogin : MonoBehaviour
 
     public void ClearUI()
     {
+        StartingScreenPanel.SetActive(false);
         loginPanel.SetActive(false);
         registrationPanel.SetActive(false);
         emailVerifPanel.SetActive(false);
@@ -69,22 +80,22 @@ public class UIManagerLogin : MonoBehaviour
         SignedInPanel.SetActive(false);
     }
 
-    public void OpenLoginPanel()
+    public async void OpenLoginPanel()
     {
         ClearUI();
-        loginPanel.SetActive(true);
+        await UITransitionManager.Instance.AnimatePanelInAsync(loginPanel); // Appel à la méthode asynchrone
     }
 
-    public void OpenRegistrationPanel()
-    {
-        ClearUI();  
-        registrationPanel.SetActive(true);
-    }
-
-    public void ShowVerificationResponse(bool isEmailSent, string emailId, string errorMessage)
+    public async void OpenRegistrationPanel()
     {
         ClearUI();
-        emailVerifPanel.SetActive(true);
+        await UITransitionManager.Instance.AnimatePanelInAsync(registrationPanel); // Appel à la méthode asynchrone
+    }
+
+    public async void ShowVerificationResponse(bool isEmailSent, string emailId, string errorMessage)
+    {
+        ClearUI();
+        await UITransitionManager.Instance.AnimatePanelInAsync(emailVerifPanel); // Appel à la méthode asynchrone
 
         if (isEmailSent)
         {
@@ -96,12 +107,16 @@ public class UIManagerLogin : MonoBehaviour
             EmailVerifText.text = $"Error: {errorMessage}.\n" +
                 "Couldn't sent email";
         }
-
     }
 
     public void OpenSignedInPanel()
     {
+        OpentTransitionCoverPanel();
+    }
+
+    public async void OpentTransitionCoverPanel()
+    {
         ClearUI();
-        SignedInPanel.SetActive(true);
+        await UITransitionManager.Instance.PlaySceneTransitionAsync(); // Appel à la méthode asynchrone
     }
 }

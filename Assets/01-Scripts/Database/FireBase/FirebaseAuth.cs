@@ -417,7 +417,7 @@ public class FirebaseAuthManager : MonoBehaviour
 
     public void OpenGameScene()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby_Horizontal v2");
+        SceneManager.Instance.LoadLobby();
     }
 
 }

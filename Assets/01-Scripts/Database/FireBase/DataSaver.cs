@@ -85,6 +85,12 @@ public class DataSaver : MonoBehaviour
         }
     }
 
+    private void OnApplicationQuit()
+    {
+        Debug.Log("Application quittée. Sauvegarde des données en cours...");
+        SaveDataFn(); // Sauvegarde automatique des données
+    }
+
     #region Data saving/loading
     public void SaveDataFn()
     {
@@ -205,6 +211,8 @@ public class DataSaver : MonoBehaviour
             dts.crrLevel = currentLevel + 1;
             dts.crrLevelProgress = 0;
         }
+
+        dts.totalLevelProgress += 50; // Reset totalLevelProgress after level up
 
         SaveDataFn();
     }
