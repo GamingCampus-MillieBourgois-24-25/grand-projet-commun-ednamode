@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 0002
   itemName: Orange Slippers
-  icon: {fileID: 21300030, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: eb172415f5737414a990cb081568b688, type: 3}
   prefab: {fileID: 919132149155446097, guid: bfab5a5ca14002a469bd5912e025f274, type: 3}
   price: 0
   category: 11

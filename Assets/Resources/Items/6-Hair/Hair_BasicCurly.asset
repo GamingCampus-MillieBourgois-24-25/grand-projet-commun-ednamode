@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 6001
   itemName: Basic Curly Hair
-  icon: {fileID: 21300028, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: b7367bca259bdf84eb0cbc28638538c3, type: 3}
   prefab: {fileID: 3024251227661365263, guid: fe8b4546c13d09341a5c2f9a3ec95ca9, type: 3}
   price: 0
   category: 6

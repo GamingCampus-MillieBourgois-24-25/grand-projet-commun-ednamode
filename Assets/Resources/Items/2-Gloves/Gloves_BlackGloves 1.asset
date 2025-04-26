@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 2002
   itemName: Black Gloves
-  icon: {fileID: 21300028, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: c410f50b0bd8806409ffdd6268ae102a, type: 3}
   prefab: {fileID: 5209372020472153478, guid: 4f7df4398449d8e4dafc1cd8986d7217, type: 3}
   price: 0
   category: 5
