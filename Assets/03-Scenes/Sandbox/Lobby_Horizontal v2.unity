@@ -21928,6 +21928,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 412433044}
     - target: {fileID: 9056724846825514288, guid: 97a453cd57211614aab2773ad82f2ebf, type: 3}
+      propertyPath: customizationDuration
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 9056724846825514288, guid: 97a453cd57211614aab2773ad82f2ebf, type: 3}
       propertyPath: panelMappings.Array.data[0].podiumPanel
       value: 
       objectReference: {fileID: 1670789514}
