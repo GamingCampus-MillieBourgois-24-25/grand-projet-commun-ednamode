@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6b218e6cee9cf6428d49de89d5705d6, type: 3}
-  m_Name: TestGart
+  m_Name: Outwear_Chemise
   m_EditorClassIdentifier: 
-  itemId: 12345
-  itemName: hn;
-  icon: {fileID: 21300038, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  itemId: 1005
+  itemName: Chemise
+  icon: {fileID: 21300000, guid: a9c239d416850a44fba3ef83b3a0ff16, type: 3}
   prefab: {fileID: 1922166492539680910, guid: 01305907ba8ee9747b31c3eeecc61ca5, type: 3}
   price: 0
   category: 9
