@@ -1,7 +1,12 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/02-Prefabs/New Folder.meta
 guid: 2b7acaa7886b17445adfcbe3c66781e4
 folderAsset: yes
 DefaultImporter:
+========
+guid: 236d73962e3ab5541933724ebbe84e8b
+PrefabImporter:
+>>>>>>>> main:Assets/02-Prefabs/Multiplayer/PlayList/Player Podium Panel.prefab.meta
   externalObjects: {}
   userData: 
   assetBundleName: 
