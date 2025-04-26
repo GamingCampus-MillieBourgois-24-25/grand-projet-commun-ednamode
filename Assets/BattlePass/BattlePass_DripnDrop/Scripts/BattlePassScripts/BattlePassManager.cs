@@ -77,20 +77,19 @@ namespace EasyBattlePass
             {
                 if (hasAfterPassRewards) AddXpAfterPass(amount);
             }
-            else if (level != maxLevelFree || paidUnlocked)
+            else if (level < maxLevelFree || paidUnlocked)
             {
-                xp += buyingTier ? amount : amount;
+                xp += amount;
                 buyingTier = false;
             }
 
             totalXp += amount;
 
-            while (level < xpToNextLevel.Length && xp >= xpToNextLevel[level] && level != maxLevelPaid)
+            while (level < xpToNextLevel.Length && xp >= xpToNextLevel[level] && level < maxLevelPaid)
             {
                 xp -= xpToNextLevel[level];
-                if ((level != maxLevelFree && !paidUnlocked) || (paidUnlocked && level != maxLevelPaid)) level++;
-                if (level == maxLevelPaid && !hasAfterPassRewards) xp = 0;
-                nextLevel = Mathf.Min(maxLevelPaid, nextLevel + 1);
+                level++;
+                nextLevel = Mathf.Min(maxLevelPaid, level + 1);
                 UpdateUI();
                 UnlockRewards();
             }
@@ -101,7 +100,9 @@ namespace EasyBattlePass
 
         private void AddXpAfterPass(int amount)
         {
-            if (extraLevel < maxExtraLevel) xp += amount;
+            if (extraLevel < maxExtraLevel)
+                xp += amount;
+
             if (xp >= xpToExtraReward)
             {
                 xp = 0;
@@ -128,7 +129,7 @@ namespace EasyBattlePass
                 paidUnlocked = true;
                 UnlockPaidRewards();
             }
-            else Debug.Log("Not enough " + passCurrency.name);
+            else Debug.Log($"Not enough {passCurrency.name}");
 
             Load();
         }
@@ -149,27 +150,39 @@ namespace EasyBattlePass
                 buyingTier = true;
                 AddXP(xpToNextLevel[level] - xp);
             }
-            else Debug.Log("Not enough " + skipTierCurrency.name);
+            else Debug.Log($"Not enough {skipTierCurrency.name}");
         }
 
         private void UnlockRewards()
         {
-            if (paidUnlocked) { UnlockPaidRewards(); UnlockFreeRewards(); }
+            if (paidUnlocked)
+            {
+                UnlockPaidRewards();
+                UnlockFreeRewards();
+            }
             else UnlockFreeRewards();
         }
 
         private void UnlockPaidRewards()
         {
             for (int i = 0; i < paidRewardTiers.Length; i++)
-                if (i <= level) { paidRewardTiers[i].Unlocked(); paidRewardTiers[i].UnlockEffects(); }
+                if (i <= level)
+                {
+                    paidRewardTiers[i].Unlocked();
+                    paidRewardTiers[i].UnlockEffects();
+                }
         }
 
         private void UnlockFreeRewards()
         {
             for (int i = 0; i < freeRewardTiers.Length; i++)
-                if (i <= level) { freeRewardTiers[i].Unlocked(); freeRewardTiers[i].UnlockEffects(); }
+                if (i <= level)
+                {
+                    freeRewardTiers[i].Unlocked();
+                    freeRewardTiers[i].UnlockEffects();
+                }
 
-            tierScroller?.ScrollToSection(level == 0 ? 0 : level);
+            tierScroller?.ScrollToSection(level);
         }
 
         private void UpdateUI()
@@ -179,13 +192,13 @@ namespace EasyBattlePass
 
             levelText.text = level.ToString();
             extraLevelText.text = extraLevel.ToString();
-            bool showAfterIcon = (level == maxLevelPaid && hasAfterPassRewards);
-            afterPassRewardIcon.SetActive(showAfterIcon);
+            bool showAfter = level == maxLevelPaid && hasAfterPassRewards;
+            afterPassRewardIcon.SetActive(showAfter);
 
             if (level == maxLevelPaid)
             {
-                xpText.text = showAfterIcon ? $"{xp}/{xpToExtraReward}" : "0/0";
-                nextLevelText.text = "";
+                xpText.text = showAfter ? $"{xp}/{xpToExtraReward}" : "0/0";
+                nextLevelText.text = string.Empty;
             }
             else
             {
@@ -201,7 +214,9 @@ namespace EasyBattlePass
             {
                 t += Time.deltaTime;
                 float frac = Mathf.Clamp01(t / dur);
-                levelProgressBar.value = Mathf.Lerp(levelProgressBar.value, xpToNextLevel[level] > 0 ? (float)xp / xpToNextLevel[level] : 0, frac);
+                levelProgressBar.value = xpToNextLevel[level] > 0
+                    ? Mathf.Lerp(levelProgressBar.value, (float)xp / xpToNextLevel[level], frac)
+                    : 0;
                 yield return null;
             }
         }
@@ -214,43 +229,56 @@ namespace EasyBattlePass
                 t += Time.deltaTime;
                 float frac = Mathf.Clamp01(t / dur);
 
-                PassTierProgressBar bar = passTierProgressBar[level];
+                var bar = passTierProgressBar[level];
                 if (level > 0)
                 {
-                    passTierProgressBar[level - 1].UnlockedTier();
-                    passTierProgressBar[level - 1].UnlockEffectsTier();
+                    var prev = passTierProgressBar[level - 1];
+                    prev.UnlockedTier();
+                    prev.UnlockEffectsTier();
                 }
 
-                bool showBtn = canSkipTier && ((level != maxLevelFree && !paidUnlocked) || (level != maxLevelPaid && paidUnlocked));
+                bool showBtn = canSkipTier && (level < maxLevelPaid);
                 bar.payProgressButton.SetActive(showBtn);
                 bar.lockedColor.SetActive(false);
-                bar.tierSliderBar.value = Mathf.Lerp(bar.tierSliderBar.value, xpToNextLevel[level] > 0 ? (float)xp / xpToNextLevel[level] : 0, frac);
+                bar.tierSliderBar.value = xpToNextLevel[level] > 0
+                    ? Mathf.Lerp(bar.tierSliderBar.value, (float)xp / xpToNextLevel[level], frac)
+                    : 0;
                 yield return null;
             }
         }
 
         public void ClaimFreeReward(PassReward reward)
         {
-            if (!freeClaimedRewards.TryGetValue(reward, out bool claimed) || claimed) return;
+            if (freeClaimedRewards.TryGetValue(reward, out bool claimed) && claimed) return;
+            freeClaimedRewards[reward] = false;
+
             rewardPopup.ShowPopup(reward.Icon, reward.itemAmount.ToString());
             foreach (var cr in reward.passTierRewards)
+            {
                 if (cr.name == "Coins") dataSaver.addCoins(cr.amount);
                 else dataSaver.addJewels(cr.amount);
+            }
             freeClaimedRewards[reward] = true;
             reward.Claimed();
             SaveFreeClaimedRewards();
+            UpdateUI();
         }
 
         public void ClaimPaidReward(PassReward reward)
         {
-            if (!paidClaimedRewards.TryGetValue(reward, out bool claimed) || claimed) return;
+            if (paidClaimedRewards.TryGetValue(reward, out bool claimed) && claimed) return;
+            paidClaimedRewards[reward] = false;
+
             rewardPopup.ShowPopup(reward.Icon, reward.itemAmount.ToString());
             foreach (var cr in reward.passTierRewards)
+            {
                 if (cr.name == "Coins") dataSaver.addCoins(cr.amount);
                 else dataSaver.addJewels(cr.amount);
+            }
             paidClaimedRewards[reward] = true;
             reward.Claimed();
             SavePaidClaimedRewards();
+            UpdateUI();
         }
 
         public void ClaimAfterPassReward()
@@ -279,13 +307,16 @@ namespace EasyBattlePass
                 EncryptionManager.SaveInt(kv.Key.name + "_paidClaimed", kv.Value ? 1 : 0);
         }
 
+        // Ajout des méthodes manquantes pour Reset
         private void LoadFreeClaimedRewards()
         {
             for (int i = 0; i < freeRewardTiers.Length; i++)
             {
-                bool claimed = EncryptionManager.LoadInt(freeRewardTiers[i].name + "_freeClaimed", 0) == 1;
-                freeClaimedRewards[freeRewardTiers[i]] = claimed;
-                if (claimed) freeRewardTiers[i].Claimed();
+                int claimed = EncryptionManager.LoadInt(freeRewardTiers[i].name + "_freeClaimed", 0);
+                bool isClaimed = claimed == 1;
+                freeClaimedRewards[freeRewardTiers[i]] = isClaimed;
+                if (isClaimed)
+                    freeRewardTiers[i].Claimed();
             }
         }
 
@@ -293,30 +324,26 @@ namespace EasyBattlePass
         {
             for (int i = 0; i < paidRewardTiers.Length; i++)
             {
-                bool claimed = EncryptionManager.LoadInt(paidRewardTiers[i].name + "_paidClaimed", 0) == 1;
-                paidClaimedRewards[paidRewardTiers[i]] = claimed;
-                if (claimed) paidRewardTiers[i].Claimed();
+                int claimed = EncryptionManager.LoadInt(paidRewardTiers[i].name + "_paidClaimed", 0);
+                bool isClaimed = claimed == 1;
+                paidClaimedRewards[paidRewardTiers[i]] = isClaimed;
+                if (isClaimed)
+                    paidRewardTiers[i].Claimed();
             }
         }
 
         private void ResetFreeClaimedRewards()
         {
-            var keys = new List<PassReward>(freeClaimedRewards.Keys);
-            foreach (var r in keys)
-            {
-                EncryptionManager.SaveInt(r.name + "_freeClaimed", 0);
-                freeClaimedRewards[r] = false;
-            }
+            foreach (var tier in freeRewardTiers)
+                EncryptionManager.SaveInt(tier.name + "_freeClaimed", 0);
+            freeClaimedRewards.Clear();
         }
 
         private void ResetPaidClaimedRewards()
         {
-            var keys = new List<PassReward>(paidClaimedRewards.Keys);
-            foreach (var r in keys)
-            {
-                EncryptionManager.SaveInt(r.name + "_paidClaimed", 0);
-                paidClaimedRewards[r] = false;
-            }
+            foreach (var tier in paidRewardTiers)
+                EncryptionManager.SaveInt(tier.name + "_paidClaimed", 0);
+            paidClaimedRewards.Clear();
         }
 
         public void ResetPass()
@@ -325,17 +352,14 @@ namespace EasyBattlePass
             EncryptionManager.SaveInt("_paidVersion", 0);
             seasonEndedPass = false;
             xpSliderInfo.SetActive(true);
-
             for (int i = 0; i < freeRewardTiers.Length; i++) freeRewardTiers[i].Locked();
             for (int i = 0; i < paidRewardTiers.Length; i++) paidRewardTiers[i].Locked();
-
             ResetFreeClaimedRewards();
             ResetPaidClaimedRewards();
-
             tierScroller?.ScrollToSection(0);
             reset = true;
-
             Save();
+            UpdateUI();
         }
 
         public void EndPassSeason() { seasonEndedPass = true; Save(); }
@@ -360,18 +384,15 @@ namespace EasyBattlePass
             extraLevel = EncryptionManager.LoadInt("extraLevel", extraLevel);
             xp = EncryptionManager.LoadInt("currentXP", xp);
             totalXp = EncryptionManager.LoadInt("totalXP", totalXp);
-            tierScroller?.ScrollToSection(level == 0 ? 0 : level);
-
+            tierScroller?.ScrollToSection(level);
             int pv = EncryptionManager.LoadInt("_paidVersion", 0);
             paidUnlocked = pv == 1;
             paidVersionButton.SetActive(pv == 0);
-
             if (seasonEndedPass || seasonOffline)
             {
                 paidVersionButton.SetActive(false);
                 xpSliderInfo.SetActive(false);
             }
-
             afterPassReward.gameObject.SetActive(hasAfterPassRewards);
             UpdateUI();
         }
