@@ -76,7 +76,6 @@ public class GamePhaseTransitionController : NetworkBehaviour
     private IEnumerator PhaseSequenceCoroutine()
     {
         SetPhase(GamePhaseManager.GamePhase.ThemeDisplay);
-        ThemeUIManager.Instance.DisplayThemeSequence();
         yield return new WaitForSeconds(5f);
 
         // ============= Phase d'attente ============= //
