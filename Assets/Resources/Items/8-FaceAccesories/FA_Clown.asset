@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 8001
   itemName: ClownNose
-  icon: {fileID: 21300004, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: d82fbbf3eaabf9645892c0b9473efc37, type: 3}
   prefab: {fileID: 3103565648387152083, guid: 1241abf6489b71440abee7d82a88aafa, type: 3}
   price: 0
   category: 0

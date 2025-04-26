@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 5001
   itemName: Green Pants
-  icon: {fileID: 21300024, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: 482003dc7876beb4cb7ac3ac7d4849e6, type: 3}
   prefab: {fileID: 3350248468845389839, guid: 5ef1c7fcfd78a4248ba6a2dc864c9b7c, type: 3}
   price: 0
   category: 10

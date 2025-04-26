@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 0003
   itemName: Blue Slippers
-  icon: {fileID: 21300030, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: 9500c243ca474aa4d9f7dcf7ee15c97c, type: 3}
   prefab: {fileID: 2442062568381488477, guid: d8d908e1160656a45848352933ae4caa, type: 3}
   price: 0
   category: 11

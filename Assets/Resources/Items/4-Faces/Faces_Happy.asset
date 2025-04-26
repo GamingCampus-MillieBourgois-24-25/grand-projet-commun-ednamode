@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 4001
   itemName: Happy Face
-  icon: {fileID: 21300032, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: 817a7ab0ddbe103468853a901ce5a993, type: 3}
   prefab: {fileID: 1195756561241719265, guid: f6318ad0b79a7484f93a73ad9fcd37d3, type: 3}
   price: 0
   category: 2
