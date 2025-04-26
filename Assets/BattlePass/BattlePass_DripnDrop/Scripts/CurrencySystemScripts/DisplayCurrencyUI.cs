@@ -6,21 +6,20 @@ namespace EasyBattlePass
 {
     public class DisplayCurrencyUI : MonoBehaviour
     {
-        // This just updates the currencies amount on the UI
-        public TMP_Text displayText;
+        [Tooltip("Mettre \"Coins\" ou \"Gems\" selon l’élément à afficher")]
         public string currencyName;
-        public SimpleCurrencySystem currencySystem;
+        public TMP_Text displayText;
 
-        private void Start()
+        void Update()
         {
-            displayText.text = currencySystem.GetCurrency(currencyName).ToString();
-        }
+            if (DataSaver.Instance == null) return;
 
-        private void Update()
-        {
-            displayText.text = currencySystem.GetCurrency(currencyName).ToString();
+            int value = currencyName == "Coins"
+                ? DataSaver.Instance.dts.totalCoins
+                : DataSaver.Instance.dts.totalJewels;
+
+            displayText.text = value.ToString();
         }
     }
+
 }
-
-
