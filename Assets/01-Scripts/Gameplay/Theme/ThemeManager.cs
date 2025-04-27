@@ -9,33 +9,76 @@ public class ThemeManager : NetworkBehaviour
     public static ThemeManager Instance { get; private set; }
 
     private List<ThemeData> availableThemes = new List<ThemeData>();
+    private readonly Dictionary<ThemeData.ThemeCategory, List<ThemeData>> themesByCategory = new Dictionary<ThemeData.ThemeCategory, List<ThemeData>>();
 
-    private NetworkVariable<int> selectedThemeIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<ulong> impostorClientId = new(ulong.MaxValue, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private NetworkVariable<int> selectedThemeIndex = new NetworkVariable<int>(
+        -1,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+    private NetworkVariable<ulong> impostorClientId = new NetworkVariable<ulong>(
+        ulong.MaxValue,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
 
-    private ThemeData lastChosenTheme = null;
-    private ThemeData.ThemeCategory? lastCategory = null;
-    public ThemeData CurrentTheme => (selectedThemeIndex.Value >= 0 && selectedThemeIndex.Value < availableThemes.Count)
-                                        ? availableThemes[selectedThemeIndex.Value]
-                                        : null;
+    private ThemeData lastChosenTheme;
+    private ThemeData.ThemeCategory? lastCategory;
+    private readonly List<ThemeData> recentThemes = new List<ThemeData>();
+    private const int MaxRecentThemes = 5; // Avoid repeating last 5 themes
+
+    public ThemeData CurrentTheme => selectedThemeIndex.Value >= 0 && selectedThemeIndex.Value < availableThemes.Count
+        ? availableThemes[selectedThemeIndex.Value]
+        : null;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
 
-        // 🎲 Forcer une seed aléatoire dynamique à chaque lancement
-        Random.InitState(System.DateTime.Now.GetHashCode() + UnityEngine.Random.Range(0, int.MaxValue));
+        // Lightweight seed for mobile
+        int seed = System.DateTime.Now.Millisecond + Time.frameCount;
+        Random.InitState(seed);
 
         LoadAllThemes();
     }
 
+    private void OnEnable()
+    {
+        selectedThemeIndex.OnValueChanged += OnSelectedThemeIndexChanged;
+    }
+
+    private void OnDisable()
+    {
+        selectedThemeIndex.OnValueChanged -= OnSelectedThemeIndexChanged;
+    }
+
     private void LoadAllThemes()
     {
-        availableThemes = Resources.LoadAll<ThemeData>("Themes")
-                                   .Where(t => t.hideFlags != HideFlags.DontSave)
-                                   .ToList();
-        Debug.Log($"[ThemeManager] {availableThemes.Count} thèmes chargés.");
+        availableThemes = Resources.LoadAll<ThemeData>("Themes").ToList();
+        themesByCategory.Clear();
+
+        // Cache themes by category for faster lookup
+        foreach (var theme in availableThemes)
+        {
+            if (theme.hideFlags == HideFlags.DontSave) continue;
+            if (!themesByCategory.ContainsKey(theme.category))
+                themesByCategory[theme.category] = new List<ThemeData>();
+            themesByCategory[theme.category].Add(theme);
+        }
+
+        // Log theme and category counts
+        int themeCount = availableThemes.Count;
+        string categories = string.Join(", ", themesByCategory.Keys);
+        Debug.Log($"[ThemeManager] {themeCount} thèmes chargés. Categories: {categories}");
+        foreach (var kvp in themesByCategory)
+        {
+            Debug.Log($"[ThemeManager] Category {kvp.Key}: {kvp.Value.Count} themes");
+        }
     }
 
     public IEnumerator LaunchThemeDisplaySequence()
@@ -48,36 +91,62 @@ public class ThemeManager : NetworkBehaviour
 
     private void SelectThemeWithImpostorLogic()
     {
-        // Mélange des catégories
-        var categories = System.Enum.GetValues(typeof(ThemeData.ThemeCategory)).Cast<ThemeData.ThemeCategory>().OrderBy(c => UnityEngine.Random.value).ToList();
+        // Get available categories
+        List<ThemeData.ThemeCategory> categories = new List<ThemeData.ThemeCategory>(themesByCategory.Keys);
+        if (categories.Count == 0)
+        {
+            Debug.LogError("[ThemeManager] No valid categories found!");
+            return;
+        }
 
-        // Prendre la première catégorie différente de la précédente
-        var randomCategory = categories.FirstOrDefault(c => c != lastCategory);
+        // Select a random category, preferring different from lastCategory
+        ThemeData.ThemeCategory randomCategory;
+        if (categories.Count > 1 && lastCategory.HasValue)
+        {
+            List<ThemeData.ThemeCategory> validCategories = new List<ThemeData.ThemeCategory>(categories.Count);
+            foreach (var cat in categories)
+            {
+                if (cat != lastCategory.Value)
+                    validCategories.Add(cat);
+            }
+            randomCategory = validCategories[Random.Range(0, validCategories.Count)];
+        }
+        else
+        {
+            randomCategory = categories[Random.Range(0, categories.Count)];
+        }
         lastCategory = randomCategory;
 
+        // Handle impostor mode
         int selectedMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
-        bool isImpostorMode = (selectedMode == 1);
-
+        bool isImpostorMode = selectedMode == 1;
         if (isImpostorMode)
         {
             var clients = NetworkManager.Singleton.ConnectedClientsList;
             impostorClientId.Value = clients[Random.Range(0, clients.Count)].ClientId;
-            Debug.Log($"[ThemeManager] 🎭 Imposteur désigné : Client {impostorClientId.Value}");
         }
         else
         {
             impostorClientId.Value = ulong.MaxValue;
         }
 
-        var themesInCategory = availableThemes.Where(t => t.category == randomCategory).OrderBy(t => UnityEngine.Random.value).ToList();
+        // Get themes in category
+        if (!themesByCategory.TryGetValue(randomCategory, out var themesInCategory) || themesInCategory.Count == 0)
+        {
+            Debug.LogError($"[ThemeManager] No themes found in category {randomCategory}!");
+            return;
+        }
 
-        ThemeData chosenTheme = themesInCategory.FirstOrDefault(t => t != lastChosenTheme) ?? themesInCategory[0];
+        // Select a theme, avoiding recent ones
+        ThemeData chosenTheme = SelectNonRecentTheme(themesInCategory);
+        recentThemes.Add(chosenTheme);
+        if (recentThemes.Count > MaxRecentThemes)
+            recentThemes.RemoveAt(0);
         lastChosenTheme = chosenTheme;
 
         selectedThemeIndex.Value = availableThemes.IndexOf(chosenTheme);
 
-        Debug.Log($"[ThemeManager] Catégorie : {randomCategory} | Thème sélectionné : {chosenTheme.themeName}");
-
+        // Notify clients
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
             bool isImpostor = isImpostorMode && client.ClientId == impostorClientId.Value;
@@ -85,21 +154,22 @@ public class ThemeManager : NetworkBehaviour
         }
     }
 
-    private ThemeData GetNonRepeatingRandomTheme(List<ThemeData> themes)
+    private ThemeData SelectNonRecentTheme(List<ThemeData> themes)
     {
-        if (themes.Count <= 1)
-            return themes[0];
-
-        ThemeData chosen;
-        int attempts = 0;
-        do
+        List<ThemeData> validThemes = new List<ThemeData>(themes.Count);
+        foreach (var theme in themes)
         {
-            chosen = themes[Random.Range(0, themes.Count)];
-            attempts++;
-        } while (chosen == lastChosenTheme && attempts < 10);
+            if (!recentThemes.Contains(theme))
+                validThemes.Add(theme);
+        }
 
-        lastChosenTheme = chosen;
-        return chosen;
+        if (validThemes.Count == 0)
+        {
+            validThemes = themes;
+        }
+
+        int index = Random.Range(0, validThemes.Count);
+        return validThemes[index];
     }
 
     [ClientRpc]
@@ -107,5 +177,21 @@ public class ThemeManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton.LocalClientId != targetClientId) return;
         ThemeUIManager.Instance.DisplayThemeSequence(categoryName, themeName);
+    }
+
+    private void OnSelectedThemeIndexChanged(int oldValue, int newValue)
+    {
+    }
+
+    public string GetCurrentThemeName()
+    {
+        return CurrentTheme?.themeName ?? "";
+    }
+
+    public void ResetThemeHistory()
+    {
+        recentThemes.Clear();
+        lastChosenTheme = null;
+        lastCategory = null;
     }
 }

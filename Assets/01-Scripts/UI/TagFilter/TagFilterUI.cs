@@ -95,7 +95,6 @@ namespace CharacterCustomization
                             itemCount++;
                             if (item != null)
                             {
-                                Debug.Log($"[TagFilterUI] Item : {item.itemName} (ID: {item.itemId}), Tags : {(item.tags != null ? string.Join(", ", item.tags) : "null")}");
                                 if (item.tags != null && item.tags.Count > 0)
                                 {
                                     foreach (var tag in item.tags)
@@ -152,12 +151,8 @@ namespace CharacterCustomization
                     if (label != null)
                     {
                         label.text = tag;
-                        Debug.Log($"[TagFilterUI] Toggle créé pour tag : {tag}");
                     }
-                    else
-                    {
-                        Debug.LogWarning($"[TagFilterUI] Aucun TextMeshProUGUI trouvé sur le toggle pour le tag {tag} !");
-                    }
+                   
                     toggle.onValueChanged.AddListener((isOn) =>
                     {
                         if (_isUpdatingToggles) return;

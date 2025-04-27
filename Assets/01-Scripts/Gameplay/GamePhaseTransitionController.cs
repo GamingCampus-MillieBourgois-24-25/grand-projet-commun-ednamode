@@ -63,6 +63,11 @@ public class GamePhaseTransitionController : NetworkBehaviour
         {
             Debug.LogError("[PostProcess] Aucun DepthOfField trouvé dans le profil !");
         }
+
+        if (IsServer)
+        {
+            StartCoroutine(PhaseSequenceCoroutine());
+        }
     }
 
     #region Phases de jeu
@@ -88,8 +93,9 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         // ============= Phase de customisation ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
-        CustomisationUIManager.Instance.DisplayCurrentTheme();
-        CustomisationUIManager.Instance.StartCustomizationTimer(_phaseManager.CustomizationDuration);
+        string themeName = ThemeManager.Instance.GetCurrentThemeName();
+        CustomisationUIManager.Instance.DisplayCurrentThemeClientRpc(themeName);
+        CustomisationUIManager.Instance.StartCustomizationTimerClientRpc(_phaseManager.CustomizationDuration);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
         // ============= Phase de défilé ============= //
