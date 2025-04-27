@@ -76,42 +76,29 @@ public class PlayerCustomizationData : NetworkBehaviour
             string itemId = kvp.Value;
 
             var item = allItems.FirstOrDefault(i => i.itemId == itemId);
-            if (string.IsNullOrEmpty(itemId))
+            if (string.IsNullOrEmpty(itemId) || item == null || item.prefab == null)
             {
-                Debug.LogWarning($"[ApplyToVisuals] ⚠ itemId vide pour {slot} sur joueur {OwnerClientId}");
-                continue;
-            }
-            if (item == null || item.prefab == null)
-            {
-                Debug.LogWarning($"[ApplyToVisuals] ❌ Item invalide pour {slot} → {itemId}");
+                Debug.LogWarning($"[ApplyToVisuals] ❌ Problème avec l'item {itemId} pour slot {slot}");
                 continue;
             }
 
-            Color color = Color.white;
-            if (Data.TryGetColor(slot, out var color32))
+            bool hasCustomColor = Data.TryGetColor(slot, out var customColor);
+            bool hasCustomTexture = Data.TryGetTexture(slot, out var textureName);
+
+            if (hasCustomTexture)
             {
-                color = color32;
-                Debug.Log($"[ApplyToVisuals] Couleur appliquée pour {slot}: {ColorUtility.ToHtmlStringRGBA(color)}");
+                handler.Equip(slot, item.prefab, hasCustomColor ? customColor : (Color?)null, textureName);
             }
             else
             {
-                Debug.LogWarning($"[ApplyToVisuals] Aucune couleur trouvée pour {slot}, utilisation de blanc par défaut.");
-            }
-
-            Data.TryGetTexture(slot, out var textureName);
-
-            if (string.IsNullOrEmpty(textureName))
-            {
-                handler.ApplyColorWithoutTexture(slot, color);
-                Debug.Log($"[ApplyToVisuals] Appliqué sans texture pour {slot} avec couleur {ColorUtility.ToHtmlStringRGBA(color)}");
-            }
-            else
-            {
-                handler.Equip(slot, item.prefab, color, textureName);
-                Debug.Log($"[ApplyToVisuals] Appliqué avec texture {textureName} pour {slot} avec couleur {ColorUtility.ToHtmlStringRGBA(color)}");
+                if (hasCustomColor)
+                    handler.ApplyColorWithoutTexture(slot, customColor);
+                else
+                    handler.Equip(slot, item.prefab, null, null); // 🛠️ Laisse intact si aucune customisation
             }
         }
     }
+
 
     public void SetItemAndApplyLocal(SlotType slotType, string itemId, Item item)
     {

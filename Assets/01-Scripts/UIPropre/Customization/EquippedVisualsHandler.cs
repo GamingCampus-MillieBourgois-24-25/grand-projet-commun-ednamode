@@ -60,7 +60,7 @@ public class EquippedVisualsHandler : NetworkBehaviour
         Equip(slotType, prefab, Color.white, null);
     }
 
-    public void Equip(SlotType slotType, GameObject prefab, Color color, string textureName)
+    public void Equip(SlotType slotType, GameObject prefab, Color? color = null, string textureName = null)
     {
         Unequip(slotType);
 
@@ -87,11 +87,22 @@ public class EquippedVisualsHandler : NetworkBehaviour
         foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
         {
             foreach (var mat in renderer.materials)
-            {
-                if (mat != null)
-                    mat.color = color;
-            }
+{
+    if (mat != null)
+    {
+        if (color.HasValue)
+        {
+            mat.color = color.Value;
         }
+        else
+        {
+            // 🛡️ IMPORTANT : NE PAS TOUCHER à la couleur d'origine
+        }
+    }
+}
+
+        }
+
         var skinned = instance.GetComponentInChildren<SkinnedMeshRenderer>();
         var bodySkinned = GetComponentInChildren<SkinnedMeshRenderer>();
 
@@ -99,10 +110,6 @@ public class EquippedVisualsHandler : NetworkBehaviour
         {
             skinned.bones = bodySkinned.bones;
             skinned.rootBone = bodySkinned.rootBone;
-        }
-        else
-        {
-            Debug.LogWarning($"[EquippedVisualsHandler] ⚠️ SkinnedMeshRenderer non trouvé pour {slotType}");
         }
 
         if (!string.IsNullOrEmpty(textureName))
@@ -119,14 +126,11 @@ public class EquippedVisualsHandler : NetworkBehaviour
                     }
                 }
             }
-            else
-            {
-                Debug.LogWarning($"[EquippedVisualsHandler] ❌ Texture non trouvée : {textureName}");
-            }
         }
 
         equippedVisuals[slotType] = instance;
     }
+
 
     public void ApplyColorWithoutTexture(SlotType slotType, Color color)
     {

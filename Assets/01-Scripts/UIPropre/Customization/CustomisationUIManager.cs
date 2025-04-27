@@ -508,8 +508,15 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private void OpenColorPicker()
     {
-        if (currentSelectedItem == null || visualsHandler == null)
+        if (currentSelectedItem == null)
         {
+            Debug.LogWarning("[CustomisationUI] Aucun item sélectionné pour la couleur.");
+            return;
+        }
+
+        if (visualsHandler == null)
+        {
+            Debug.LogWarning("[CustomisationUI] EquippedVisualsHandler non trouvé.");
             return;
         }
 
@@ -517,33 +524,38 @@ public class CustomisationUIManager : NetworkBehaviour
         var equippedObject = visualsHandler.GetEquippedObject(slotType);
         if (equippedObject == null)
         {
+            Debug.LogWarning($"[CustomisationUI] Aucun vêtement équipé pour le slot {slotType}.");
             return;
         }
 
         var renderer = equippedObject.GetComponentInChildren<SkinnedMeshRenderer>();
         if (renderer == null)
         {
+            Debug.LogWarning($"[CustomisationUI] Aucun SkinnedMeshRenderer trouvé pour {slotType}.");
             return;
         }
 
         _initialColor = renderer.material.color;
         _initialTextureName = customizationData.Data.TryGetTexture(slotType, out var textureName) ? textureName : null;
 
+        Debug.Log($"[CustomisationUI] État initial sauvegardé pour {slotType}: Couleur={ColorUtility.ToHtmlStringRGBA(_initialColor)}, Texture={_initialTextureName ?? "Aucune"}");
+
         if (tabTexturePanel != null) tabTexturePanel.SetActive(false);
+
+        // 🛠️ Important : changer LOCALMENT la couleur à blanc (VISUELLEMENT), mais NE PAS enregistrer dans dataToSave ici !!
+        renderer.material.color = Color.white;
+
+        // 🛠 SAUVEGARDE DANS LES DONNÉES IMMÉDIATEMENT
+        dataToSave.SetColor(slotType, Color.white);
         dataToSave.SetTexture(slotType, null);
-        customizationData.Data = dataToSave;
         customizationData.SyncCustomizationDataServerRpc(dataToSave);
 
-        Color currentColor = Color.white;
-        if (customizationData.Data.TryGetColor(slotType, out var storedColor))
-        {
-            currentColor = storedColor;
-        }
+        Debug.Log($"[CustomisationUI] Couleur blanche affichée localement pour {slotType}, sans enregistrer.");
 
-        visualsHandler.ApplyColorWithoutTexture(slotType, currentColor);
+        tabColorPanel?.SetActive(true);
 
         bool success = ColorPicker.Create(
-            original: currentColor,
+            original: Color.white,
             message: "Choisissez une couleur pour le vêtement",
             renderer: renderer,
             onColorChanged: (color) => OnColorChanged(slotType, color),
@@ -553,23 +565,23 @@ public class CustomisationUIManager : NetworkBehaviour
 
         if (!success)
         {
-            if (tabColorPanel != null) tabColorPanel.SetActive(false);
-        }
-        else
-        {
-            if (tabColorPanel != null) tabColorPanel.SetActive(true);
+            Debug.LogWarning("[CustomisationUI] Échec de l'ouverture du ColorPicker.");
+            tabColorPanel?.SetActive(false);
         }
     }
+
 
     private void OnColorChanged(SlotType slotType, Color color)
     {
         if (visualsHandler != null && currentSelectedItem != null)
         {
             visualsHandler.ApplyColorWithoutTexture(slotType, color);
-            dataToSave.SetColor(slotType, color);
+            dataToSave.SetColor(slotType, (Color32)color);
             dataToSave.SetTexture(slotType, null);
-            customizationData.SyncCustomizationDataServerRpc(dataToSave);
         }
+        Debug.Log($"[CustomisationUI] OnColorChanged appelé");
+
+        customizationData.SyncCustomizationDataServerRpc(dataToSave);
     }
         private void OnColorSelected(SlotType slotType, Color color)
         {
@@ -582,6 +594,7 @@ public class CustomisationUIManager : NetworkBehaviour
 
             customizationData.SyncCustomizationDataServerRpc(dataToSave);
 
+            Debug.Log($"[CustomisationUI] OnColorSelected appelé");
             if (tabColorPanel != null) tabColorPanel.SetActive(false);
         }
 
