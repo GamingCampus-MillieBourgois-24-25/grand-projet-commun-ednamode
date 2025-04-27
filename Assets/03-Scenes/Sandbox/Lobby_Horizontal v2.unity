@@ -1770,7 +1770,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 116.9263, y: 0}
+  m_SizeDelta: {x: 134.9482, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &157131337
 MonoBehaviour:
@@ -2582,8 +2582,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 13, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -0.0000076294, y: -0.000033379}
+  m_SizeDelta: {x: 63.0459, y: 62.8436}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &248886104
 CanvasRenderer:
@@ -2613,7 +2613,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0
+  m_text: 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 51d6f9bb4879d774cb38310325a3f3c1, type: 2}
   m_sharedMaterial: {fileID: -63304547855798175, guid: 51d6f9bb4879d774cb38310325a3f3c1, type: 2}
@@ -2622,8 +2622,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4278979596
+  m_fontColor: {r: 0.047169805, g: 0.047169805, b: 0.047169805, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2640,15 +2640,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 52
+  m_fontSize: 60.3
   m_fontSizeBase: 52
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_VerticalAlignment: 4096
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -2678,7 +2678,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 59.242313, y: 0, z: 86.29127, w: 0}
+  m_margin: {x: -0.14229967, y: 0, z: 0.46526337, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -7393,7 +7393,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -463.00003, y: -7.0000453}
+  m_AnchoredPosition: {x: -463.00003, y: -9.500121}
   m_SizeDelta: {x: 356.84497, y: 134.09}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &748999571
@@ -16413,7 +16413,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 116.9263, y: 0}
+  m_SizeDelta: {x: 134.2639, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1645173758
 MonoBehaviour:
@@ -18552,7 +18552,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -463, y: -93}
+  m_AnchoredPosition: {x: -463, y: -102}
   m_SizeDelta: {x: 356.84497, y: 134.09}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1991747259
@@ -22477,6 +22477,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Online Panels
       objectReference: {fileID: 0}
+    - target: {fileID: 7666283658736991644, guid: db3fed664e6871e438c1e1a777c3989a, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7871590492303849376, guid: db3fed664e6871e438c1e1a777c3989a, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -22859,6 +22863,10 @@ PrefabInstance:
       value: Main Menu
       objectReference: {fileID: 0}
     - target: {fileID: 1643546847797775729, guid: 4363a414a96c7064ea3d3c24ca1407e0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4625478723793267394, guid: 4363a414a96c7064ea3d3c24ca1407e0, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
@@ -24144,10 +24152,6 @@ PrefabInstance:
       propertyPath: 'spawnPoints.Array.data[7]'
       value: 
       objectReference: {fileID: 412433044}
-    - target: {fileID: 9056724846825514288, guid: 97a453cd57211614aab2773ad82f2ebf, type: 3}
-      propertyPath: customizationDuration
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 9056724846825514288, guid: 97a453cd57211614aab2773ad82f2ebf, type: 3}
       propertyPath: panelMappings.Array.data[0].podiumPanel
       value: 
