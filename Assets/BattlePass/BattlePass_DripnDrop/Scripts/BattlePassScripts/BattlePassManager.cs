@@ -135,8 +135,8 @@ namespace EasyBattlePass
         {
             if (EncryptionManager.LoadInt("SeasonEnded", 0) == 1) return;
 
-            // Vérifie et dépense la bonne devise
-            if (passCurrency.name == "Coins")
+            // Vérification et dépense via DataSaver
+            if (passCurrency.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
             {
                 if (dataSaver.dts.totalCoins < passCurrency.amount)
                 {
@@ -145,7 +145,7 @@ namespace EasyBattlePass
                 }
                 dataSaver.removeCoins(passCurrency.amount);
             }
-            else if (passCurrency.name == "Jewels")
+            else if (passCurrency.name.Equals("Jewels", StringComparison.OrdinalIgnoreCase))
             {
                 if (dataSaver.dts.totalJewels < passCurrency.amount)
                 {
@@ -160,13 +160,13 @@ namespace EasyBattlePass
                 return;
             }
 
-            // Débloque la version payante
+            // Débloquer la version payante
             EncryptionManager.SaveInt("_paidVersion", 1);
             paidVersionButton.SetActive(false);
             paidUnlocked = true;
             UnlockPaidRewards();
 
-            // Rechargement des données
+            // Recharger l'état
             Load();
         }
 
@@ -174,8 +174,8 @@ namespace EasyBattlePass
         {
             if (EncryptionManager.LoadInt("SeasonEnded", 0) == 1) return;
 
-            // Vérifie et dépense la bonne devise
-            if (skipTierCurrency.name == "Coins")
+            // Vérification et dépense via DataSaver
+            if (skipTierCurrency.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
             {
                 if (dataSaver.dts.totalCoins < skipTierCurrency.amount)
                 {
@@ -184,7 +184,7 @@ namespace EasyBattlePass
                 }
                 dataSaver.removeCoins(skipTierCurrency.amount);
             }
-            else if (skipTierCurrency.name == "Jewels")
+            else if (skipTierCurrency.name.Equals("Jewels", StringComparison.OrdinalIgnoreCase))
             {
                 if (dataSaver.dts.totalJewels < skipTierCurrency.amount)
                 {
@@ -199,7 +199,7 @@ namespace EasyBattlePass
                 return;
             }
 
-            // Ajoute l’XP manquante pour débloquer le palier suivant
+            // On simule l'XP manquant pour passer au palier suivant
             buyingTier = true;
             AddXP(xpToNextLevel[level] - xp);
         }
@@ -300,44 +300,49 @@ namespace EasyBattlePass
 
         public void ClaimFreeReward(PassReward reward)
         {
-            Debug.Log($"[DEBUG] Claim on tier `{reward.name}` with {reward.passTierRewards.Length} entries:");
-            for (int i = 0; i < reward.passTierRewards.Length; i++)
-            {
-                var cr = reward.passTierRewards[i];
-                Debug.Log($"    Entry {i}: name={cr.name}, amount={cr.amount}");
-            }
-            if (freeClaimedRewards.TryGetValue(reward, out bool claimed) && claimed) return;
+            if (freeClaimedRewards.TryGetValue(reward, out bool wasClaimed) && wasClaimed)
+                return;
             freeClaimedRewards[reward] = false;
 
+            // Affichage popup
             rewardPopup.ShowPopup(reward.Icon, reward.itemAmount.ToString());
+
+            // Attribution via DataSaver
             foreach (var cr in reward.passTierRewards)
             {
-                if (cr.name == "Coins") dataSaver.addCoins(cr.amount);
-                else dataSaver.addJewels(cr.amount);
+                if (cr.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
+                    dataSaver.addCoins(cr.amount);
+                else if (cr.name.Equals("Jewels", StringComparison.OrdinalIgnoreCase))
+                    dataSaver.addJewels(cr.amount);
+                else
+                    Debug.LogWarning($"Unknown reward currency: {cr.name}");
             }
+
             freeClaimedRewards[reward] = true;
             reward.Claimed();
             SaveFreeClaimedRewards();
             UpdateUI();
         }
 
+
         public void ClaimPaidReward(PassReward reward)
         {
-            Debug.Log($"[DEBUG] Claim on tier `{reward.name}` with {reward.passTierRewards.Length} entries:");
-            for (int i = 0; i < reward.passTierRewards.Length; i++)
-            {
-                var cr = reward.passTierRewards[i];
-                Debug.Log($"    Entry {i}: name={cr.name}, amount={cr.amount}");
-            }
-            if (paidClaimedRewards.TryGetValue(reward, out bool claimed) && claimed) return;
+            if (paidClaimedRewards.TryGetValue(reward, out bool wasClaimed) && wasClaimed)
+                return;
             paidClaimedRewards[reward] = false;
 
             rewardPopup.ShowPopup(reward.Icon, reward.itemAmount.ToString());
+
             foreach (var cr in reward.passTierRewards)
             {
-                if (cr.name == "Coins") dataSaver.addCoins(cr.amount);
-                else dataSaver.addJewels(cr.amount);
+                if (cr.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
+                    dataSaver.addCoins(cr.amount);
+                else if (cr.name.Equals("Jewels", StringComparison.OrdinalIgnoreCase))
+                    dataSaver.addJewels(cr.amount);
+                else
+                    Debug.LogWarning($"Unknown reward currency: {cr.name}");
             }
+
             paidClaimedRewards[reward] = true;
             reward.Claimed();
             SavePaidClaimedRewards();
