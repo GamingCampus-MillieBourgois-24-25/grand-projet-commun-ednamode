@@ -47,7 +47,6 @@ public class MultiplayerManager : NetworkBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         IsReady = false;
     }
@@ -205,6 +204,8 @@ public class MultiplayerManager : NetworkBehaviour
         // 6️⃣ Optionnel : Relancer la musique de menu
         FindObjectOfType<MultiplayerUI>()?.UpdateConnectionUI(false);
 
+        NetworkPlayer.CleanupAllDetachedCameras();
+
         Debug.Log("✅ [MultiplayerManager] Reset terminé.");
     }
 
@@ -279,8 +280,6 @@ public class MultiplayerManager : NetworkBehaviour
         }
         return false;
     }
-
-
 
     private async void SendHeartbeat()
     {

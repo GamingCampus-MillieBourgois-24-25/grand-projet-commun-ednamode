@@ -122,8 +122,17 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
-        ActivateReturnToLobbyPhase();
+        //ActivateReturnToLobbyPhase();
+
         FadeOutMusic(themeMusicSource, 2f);
+
+
+        MultiplayerManager.Instance?.LeaveLobby();
+        // Lancer localement pour le host
+        LoadingSceneManager.LoadSceneWithTransition("Lobby_Horizontal v2");
+
+        // Puis envoyer au reste des clients
+        ForceLoadSceneClientRpc("Lobby_Horizontal v2");
     }
 
     /// <summary>
@@ -203,22 +212,39 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
     private void ResetPlayersPositionAndCamera()
     {
-        var players = FindObjectsOfType<NetworkPlayer>();
-        foreach (var player in players)
+        foreach (var player in FindObjectsOfType<NetworkPlayer>())
         {
-            var spawnPosition = NetworkPlayerManager.Instance.GetAssignedSpawnPosition(player.OwnerClientId);
-            var netTransform = player.GetComponent<NetworkTransform>();
-            netTransform.Teleport(spawnPosition, Quaternion.identity, player.transform.localScale);
+            ulong targetClientId = player.OwnerClientId;
+            Vector3 spawnPos = NetworkPlayerManager.Instance.GetAssignedSpawnPosition(targetClientId);
 
-            var cam = player.GetLocalCamera();
-            if (cam != null)
+            ClientRpcParams rpcParams = new ClientRpcParams
             {
-                cam.transform.SetParent(player.transform);
-                cam.transform.localPosition = Vector3.zero; // Ajuste selon ta config
-                cam.transform.localRotation = Quaternion.identity;
-                Debug.Log($"[Lobby] Caméra réassignée pour le joueur {player.OwnerClientId}");
-            }
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new[] { targetClientId }
+                }
+            };
+
+            RequestTeleportClientRpc(spawnPos, targetClientId, rpcParams);
         }
+    }
+
+    [ClientRpc]
+    private void RequestTeleportClientRpc(Vector3 targetPosition, ulong targetClientId, ClientRpcParams rpcParams = default)
+    {
+        if (NetworkManager.Singleton.LocalClientId != targetClientId) return;
+
+        var localPlayer = NetworkPlayerManager.Instance.GetLocalPlayer();
+        if (localPlayer != null)
+        {
+            localPlayer.TeleportLocalPlayer(targetPosition, Quaternion.identity, localPlayer.transform.localScale);
+        }
+    }
+
+    [ClientRpc]
+    private void ForceLoadSceneClientRpc(string sceneName)
+    {
+        LoadingSceneManager.LoadSceneWithTransition(sceneName);
     }
 
     public void ForceStopPhaseSequence()

@@ -6,6 +6,9 @@ using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 
+using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
+using UnityEngine.SceneManagement;
+
 public class UIManager : MonoBehaviour
 {
     #region Singleton
@@ -14,17 +17,30 @@ public class UIManager : MonoBehaviour
     {
         if (Instance && Instance != this)
         {
+            Debug.LogWarning("[UIManager] ⚠️ Instance déjà existante, destruction de l'objet actuel !");
             Destroy(gameObject);
             return;
         }
 
+        Debug.Log("[UIManager] Nouvelle instance créée.");
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
+
+        //UnitySceneManager.sceneLoaded += OnSceneLoaded;
+
         InitializePanels();
 
         if (autoPlayIntroOnStart)
             PlaySceneIntro();
     }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"[UIManager] 🚨 Scene rechargée : {scene.name} - Réinitialisation des panels...");
+        InitializePanels();
+    }
+
+
     #endregion
 
     #region Structs & Fields
@@ -70,7 +86,7 @@ public class UIManager : MonoBehaviour
     [Tooltip("Panels à désactiver lors de la déconnexion")]
     [SerializeField] private List<GameObject> disconnectCleanupPanels;
 
-
+    private bool panelsInitialized = false;
     private GameObject _currentPanel;
     private Dictionary<string, GameObject> _panelDict;
     private Dictionary<Button, string> _buttonToPanel;
@@ -198,6 +214,8 @@ public class UIManager : MonoBehaviour
 
     private void InitializePanels()
     {
+        if (panelsInitialized) return;
+
         _panelDict = new();
         _buttonToPanel = new();
 
@@ -244,6 +262,7 @@ public class UIManager : MonoBehaviour
             }
 
         }
+        panelsInitialized = true;
     }
 
     private void OnPanelButtonClicked(Button clickedButton)

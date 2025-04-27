@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4281219056
+  GlobalObjectIdHash: 3415522374
   InScenePlacedSourceGlobalObjectIdHash: 1910677184
   DeferredDespawnTick: 0
   Ownership: 1
@@ -77,23 +77,31 @@ MonoBehaviour:
     m_InternalValue: 0
   customizationDuration: 10
   runwayVotingPerPlayerDuration: 7
-  podiumDuration: 10
+  podiumDuration: 7
   transitionController: {fileID: 8256609374081343765}
   panelMappings:
   - modeName: Dress to Impress
+    themeDisplayPanel: {fileID: 0}
+    themeDisplayPanelToHide: {fileID: 0}
     customizationPanel: {fileID: 0}
     customizationPanelToHide: {fileID: 0}
     runwayPanel: {fileID: 0}
     runwayPanelToHide: {fileID: 0}
     podiumPanel: {fileID: 0}
     podiumPanelToHide: {fileID: 0}
+    returnToLobbyPanel: {fileID: 0}
+    returnToLobbyPanelToHide: {fileID: 0}
   - modeName: Impostor
+    themeDisplayPanel: {fileID: 0}
+    themeDisplayPanelToHide: {fileID: 0}
     customizationPanel: {fileID: 0}
     customizationPanelToHide: {fileID: 0}
     runwayPanel: {fileID: 0}
     runwayPanelToHide: {fileID: 0}
     podiumPanel: {fileID: 0}
     podiumPanelToHide: {fileID: 0}
+    returnToLobbyPanel: {fileID: 0}
+    returnToLobbyPanelToHide: {fileID: 0}
 --- !u!114 &8256609374081343765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,6 +117,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   delayBetweenPhases: 3
   postProcessVolume: {fileID: 0}
+  themeMusicSource: {fileID: 0}
+  themeMusicClip: {fileID: 0}
 --- !u!114 &8462441088013454958
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -93,6 +93,20 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     /// <summary>
+    /// Téléporte ce joueur localement (appelé uniquement par le propriétaire).
+    /// </summary>
+    public void TeleportLocalPlayer(Vector3 position, Quaternion rotation, Vector3 scale)
+    {
+        if (IsOwner)
+        {
+            var netTransform = GetComponent<NetworkTransform>();
+            netTransform.Teleport(position, rotation, scale);
+            Debug.Log($"[Teleport] 🚀 Joueur local téléporté à {position}");
+        }
+    }
+
+
+    /// <summary>
     /// Instancie une caméra propre à ce joueur local uniquement.
     /// </summary>
     private void CreateAndAttachLocalCamera()
@@ -119,6 +133,27 @@ public class NetworkPlayer : NetworkBehaviour
 
         Debug.Log("[NetworkPlayer] 🎥 Caméra locale créée pour ce joueur");
     }
+
+    /// <summary>
+    /// Détruit la caméra locale uniquement si elle a été détachée du joueur.
+    /// </summary>
+    public void DestroyDetachedLocalCamera()
+    {
+        if (IsOwner && localCamera != null)
+        {
+            if (localCamera.transform.parent == null)
+            {
+                Destroy(localCamera.gameObject);
+                Debug.Log($"[NetworkPlayer] 🗑️ Caméra détachée du joueur {OwnerClientId} détruite.");
+                localCamera = null;
+            }
+            else
+            {
+                Debug.Log($"[NetworkPlayer] 🎥 La caméra du joueur {OwnerClientId} est toujours attachée, pas de suppression.");
+            }
+        }
+    }
+
 
     [ServerRpc]
     public void RequestReturnToLobbyServerRpc()
@@ -148,12 +183,25 @@ public class NetworkPlayer : NetworkBehaviour
     /// <summary>
     /// Réinitialise la position de la caméra locale au décalage défini.
     /// </summary>
-    private void ResetCameraPosition()
+    public void ResetCameraPosition()
     {
         if (localCamera != null)
         {
             localCamera.transform.localPosition = cameraOffset;
             Debug.Log("[NetworkPlayer] 🎥 Caméra repositionnée après retour au lobby.");
+        }
+    }
+
+    public static void CleanupAllDetachedCameras()
+    {
+        var cameras = GameObject.FindObjectsOfType<Camera>();
+        foreach (var cam in cameras)
+        {
+            if (cam.name.StartsWith("LocalCamera_") && cam.transform.parent == null)
+            {
+                GameObject.Destroy(cam.gameObject);
+                Debug.Log($"[Cleanup] 🗑️ Caméra orpheline {cam.name} détruite.");
+            }
         }
     }
 

@@ -24,7 +24,6 @@ public class SessionStore : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     public void SetLobby(Lobby lobby)
