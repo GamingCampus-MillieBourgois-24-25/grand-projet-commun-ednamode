@@ -13,4 +13,6 @@ MonoBehaviour:
   m_Name: GlassesTab
   m_EditorClassIdentifier: 
   category: 4
-  items: []
+  items:
+  - {fileID: 11400000, guid: bcc452094cf6fee45918ed23d42ff09c, type: 2}
+  - {fileID: 11400000, guid: 3639012b5ee132b4ca71c62bd31fd547, type: 2}

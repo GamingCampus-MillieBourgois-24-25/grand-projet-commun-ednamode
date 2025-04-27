@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: AccesoriesTab
   m_EditorClassIdentifier: 
   category: 0
-  items: []
+  items:
+  - {fileID: 11400000, guid: c1ad42698a75d5e47a4a5b7c0a89ed6c, type: 2}

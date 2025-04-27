@@ -8,59 +8,110 @@ namespace CharacterCustomization
         [System.Serializable]
         public class SlotAttachment
         {
-            public SlotType slotType; // Type de l'emplacement (ex: Hat, Glasses, etc.)
-            public Transform attachmentPoint; // Point d'attache sur le personnage
+            public SlotType slotType;
+            public Transform attachmentPoint;
         }
 
-        [Header("Points d'attache")]
-        public List<SlotAttachment> slotAttachments; // Liste des points d'attache pour chaque type d'item
+        [Header("Points d'attache (optionnel)")]
+        public List<SlotAttachment> slotAttachments;
+
+        [Header("Cible pour équipement")]
+        [Tooltip("Transform du body du joueur (ex: RootBody)")]
+        [SerializeField] private Transform bodyTarget;
+
+        [Tooltip("Copier l'Animator du parent")]
+        [SerializeField] private bool copyAnimatorFromParent = true;
 
         private Dictionary<SlotType, GameObject> equippedItems = new Dictionary<SlotType, GameObject>();
+        private Animator referenceAnimator;
+        private SkinnedMeshRenderer bodySkinned;
 
-        /// <summary>
-        /// Équipe un nouvel item sur le personnage.
-        /// </summary>
-        /// <param name="item">L'item à équiper.</param>
-        public void EquipItem(Item item)
+        private void Awake()
+        {
+            if (bodyTarget == null)
+            {
+                Debug.LogError("[CharacterItemManager] bodyTarget non assigné dans l'Inspector !");
+            }
+
+            referenceAnimator = GetComponentInParent<Animator>();
+            if (referenceAnimator == null)
+            {
+                Debug.LogWarning("[CharacterItemManager] Aucun Animator trouvé dans le parent.");
+            }
+
+            bodySkinned = bodyTarget?.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (bodySkinned == null)
+            {
+                Debug.LogWarning("[CharacterItemManager] Aucun SkinnedMeshRenderer trouvé sur bodyTarget.");
+            }
+        }
+
+        public void EquipSingleItemForShop(Item item)
         {
             if (item == null || item.prefab == null)
             {
-                Debug.LogError("L'item ou son prefab est null !");
+                Debug.LogError($"[CharacterItemManager] L'item ou son prefab est null ! Item: {item?.name}");
                 return;
             }
 
-            // Trouver le point d'attache correspondant au type de l'item
-            SlotAttachment attachment = slotAttachments.Find(a => a.slotType == item.category);
-            if (attachment == null || attachment.attachmentPoint == null)
+            if (bodyTarget == null)
             {
-                Debug.LogError($"Aucun point d'attache trouvé pour le type {item.category} !");
+                Debug.LogError("[CharacterItemManager] bodyTarget non assigné !");
                 return;
             }
 
-            // Détruire l'item précédent s'il existe
-            if (equippedItems.ContainsKey(item.category))
+            // Déséquiper tous les items
+            ClearAllEquippedItems();
+
+            // Instancier l'item
+            Debug.Log($"[CharacterItemManager] Instanciation de {item.itemName} sur {bodyTarget.name}");
+            GameObject instance = Instantiate(item.prefab, bodyTarget);
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+
+            // Synchroniser l'Animator
+            if (copyAnimatorFromParent && referenceAnimator != null)
             {
-                Destroy(equippedItems[item.category]);
-                equippedItems.Remove(item.category);
+                var animator = instance.GetComponent<Animator>();
+                if (animator != null)
+                {
+                    animator.runtimeAnimatorController = referenceAnimator.runtimeAnimatorController;
+                    Debug.Log($"[CharacterItemManager] Animator synchronisé pour {item.itemName}");
+                }
             }
 
-            // Instancier le nouvel item et l'attacher au point d'attache
-            GameObject newItem = Instantiate(item.prefab, attachment.attachmentPoint);
-            newItem.transform.localPosition = Vector3.zero;
-            newItem.transform.localRotation = Quaternion.identity;
-            newItem.transform.localScale = Vector3.one;
-
-            // Ajouter l'item à la liste des items équipés
-            equippedItems[item.category] = newItem;
-
-            // Synchroniser les animations si nécessaire
-            AnimationSync animationSync = newItem.GetComponent<AnimationSync>();
-            if (animationSync != null)
+            // Synchroniser les os (SkinnedMeshRenderer)
+            var skinned = instance.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (skinned != null && bodySkinned != null)
             {
-                animationSync.Initialize(this.gameObject);
+                skinned.bones = bodySkinned.bones;
+                skinned.rootBone = bodySkinned.rootBone;
+                Debug.Log($"[CharacterItemManager] SkinnedMeshRenderer synchronisé pour {item.itemName}");
+            }
+            else
+            {
+                Debug.LogWarning($"[CharacterItemManager] SkinnedMeshRenderer non trouvé pour {item.itemName} ou bodyTarget.");
             }
 
-            Debug.Log($"Item {item.itemName} équipé sur {attachment.attachmentPoint.name}.");
+            // Stocker l'item
+            equippedItems[item.category] = instance;
+
+            Debug.Log($"[CharacterItemManager] Item {item.itemName} équipé sur {bodyTarget.name}.");
+        }
+
+        public void ClearAllEquippedItems()
+        {
+            Debug.Log("[CharacterItemManager] Déséquipement de tous les items...");
+            foreach (var item in equippedItems.Values)
+            {
+                if (item != null)
+                {
+                    Debug.Log($"[CharacterItemManager] Destruction de {item.name}");
+                    Destroy(item);
+                }
+            }
+            equippedItems.Clear();
         }
     }
 }
