@@ -1,13 +1,13 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using System.Linq;
-
 namespace CharacterCustomization
 {
     public class ShopContent : MonoBehaviour
     {
-        [SerializeField] private CharacterItemManager characterItemManager;
         public List<Tab> tabs = new List<Tab>();
         [SerializeField] private GameObject tabButtonPrefab;
         [SerializeField] private GameObject itemButtonPrefab;
@@ -15,82 +15,63 @@ namespace CharacterCustomization
         private DataSaver dataSaver;
         private List<Item> loadedItems;
         private List<Item> savedItems;
-
         private void Start()
         {
             dataSaver = DataSaver.Instance;
             itemButtons = new List<GameObject>();
-
-            if (dataSaver == null || characterItemManager == null || tabButtonPrefab == null || itemButtonPrefab == null)
-            {
-                Debug.LogError("[ShopContent] Composant manquant (DataSaver, CharacterItemManager, tabButtonPrefab ou itemButtonPrefab) !");
-                return;
-            }
-
+            // Trouver l'enfant avec un LayoutGroup
             LayoutGroup layoutGroup = GetComponentInChildren<LayoutGroup>();
             GridLayoutGroup gridLayoutGroup = GetComponentInChildren<GridLayoutGroup>();
-            if (layoutGroup == null || gridLayoutGroup == null)
+            if (layoutGroup == null)
             {
-                Debug.LogError("[ShopContent] Composant manquant (LayoutGroup ou GridLayoutGroup) !");
+                Debug.LogError("Aucun LayoutGroup trouv? dans les enfants !");
                 return;
             }
 
+            // Charger tous les tabs depuis le dossier Resources
             Tab[] loadedTabs = Resources.LoadAll<Tab>("Tabs");
-            Debug.Log($"[ShopContent] {loadedTabs.Length} onglets chargés.");
             foreach (Tab tab in loadedTabs)
             {
                 tabs.Add(tab);
+
+                // Instancier le bouton en tant qu'enfant du LayoutGroup
                 GameObject tabButton = Instantiate(tabButtonPrefab, layoutGroup.transform);
-                ShopButton shopButton = tabButton.GetComponent<ShopButton>();
-                if (shopButton == null)
-                {
-                    Debug.LogError($"[ShopContent] Aucun ShopButton sur {tabButton.name} !");
-                    continue;
-                }
-                shopButton.SetScriptable(tab);
-                Debug.Log($"[ShopContent] Onglet {tab.name} configuré sur {tabButton.name}.");
+                tabButton.GetComponent<ShopButton>().SetScriptable(tab);
+
             }
 
             loadedItems = Resources.LoadAll<Item>("Items").ToList();
             savedItems = dataSaver.GetItems();
             loadedItems = loadedItems.Except(savedItems).ToList();
-            Debug.Log($"[ShopContent] {loadedItems.Count} items chargés (non possédés).");
 
             Dictionary<SlotType, List<Item>> itemsByCategory = loadedItems
-                .GroupBy(item => item.category)
-                .ToDictionary(group => group.Key, group => group.ToList());
+            .GroupBy(item => item.category)
+            .ToDictionary(group => group.Key, group => group.ToList());
 
-            HashSet<Item> ownedItemsSet = new HashSet<Item>(savedItems);
+            // R?cup?rer la liste des items poss?d?s
+            HashSet<Item> ownedItemsSet = new HashSet<Item>(savedItems); // Utiliser un HashSet pour une recherche rapide
 
+            // Associer les items aux tabs correspondants
             foreach (Tab tab in tabs)
             {
                 if (itemsByCategory.TryGetValue(tab.category, out List<Item> itemsInCategory))
                 {
                     foreach (Item item in itemsInCategory)
                     {
+                        // V?rifier si l'item est d?j? poss?d?
                         if (ownedItemsSet.Contains(item))
                         {
-                            continue;
+                            continue; // Passer cet item
                         }
 
-                        tab.items.Add(item);
+                        tab.items.Add(item); // Ajouter l'item au tab
+
                         GameObject itemButton = Instantiate(itemButtonPrefab, gridLayoutGroup.transform);
-                        ItemButton itemButtonScript = itemButton.GetComponent<ItemButton>();
-                        if (itemButtonScript == null)
-                        {
-                            Debug.LogError($"[ShopContent] Aucun ItemButton sur {itemButton.name} !");
-                            continue;
-                        }
-                        itemButtonScript.SetScriptable(item, () =>
-                        {
-                            Debug.Log($"[ShopContent] Clic sur item {item.itemName}");
-                            characterItemManager.EquipSingleItemForShop(item);
-                        });
-                        itemButtons.Add(itemButton);
-                        Debug.Log($"[ShopContent] Item {item.name} configuré sur {itemButton.name}.");
+                        itemButton.GetComponent<ShopButton>().SetScriptable(item);
                     }
                 }
             }
+
         }
     }
 }

@@ -1,6 +1,5 @@
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 
 namespace CharacterCustomization
 {
@@ -13,108 +12,82 @@ namespace CharacterCustomization
         protected override void Start()
         {
             base.Start();
-            shoppingScript = UnityEngine.Object.FindFirstObjectByType<ShoppingScript>();
-            itemEquipper = UnityEngine.Object.FindFirstObjectByType<ItemEquipper>();
-            characterItemManager = UnityEngine.Object.FindFirstObjectByType<CharacterItemManager>();
-
-            if (characterItemManager == null)
-            {
-                Debug.LogError("[ItemButton] CharacterItemManager introuvable dans la scène !");
-                return;
-            }
-        }
-
-        /*public override void SetScriptable(ScriptableObject scriptable, System.Action onClickCallback)
-        {
-            base.SetScriptable(scriptable, onClickCallback);
-
-            if (scriptable == null)
-            {
-                Debug.LogError($"[ItemButton] Scriptable est null sur {gameObject.name} !");
-                return;
-            }
-
+            shoppingScript = Object.FindFirstObjectByType<ShoppingScript>();
+            itemEquipper = Object.FindFirstObjectByType<ItemEquipper>();
+            characterItemManager = Object.FindFirstObjectByType<CharacterItemManager>();
             if (scriptable is Item item)
             {
-                Debug.Log($"[ItemButton] Configuration de l'item {item.name} sur {gameObject.name}");
-                ConfigureButton(item);
-            }
-            else
-            {
-                Debug.LogError($"[ItemButton] Le scriptable n'est pas un Item sur {gameObject.name}, type reçu : {scriptable.GetType().Name} !");
-            }
-        }
-*/
-        public void SetItem(Item item)
-        {
-            if (item == null)
-            {
-                Debug.LogError("[ItemButton] SetItem a reçu un item null !");
-                return;
-            }
-
-            scriptable = item;
-            Debug.Log($"[ItemButton] SetItem pour {item.name} sur {gameObject.name}");
-            ConfigureButton(item);
-        }
-
-        private void ConfigureButton(Item item)
-        {
-            category = item.category.ToString();
-
-            if (item.icon == null)
-            {
-                Debug.LogWarning($"[ItemButton] L'item '{item.itemName}' n'a pas d'icône assignée !");
-                buttonImage.sprite = null;
-            }
-            else
-            {
-                if (buttonImage == null)
-                {
-                    Debug.LogError("[ItemButton] Le composant Image n'a pas été trouvé !");
-                    return;
-                }
+                category = item.category.ToString();
                 buttonImage.sprite = item.icon;
-            }
+                buttonText.text = item.price.ToString();
+                button.onClick.AddListener(() => shoppingScript.SetSelectedItemButton(this));
+                button.onClick.AddListener(() => itemEquipper.OnItemButtonClicked(item));
+                button.onClick.AddListener(() => characterItemManager.EquipItem(item));
+                if (characterItemManager == null)
+                {
+                    Debug.LogError("CharacterItemManager introuvable dans la sc?ne !");
+                }
 
-            if (buttonText == null)
-            {
-                Debug.LogError("[ItemButton] Le composant TextMeshProUGUI n'a pas été trouvé !");
-                return;
             }
-            buttonText.text = item.price.ToString();
-
-            if (button == null)
+            else
             {
-                Debug.LogError("[ItemButton] Le composant Button n'a pas été trouvé !");
-                return;
+                Debug.LogError("Le scriptable n'est pas un Item !");
             }
-
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() =>
-            {
-                Debug.Log($"[ItemButton] Clic sur {item.itemName}");
-                shoppingScript?.SetSelectedItemButton(this);
-                characterItemManager.EquipSingleItemForShop(item);
-            });
         }
-
         public Item GetItem()
         {
             if (scriptable is Item item)
             {
                 if (item == null)
                 {
-                    Debug.LogError("[ItemButton] GetItem a reçu un item null !");
+                    Debug.LogError("GetItem a re?u un item null !");
                     return null;
                 }
                 return item;
             }
             else
             {
-                Debug.LogError("[ItemButton] Le scriptable n'est pas un Item !");
+                Debug.LogError("Le scriptable n'est pas un Item !");
                 return null;
             }
         }
+        public void SetItem(Item item)
+        {
+            if (item == null)
+            {
+                Debug.LogError("SetItem a re?u un item null !");
+                return;
+            }
+
+            scriptable = item;
+
+            // V?rification de l'ic?ne
+            if (item.icon == null)
+            {
+                Debug.LogWarning($"L'item '{item.itemName}' n'a pas d'ic?ne assign?e !");
+                buttonImage.sprite = null; // Vous pouvez d?finir une ic?ne par d?faut ici si n?cessaire
+            }
+            else
+            {
+                if (buttonImage == null)
+                {
+                    Debug.LogError("Le composant Image n'a pas ?t? trouv? !");
+                    return;
+                }
+                buttonImage.sprite = item.icon;
+            }
+
+            // V?rification du nom
+            if (string.IsNullOrEmpty(item.itemName))
+            {
+                Debug.LogWarning("Un item n'a pas de nom assign? !");
+                buttonText.text = "Nom manquant"; // Texte par d?faut si le nom est vide
+            }
+            else
+            {
+                buttonText.text = item.itemName;
+            }
+        }
+
     }
 }

@@ -13,14 +13,14 @@ public class ItemEquipper : MonoBehaviour
 
     [Header("Configuration")]
     public List<EquipPoint> equipPoints; // Liste des points d'attache pour chaque type d'item
-    public GameObject character; // Le personnage sur lequel les items seront équipés
+    public GameObject character; // Le personnage sur lequel les items seront ?quip?s
 
     private Dictionary<SlotType, GameObject> equippedItems = new Dictionary<SlotType, GameObject>();
 
     /// <summary>
-    /// Équipe un item sur le personnage.
+    /// ?quipe un item sur le personnage.
     /// </summary>
-    /// <param name="itemPrefab">Le prefab de l'item à équiper.</param>
+    /// <param name="itemPrefab">Le prefab de l'item ? ?quiper.</param>
     /// <param name="slotType">Le type de l'item (ex: Hat, Glasses).</param>
     public void EquipItem(GameObject itemPrefab, SlotType slotType)
     {
@@ -28,11 +28,11 @@ public class ItemEquipper : MonoBehaviour
         EquipPoint equipPoint = equipPoints.Find(point => point.slotType == slotType);
         if (equipPoint == null)
         {
-            Debug.LogWarning($"Aucun point d'attache trouvé pour le type {slotType}");
+            Debug.LogWarning($"Aucun point d'attache trouv? pour le type {slotType}");
             return;
         }
 
-        // Si un item est déjà équipé à ce slot, le retirer
+        // Si un item est d?j? ?quip? ? ce slot, le retirer
         if (equippedItems.ContainsKey(slotType))
         {
             Destroy(equippedItems[slotType]);
@@ -45,14 +45,14 @@ public class ItemEquipper : MonoBehaviour
         newItem.transform.localRotation = Quaternion.identity;
         newItem.transform.localScale = Vector3.one;
 
-        // Ajouter l'item au dictionnaire des items équipés
+        // Ajouter l'item au dictionnaire des items ?quip?s
         equippedItems[slotType] = newItem;
     }
 
     /// <summary>
-    /// Méthode à appeler lorsqu'un bouton est cliqué.
+    /// M?thode ? appeler lorsqu'un bouton est cliqu?.
     /// </summary>
-    /// <param name="item">L'item à équiper.</param>
+    /// <param name="item">L'item ? ?quiper.</param>
     public void OnItemButtonClicked(Item item)
     {
         if (item == null || item.prefab == null)
