@@ -30,7 +30,6 @@ public class PodiumManager : NetworkBehaviour
         Instance = this;
     }
 
-
     public void StartPodiumSequence()
     {
         if (!IsServer) return;
@@ -43,32 +42,65 @@ public class PodiumManager : NetworkBehaviour
             return;
         }
 
-        if (topPlayers.Count > 0) TeleportPlayerToSpot(topPlayers[0].clientId, podiumSpot1);
-        if (topPlayers.Count > 1) TeleportPlayerToSpot(topPlayers[1].clientId, podiumSpot2);
-        if (topPlayers.Count > 2) TeleportPlayerToSpot(topPlayers[2].clientId, podiumSpot3);
+        if (topPlayers.Count > 0)
+            TeleportPlayerToSpot(topPlayers[0].clientId, podiumSpot1, "1st Place");
+        if (topPlayers.Count > 1)
+            TeleportPlayerToSpot(topPlayers[1].clientId, podiumSpot2, "2nd Place");
+        if (topPlayers.Count > 2)
+            TeleportPlayerToSpot(topPlayers[2].clientId, podiumSpot3, "3rd Place");
 
-        // 🎥 Positionne la caméra pour tous
         SetPodiumCameraClientRpc();
-
-        // 🖥️ Affiche le classement UI
         PodiumUIManager.Instance?.ShowRanking(topPlayers);
-
         StartCoroutine(ReturnAllPlayersToSpawnAfterDelay());
     }
 
-    private void TeleportPlayerToSpot(ulong clientId, Transform spot)
+    private void TeleportPlayerToSpot(ulong clientId, Transform spot, string rankDescription)
     {
+        if (!IsServer) return;
+
         var player = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
-        if (player == null || spot == null)
+        if (player == null)
         {
-            Debug.LogWarning($"[Podium] Impossible de téléporter le joueur {clientId}");
+            Debug.LogWarning($"[Podium] Impossible de trouver le joueur {clientId}");
+            return;
+        }
+
+        if (spot == null)
+        {
+            Debug.LogError($"[Podium] Spot non assigné pour {rankDescription} (ClientId: {clientId})");
+            return;
+        }
+
+        ClientRpcParams rpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } }
+        };
+
+        TeleportPlayerClientRpc(clientId, spot.position, spot.rotation, player.transform.localScale, rpcParams);
+    }
+
+    [ClientRpc]
+    private void TeleportPlayerClientRpc(ulong clientId, Vector3 position, Quaternion rotation, Vector3 scale, ClientRpcParams rpcParams)
+    {
+        if (NetworkManager.Singleton.LocalClientId != clientId)
+            return;
+
+        var player = NetworkPlayerManager.Instance.GetNetworkPlayerFrom(clientId);
+        if (player == null)
+        {
+            Debug.LogWarning($"[Podium] Joueur {clientId} introuvable sur le client local.");
             return;
         }
 
         var netTransform = player.GetComponent<NetworkTransform>();
-        netTransform.Teleport(spot.position, spot.rotation, player.transform.localScale);
-
-        Debug.Log($"[Podium] Joueur {clientId} déplacé sur le podium.");
+        if (netTransform != null)
+        {
+            netTransform.Teleport(position, rotation, scale);
+        }
+        else
+        {
+            Debug.LogError($"[Podium] NetworkTransform manquant pour le joueur {clientId}");
+        }
     }
 
     [ClientRpc]
@@ -79,11 +111,13 @@ public class PodiumManager : NetworkBehaviour
         {
             cam.transform.position = podiumCameraSpot.position;
             cam.transform.rotation = podiumCameraSpot.rotation;
-            cam.fieldOfView = 50f;  // Zoom léger pour effet "célébration"
-            Debug.Log("[Podium] 🎥 Caméra positionnée pour le podium.");
+            cam.fieldOfView = 50f;
+        }
+        else
+        {
+            Debug.LogWarning("[Podium] Caméra ou podiumCameraSpot non défini.");
         }
     }
-
 
     private IEnumerator ReturnAllPlayersToSpawnAfterDelay()
     {
@@ -95,12 +129,16 @@ public class PodiumManager : NetworkBehaviour
             if (player == null) continue;
 
             Transform spawn = NetworkPlayerManager.Instance.GetSpawnPoint(client.ClientId);
-            var netTransform = player.GetComponent<NetworkTransform>();
-            netTransform.Teleport(spawn.position, spawn.rotation, player.transform.localScale);
+            if (spawn == null)
+            {
+                Debug.LogWarning($"[Podium] Spawn point non trouvé pour ClientId {client.ClientId}");
+                continue;
+            }
+
+            TeleportPlayerToSpot(client.ClientId, spawn, "Spawn Point");
         }
 
         ResetAllCamerasClientRpc();
-        Debug.Log("[Podium] Tous les joueurs ont été replacés à leur spawn.");
     }
 
     [ClientRpc]
@@ -109,9 +147,8 @@ public class PodiumManager : NetworkBehaviour
         var cam = NetworkPlayerManager.Instance.GetLocalPlayer()?.GetLocalCamera();
         if (cam != null)
         {
-            cam.transform.localPosition = Vector3.zero;  // Ou ta position par défaut
+            cam.transform.localPosition = Vector3.zero;
             cam.fieldOfView = 60f;
-            Debug.Log("[Podium] 🎥 Caméra locale réinitialisée.");
         }
     }
 }
