@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace CharacterCustomization
@@ -6,11 +7,18 @@ namespace CharacterCustomization
     {
         private ShoppingScript shoppingScript;
         private ItemEquipper itemEquipper;
+        private CharacterItemManager characterItemManager;
+
+        private ShopEquippedHandler shopEquippedHandler;
+
         protected override void Start()
         {
             base.Start();
             shoppingScript = Object.FindFirstObjectByType<ShoppingScript>();
             itemEquipper = Object.FindFirstObjectByType<ItemEquipper>();
+            characterItemManager = Object.FindFirstObjectByType<CharacterItemManager>();
+            shopEquippedHandler = Object.FindFirstObjectByType<ShopEquippedHandler>(); // ?? AJOUT
+
             if (scriptable is Item item)
             {
                 category = item.category.ToString();
@@ -18,20 +26,22 @@ namespace CharacterCustomization
                 buttonText.text = item.price.ToString();
                 button.onClick.AddListener(() => shoppingScript.SetSelectedItemButton(this));
                 button.onClick.AddListener(() => itemEquipper.OnItemButtonClicked(item));
-
+                button.onClick.AddListener(() => characterItemManager.EquipItem(item));
+                button.onClick.AddListener(() => shopEquippedHandler.EquipItem(item)); // ?? AJOUT
             }
             else
             {
                 Debug.LogError("Le scriptable n'est pas un Item !");
             }
         }
+
         public Item GetItem()
         {
             if (scriptable is Item item)
             {
-                if(item == null)
+                if (item == null)
                 {
-                    Debug.LogError("GetItem a reçu un item null !");
+                    Debug.LogError("GetItem a re?u un item null !");
                     return null;
                 }
                 return item;
@@ -46,33 +56,33 @@ namespace CharacterCustomization
         {
             if (item == null)
             {
-                Debug.LogError("SetItem a reçu un item null !");
+                Debug.LogError("SetItem a re?u un item null !");
                 return;
             }
 
             scriptable = item;
 
-            // Vérification de l'icône
+            // V?rification de l'ic?ne
             if (item.icon == null)
             {
-                Debug.LogWarning($"L'item '{item.itemName}' n'a pas d'icône assignée !");
-                buttonImage.sprite = null; // Vous pouvez définir une icône par défaut ici si nécessaire
+                Debug.LogWarning($"L'item '{item.itemName}' n'a pas d'ic?ne assign?e !");
+                buttonImage.sprite = null; // Vous pouvez d?finir une ic?ne par d?faut ici si n?cessaire
             }
             else
             {
                 if (buttonImage == null)
                 {
-                    Debug.LogError("Le composant Image n'a pas été trouvé !");
+                    Debug.LogError("Le composant Image n'a pas ?t? trouv? !");
                     return;
                 }
                 buttonImage.sprite = item.icon;
             }
 
-            // Vérification du nom
+            // V?rification du nom
             if (string.IsNullOrEmpty(item.itemName))
             {
-                Debug.LogWarning("Un item n'a pas de nom assigné !");
-                buttonText.text = "Nom manquant"; // Texte par défaut si le nom est vide
+                Debug.LogWarning("Un item n'a pas de nom assign? !");
+                buttonText.text = "Nom manquant"; // Texte par d?faut si le nom est vide
             }
             else
             {

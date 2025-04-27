@@ -66,8 +66,8 @@ public class AccountManager : MonoBehaviour
         levelText.text = $"Niveau : {dts.crrLevel}";
         progressText.text = $"Progression : {dts.crrLevelProgress}/{dts.totalLevelProgress}";
 
-        coinsText.text = "coins : " + dts.totalCoins.ToString();
-        jewelsText.text = "jewels : " + dts.totalJewels.ToString();
+        coinsText.text = "Coins : " + dts.totalCoins.ToString();
+        jewelsText.text = "Jewels : " + dts.totalJewels.ToString();
     }
 
     private void ShowMessage()

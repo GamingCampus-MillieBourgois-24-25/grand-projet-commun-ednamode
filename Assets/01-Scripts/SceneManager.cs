@@ -24,6 +24,7 @@ public class SceneManager : MonoBehaviour
     // Méthode pour charger une scène
     public void LoadScene(string sceneName)
     {
+        Debug.Log($"Chargement de la scène : {sceneName}");
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
 

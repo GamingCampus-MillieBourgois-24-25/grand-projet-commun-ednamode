@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   offerId: B01
   jewelsToSpend: 100
-  coinsToObtain: 10000
+  coinsToObtain: 9999
