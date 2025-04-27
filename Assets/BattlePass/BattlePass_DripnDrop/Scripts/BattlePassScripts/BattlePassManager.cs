@@ -61,6 +61,8 @@ namespace EasyBattlePass
         void Start()
 
         {
+            DataSaver.Instance.dts.totalJewels = 500;
+            DataSaver.Instance.SaveDataFn();
             // ======= 1) Premier lancement ? =======
             // On récupère la valeur sauvegardée ; si elle n'existe pas, on aura -1
             int savedLevel = EncryptionManager.LoadInt("currentLevel", -1);
@@ -300,23 +302,17 @@ namespace EasyBattlePass
 
         public void ClaimFreeReward(PassReward reward)
         {
+            // Empêche le double-claim
             if (freeClaimedRewards.TryGetValue(reward, out bool wasClaimed) && wasClaimed)
                 return;
             freeClaimedRewards[reward] = false;
 
-            // Affichage popup
+            // Affiche le popup
             rewardPopup.ShowPopup(reward.Icon, reward.itemAmount.ToString());
 
-            // Attribution via DataSaver
-            foreach (var cr in reward.passTierRewards)
-            {
-                if (cr.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
-                    dataSaver.addCoins(cr.amount);
-                else if (cr.name.Equals("Jewels", StringComparison.OrdinalIgnoreCase))
-                    dataSaver.addJewels(cr.amount);
-                else
-                    Debug.LogWarning($"Unknown reward currency: {cr.name}");
-            }
+            // AJOUT DIRECT de coins égaux à itemAmount
+            Debug.Log($"[ClaimFree] +{reward.itemAmount} Coins");
+            dataSaver.addCoins(reward.itemAmount);
 
             freeClaimedRewards[reward] = true;
             reward.Claimed();
@@ -333,34 +329,14 @@ namespace EasyBattlePass
 
             rewardPopup.ShowPopup(reward.Icon, reward.itemAmount.ToString());
 
-            foreach (var cr in reward.passTierRewards)
-            {
-                if (cr.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
-                    dataSaver.addCoins(cr.amount);
-                else if (cr.name.Equals("Jewels", StringComparison.OrdinalIgnoreCase))
-                    dataSaver.addJewels(cr.amount);
-                else
-                    Debug.LogWarning($"Unknown reward currency: {cr.name}");
-            }
+            // AJOUT DIRECT de jewels égaux à itemAmount
+            Debug.Log($"[ClaimPaid] +{reward.itemAmount} Jewels");
+            dataSaver.addJewels(reward.itemAmount);
 
             paidClaimedRewards[reward] = true;
             reward.Claimed();
             SavePaidClaimedRewards();
             UpdateUI();
-        }
-
-        public void ClaimAfterPassReward()
-        {
-            if (extraLevel != maxExtraLevel) return;
-            afterPassReward.ClaimAfterPassRewardEffects();
-            extraLevel = 0;
-            int idx = UnityEngine.Random.Range(0, afterPassReward.rewardCurrencies.Length);
-            var rc = afterPassReward.rewardCurrencies[idx];
-            rewardPopup.ShowPopup(rc.icon, rc.amount.ToString());
-            if (rc.name == "Coins") dataSaver.addCoins(rc.amount);
-            else dataSaver.addJewels(rc.amount);
-            Save();
-            Load();
         }
 
         private void SaveFreeClaimedRewards()
