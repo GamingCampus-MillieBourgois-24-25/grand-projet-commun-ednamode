@@ -112,12 +112,12 @@ namespace CharacterCustomization
                                 }
                                 else
                                 {
-                                    Debug.LogWarning($"[TagFilterUI] Aucun tag défini pour l'item {item.itemName} ou tags est null");
+                                    //Debug.LogWarning($"[TagFilterUI] Aucun tag défini pour l'item {item.itemName} ou tags est null");
                                 }
                             }
                             else
                             {
-                                Debug.LogWarning("[TagFilterUI] Item null dans categorizedItems !");
+                                //Debug.LogWarning("[TagFilterUI] Item null dans categorizedItems !");
                             }
                         }
                     }
@@ -125,7 +125,7 @@ namespace CharacterCustomization
                 }
                 else
                 {
-                    Debug.LogError("[TagFilterUI] categorizedItems est null dans PopulateTagList !");
+                    //Debug.LogError("[TagFilterUI] categorizedItems est null dans PopulateTagList !");
                 }
             }
             else
