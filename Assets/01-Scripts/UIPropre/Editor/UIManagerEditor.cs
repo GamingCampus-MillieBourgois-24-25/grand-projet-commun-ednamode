@@ -59,6 +59,12 @@ public class UIManagerEditor : Editor
                 "normalColor",
                 "alertColor"
             }
+        },
+        {
+            "🛑 Nettoyage Déconnexion", new[]
+            {
+                "disconnectCleanupPanels"
+            }
         }
     };
 
@@ -104,6 +110,12 @@ public class UIManagerEditor : Editor
         panelList.DoLayoutList();
 
         serializedObject.ApplyModifiedProperties();
+        
+        if (GUILayout.Button("🧹 Tester le Nettoyage UI"))
+        {
+            ((UIManager)target).ForceCleanupUI(true);
+        }
+
     }
 
     private void DrawSection(string label, string[] properties)

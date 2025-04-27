@@ -6,6 +6,7 @@ using DG.Tweening;
 using TMPro;
 
 using Type = NotificationData.NotificationType;
+using System.Collections.Generic;
 
 /// <summary>
 /// MULTIPLAYER UI – Connecte les boutons à MultiplayerManager

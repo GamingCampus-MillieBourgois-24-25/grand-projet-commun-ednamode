@@ -57,10 +57,19 @@ public class UIManager : MonoBehaviour
     }
 
     [Header("🧩 Panels")]
+    [Tooltip("Liste des panels à gérer. Assurez-vous que les noms sont uniques !")]
     [SerializeField] private List<PanelEntry> panels = new();
+    [Tooltip("Durée de l'animation d'ouverture des panels")]
     [SerializeField] private float animationDuration = 0.4f;
+    [Tooltip("Type d'animation pour l'ouverture des panels")]
     [SerializeField] private Ease animationEase = Ease.OutBack;
+    [Tooltip("Échelle du panel masqué (pour l'animation)")]
     [SerializeField] private Vector3 hiddenScale = new(0.85f, 0.85f, 1);
+
+    [Header("🛑 Panels à désactiver lors de la déconnexion")]
+    [Tooltip("Panels à désactiver lors de la déconnexion")]
+    [SerializeField] private List<GameObject> disconnectCleanupPanels;
+
 
     private GameObject _currentPanel;
     private Dictionary<string, GameObject> _panelDict;
@@ -471,6 +480,21 @@ public class UIManager : MonoBehaviour
 
         _previouslyClosedPanels.Clear();
     }
+
+    public void ForceCleanupUI(bool instant = true)
+    {
+        Debug.Log("🧹 [UIManager] Nettoyage complet des panels...");
+
+        foreach (var panel in disconnectCleanupPanels)
+        {
+            if (panel != null && panel.activeSelf)
+                HidePanel(panel, instant);
+        }
+
+        HideAllPanels(instant);
+        CancelCountdown();
+    }
+
     #endregion
 
     #region 🖱 Outside Click Detection & Utility
@@ -616,6 +640,4 @@ public class UIManager : MonoBehaviour
     }
 
     #endregion
-
-
 }

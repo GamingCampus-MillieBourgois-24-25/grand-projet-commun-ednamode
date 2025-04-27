@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3207166636
+  GlobalObjectIdHash: 1273725976
   InScenePlacedSourceGlobalObjectIdHash: 1273725976
   DeferredDespawnTick: 0
   Ownership: 1
@@ -72,17 +72,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   slotLibrary: {fileID: 11400000, guid: ddee382934caf604e8a9199b8118a57e, type: 2}
+  themeReminderText: {fileID: 0}
+  customizationTimerPanel: {fileID: 0}
+  customizationSlider: {fileID: 0}
+  timerText: {fileID: 0}
+  countdownBeep: {fileID: 8300000, guid: e92dd36cfa0204f48a6962c1263076c3, type: 3}
   categoryButtonContainer: {fileID: 0}
   categoryButtonPrefab: {fileID: 293819967451510782, guid: 5b8cfd6c8f5a2824a81cd7f64afb8f25, type: 3}
   tabItemPanel: {fileID: 0}
-  tabTexturePanel: {fileID: 0}
   tabColorPanel: {fileID: 0}
+  tabTexturePanel: {fileID: 0}
   tabItemButton: {fileID: 0}
-  tabTextureButton: {fileID: 0}
   tabColorButton: {fileID: 0}
+  tabTextureButton: {fileID: 0}
   itemListContainer: {fileID: 0}
   itemButtonPrefab: {fileID: 3326161593033534515, guid: 2c124be6e43d91c4e9cd018f295d7d3a, type: 3}
-  textureListContainer: {fileID: 0}
+  availableTextures:
+  - name: Default
+    texture: {fileID: 2800000, guid: 601cef6ffead6614a8abd4f653eaaef5, type: 3}
+    preview: {fileID: 21300000, guid: 78625a718b454324a86384394547a83f, type: 3}
+  - name: Forest
+    texture: {fileID: 2800000, guid: 7c423e707e7388d4f951b065d66bf7dd, type: 3}
+    preview: {fileID: 21300000, guid: 98b991faddc658847afc2ebcae21f2d0, type: 3}
+  - name: Red Waves
+    texture: {fileID: 2800000, guid: e0575464f7745814eb947d8294c250a8, type: 3}
+    preview: {fileID: 21300000, guid: 98b991faddc658847afc2ebcae21f2d0, type: 3}
+  - name: Bricks
+    texture: {fileID: 2800000, guid: e3e2e3da649385748a7072d22aaffae9, type: 3}
+    preview: {fileID: 21300000, guid: 98b991faddc658847afc2ebcae21f2d0, type: 3}
+  - name: White Stone
+    texture: {fileID: 2800000, guid: 0853add62de1db4479b61135ab22156c, type: 3}
+    preview: {fileID: 21300000, guid: 98b991faddc658847afc2ebcae21f2d0, type: 3}
   textureButtonPrefab: {fileID: 3368365515884707781, guid: 8c2731833000f1e4cba10f9877a972b9, type: 3}
-  colorListContainer: {fileID: 0}
-  colorButtonPrefab: {fileID: 3425710442072178208, guid: 0175e330b8621f043b98aae3cbe3c26d, type: 3}
+  textureButtonContainer: {fileID: 0}
+  defaultTexturePreview: {fileID: 0}
+  tagFilterUI: {fileID: 0}
+  equipEffectPrefab: {fileID: 9157105887711914197, guid: c4f829cb7dd4b864caf8832ec5b1ee55, type: 3}

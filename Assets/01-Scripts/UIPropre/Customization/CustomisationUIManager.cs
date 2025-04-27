@@ -246,6 +246,14 @@ public class CustomisationUIManager : NetworkBehaviour
 
     public void DisplayCurrentTheme()
     {
+        if (themeReminderText != null && ThemeManager.Instance != null)
+        {
+            var theme = ThemeManager.Instance.CurrentTheme;
+            if (theme != null)
+                themeReminderText.text = $"{theme.themeName}";
+            else
+                themeReminderText.text = "Thème : Inconnu";
+        }
     }
 
     #endregion
@@ -269,9 +277,20 @@ public class CustomisationUIManager : NetworkBehaviour
 
     private IEnumerator UpdateCustomizationTimer()
     {
-        Image fillImage = customizationSlider.fillRect.GetComponent<Image>();
-        Color baseColor = Color.green;
+        if (customizationSlider == null || customizationSlider.fillRect == null)
+        {
+            Debug.LogError("[CustomisationUIManager] Slider ou FillRect non assigné !");
+            yield break;
+        }
 
+        Image fillImage = customizationSlider.fillRect.GetComponent<Image>();
+        if (fillImage == null)
+        {
+            Debug.LogError("[CustomisationUIManager] Aucun Image trouvé sur le FillRect du slider !");
+            yield break;
+        }
+
+        Color baseColor = Color.green;
         fillImage.color = baseColor;
 
         bool isPulsating = false;

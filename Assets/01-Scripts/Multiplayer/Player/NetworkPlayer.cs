@@ -22,7 +22,7 @@ public class NetworkPlayer : NetworkBehaviour
     private CharacterController controller;
     private Camera localCamera;
     public static readonly Vector3 DefaultScale = Vector3.one;
-    public static readonly Vector3 EnlargedScale = new Vector3(3f, 3f, 3f); public Camera GetLocalCamera() => localCamera;
+    public static readonly Vector3 EnlargedScale = new Vector3(1.4f, 1.4f, 1.4f); public Camera GetLocalCamera() => localCamera;
 
     private void Awake()
     {

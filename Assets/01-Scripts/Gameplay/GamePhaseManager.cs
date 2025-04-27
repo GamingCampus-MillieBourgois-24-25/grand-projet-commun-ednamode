@@ -134,6 +134,42 @@ public class GamePhaseManager : NetworkBehaviour
             UIManager.Instance.ShowPanelDirect(toShow);
     }
 
+    public void ForceStopGamePhase()
+    {
+        Debug.LogWarning("[GamePhaseManager] ⛔ Interruption forcée des phases de jeu.");
+
+        var mapping = GetActivePanelMapping();
+        if (mapping == null) return;
+
+        // Désactiver tous les panels toHide et principaux
+        List<GameObject> panelsToDisable = new()
+    {
+        mapping.themeDisplayPanel,
+        mapping.themeDisplayPanelToHide,
+        mapping.customizationPanel,
+        mapping.customizationPanelToHide,
+        mapping.runwayPanel,
+        mapping.runwayPanelToHide,
+        mapping.podiumPanel,
+        mapping.podiumPanelToHide,
+        mapping.returnToLobbyPanel,
+        mapping.returnToLobbyPanelToHide
+    };
+
+        foreach (var panel in panelsToDisable)
+        {
+            if (panel != null && panel.activeSelf)
+                UIManager.Instance.HidePanel(panel, instant: true);
+        }
+
+        // Réinitialise la phase
+        CurrentPhase.Value = GamePhase.Waiting;
+
+        // Annule les timers ou animations éventuelles
+        UIManager.Instance?.CancelCountdown();
+    }
+
+
     #endregion
 
 }
