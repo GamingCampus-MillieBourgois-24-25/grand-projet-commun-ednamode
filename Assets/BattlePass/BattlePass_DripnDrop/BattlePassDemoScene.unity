@@ -5688,7 +5688,7 @@ MonoBehaviour:
   - name: Gold
     amount: 100
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 100
   textAmount: {fileID: 84915307}
   claimButton: {fileID: 203446415}
@@ -10327,7 +10327,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 1550114346}
   claimButton: {fileID: 614277585}
@@ -10603,7 +10603,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 1012570594}
   claimButton: {fileID: 415703138}
@@ -12993,7 +12993,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 1091237919}
   claimButton: {fileID: 917411075}
@@ -14843,7 +14843,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 1011667571}
   claimButton: {fileID: 510407095}
@@ -16329,7 +16329,7 @@ MonoBehaviour:
   - name: Gold
     amount: 130
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 130
   textAmount: {fileID: 612105615}
   claimButton: {fileID: 803727142}
@@ -18952,7 +18952,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 1685802098}
   claimButton: {fileID: 299122253}
@@ -23847,7 +23847,7 @@ MonoBehaviour:
   - name: Gold
     amount: 20
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 20
   textAmount: {fileID: 141315703}
   claimButton: {fileID: 1075092346}
@@ -25460,7 +25460,7 @@ MonoBehaviour:
   - name: Gold
     amount: 50
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 50
   textAmount: {fileID: 689270519}
   claimButton: {fileID: 1521859876}
@@ -27345,7 +27345,7 @@ MonoBehaviour:
   - name: Gold
     amount: 120
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 120
   textAmount: {fileID: 1603005545}
   claimButton: {fileID: 626025702}
@@ -29484,7 +29484,7 @@ MonoBehaviour:
   - name: Gold
     amount: 80
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 80
   textAmount: {fileID: 1368472618}
   claimButton: {fileID: 43927368}
@@ -29854,7 +29854,7 @@ MonoBehaviour:
   - name: Gold
     amount: 90
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 90
   textAmount: {fileID: 753715262}
   claimButton: {fileID: 1792139368}
@@ -31164,7 +31164,7 @@ MonoBehaviour:
   - name: Gold
     amount: 30
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 30
   textAmount: {fileID: 1062631828}
   claimButton: {fileID: 532031134}
@@ -32211,7 +32211,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 2015455005}
   claimButton: {fileID: 1823054230}
@@ -39005,7 +39005,7 @@ MonoBehaviour:
   - name: Gold
     amount: 100
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 100
   textAmount: {fileID: 1023655677}
   claimButton: {fileID: 1210618500}
@@ -44308,7 +44308,7 @@ MonoBehaviour:
   - name: Gold
     amount: 70
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 70
   textAmount: {fileID: 2076910432}
   claimButton: {fileID: 1233981316}
@@ -52344,7 +52344,7 @@ MonoBehaviour:
   - name: Gold
     amount: 60
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 60
   textAmount: {fileID: 159699586}
   claimButton: {fileID: 700104590}
@@ -52409,7 +52409,7 @@ MonoBehaviour:
   - name: Gold
     amount: 50
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 50
   textAmount: {fileID: 361861722}
   claimButton: {fileID: 2041512386}
@@ -55029,7 +55029,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 547427886}
   claimButton: {fileID: 430044959}
@@ -55240,7 +55240,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 31736798}
   claimButton: {fileID: 1725515260}
@@ -60041,7 +60041,7 @@ MonoBehaviour:
   - name: Gold
     amount: 110
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 110
   textAmount: {fileID: 984009382}
   claimButton: {fileID: 407398121}
@@ -63023,7 +63023,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 623426512}
   claimButton: {fileID: 355154729}
@@ -63096,7 +63096,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 1123566053}
   claimButton: {fileID: 338563471}
@@ -63968,7 +63968,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 1008825517}
   claimButton: {fileID: 1666693673}
@@ -64691,7 +64691,7 @@ MonoBehaviour:
   - name: Gold
     amount: 80
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 80
   textAmount: {fileID: 88905725}
   claimButton: {fileID: 848332624}
@@ -66220,7 +66220,7 @@ MonoBehaviour:
   - name: Gold
     amount: 40
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 40
   textAmount: {fileID: 2046718836}
   claimButton: {fileID: 881051120}
@@ -68244,7 +68244,7 @@ MonoBehaviour:
   - name: Gold
     amount: 40
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 40
   textAmount: {fileID: 914840620}
   claimButton: {fileID: 9834510}
@@ -69921,7 +69921,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 583554197}
   claimButton: {fileID: 1386842938}
@@ -69993,7 +69993,7 @@ MonoBehaviour:
   - name: Gold
     amount: 70
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 70
   textAmount: {fileID: 279150643}
   claimButton: {fileID: 924974834}
@@ -70057,7 +70057,7 @@ MonoBehaviour:
   - name: Gold
     amount: 20
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 20
   textAmount: {fileID: 359157588}
   claimButton: {fileID: 2022101118}
@@ -70985,7 +70985,7 @@ MonoBehaviour:
   - name: Gold
     amount: 130
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 130
   textAmount: {fileID: 1650359842}
   claimButton: {fileID: 1966638855}
@@ -71557,7 +71557,7 @@ MonoBehaviour:
   - name: Gold
     amount: 90
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 90
   textAmount: {fileID: 1258782619}
   claimButton: {fileID: 1489043922}
@@ -71771,7 +71771,7 @@ MonoBehaviour:
   - name: Gold
     amount: 30
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 30
   textAmount: {fileID: 590751181}
   claimButton: {fileID: 959950144}
@@ -71836,7 +71836,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 784284257}
   claimButton: {fileID: 1485390583}
@@ -73647,7 +73647,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 1524028049}
   claimButton: {fileID: 1976304796}
@@ -73856,7 +73856,7 @@ MonoBehaviour:
   - name: Gold
     amount: 60
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 60
   textAmount: {fileID: 270313217}
   claimButton: {fileID: 1716872648}
@@ -80606,139 +80606,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1890017066}
   m_CullTransparentMesh: 0
---- !u!1 &1890158442
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1890158443}
-  - component: {fileID: 1890158446}
-  - component: {fileID: 1890158445}
-  - component: {fileID: 1890158444}
-  m_Layer: 5
-  m_Name: ButtonResetSeasonTest
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1890158443
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1890158442}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2002103575}
-  m_Father: {fileID: 3795060889656898241}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -919, y: -2.287}
-  m_SizeDelta: {x: 225.448, y: 86.074}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1890158444
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1890158442}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1890158445}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3795060889859412545}
-        m_TargetAssemblyTypeName: EasyBattlePass.SeasonManager, Assembly-CSharp
-        m_MethodName: TestNewSeason
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 10
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &1890158445
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1890158442}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1890158446
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1890158442}
-  m_CullTransparentMesh: 1
 --- !u!1 &1891220922
 GameObject:
   m_ObjectHideFlags: 0
@@ -80795,7 +80662,7 @@ MonoBehaviour:
   - name: Gold
     amount: 110
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 110
   textAmount: {fileID: 1495765759}
   claimButton: {fileID: 1995584282}
@@ -84449,7 +84316,7 @@ MonoBehaviour:
   - name: Gold
     amount: 120
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 120
   textAmount: {fileID: 1888212003}
   claimButton: {fileID: 1085244014}
@@ -85311,142 +85178,6 @@ RectTransform:
   m_AnchoredPosition: {x: -10.239185, y: 8.791365}
   m_SizeDelta: {x: 102, y: 114}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &2002103574
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2002103575}
-  - component: {fileID: 2002103577}
-  - component: {fileID: 2002103576}
-  m_Layer: 5
-  m_Name: Text (TMP)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &2002103575
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2002103574}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.87625, y: 0.87625, z: 0.87625}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1890158443}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2002103576
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2002103574}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_text: New Season
-  m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 125cb55b44b24c4393181402bc6200e6, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 125cb55b44b24c4393181402bc6200e6, type: 2}
-  m_fontSharedMaterials: []
-  m_fontMaterial: {fileID: 0}
-  m_fontMaterials: []
-  m_fontColor32:
-    serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
-  m_enableVertexGradient: 0
-  m_colorMode: 3
-  m_fontColorGradient:
-    topLeft: {r: 1, g: 1, b: 1, a: 1}
-    topRight: {r: 1, g: 1, b: 1, a: 1}
-    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
-    bottomRight: {r: 1, g: 1, b: 1, a: 1}
-  m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
-  m_tintAllSprites: 0
-  m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: -1183493901
-  m_overrideHtmlColors: 0
-  m_faceColor:
-    serializedVersion: 2
-    rgba: 4294967295
-  m_fontSize: 40
-  m_fontSizeBase: 40
-  m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
-  m_fontStyle: 1
-  m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
-  m_textAlignment: 65535
-  m_characterSpacing: 0
-  m_wordSpacing: 0
-  m_lineSpacing: 0
-  m_lineSpacingMax: 0
-  m_paragraphSpacing: 0
-  m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
-  m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
-  m_linkedTextComponent: {fileID: 0}
-  parentLinkedComponent: {fileID: 0}
-  m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
-  m_enableExtraPadding: 0
-  checkPaddingRequired: 0
-  m_isRichText: 1
-  m_EmojiFallbackSupport: 1
-  m_parseCtrlCharacters: 1
-  m_isOrthographic: 1
-  m_isCullingEnabled: 0
-  m_horizontalMapping: 0
-  m_verticalMapping: 0
-  m_uvLineOffset: 0
-  m_geometrySortingOrder: 0
-  m_IsTextObjectScaleStatic: 0
-  m_VertexBufferAutoSizeReduction: 0
-  m_useMaxVisibleDescender: 1
-  m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_isUsingLegacyAnimationComponent: 0
-  m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_baseMaterial: {fileID: 0}
-  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &2002103577
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2002103574}
-  m_CullTransparentMesh: 1
 --- !u!1 &2004012380
 GameObject:
   m_ObjectHideFlags: 0
@@ -89915,7 +89646,7 @@ MonoBehaviour:
   - name: Gems
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 10
   textAmount: {fileID: 204303283}
   claimButton: {fileID: 1763277343}
@@ -97739,7 +97470,7 @@ MonoBehaviour:
   - name: Gems
     amount: 5
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
-  Icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+  Icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   itemAmount: 5
   textAmount: {fileID: 160830401393884041}
   claimButton: {fileID: 160830401525272861}
@@ -97792,7 +97523,7 @@ MonoBehaviour:
   - name: Gold
     amount: 10
     icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 10
   textAmount: {fileID: 160830400216179952}
   claimButton: {fileID: 160830401901436012}
@@ -105095,7 +104826,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -691, y: -2.287}
+  m_AnchoredPosition: {x: -997, y: -2.287}
   m_SizeDelta: {x: 160, y: 86.0737}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3795060889360159453
@@ -106189,7 +105920,6 @@ GameObject:
   - component: {fileID: 3795060889531441420}
   - component: {fileID: 3795060889531441423}
   - component: {fileID: 3795060889531441411}
-  - component: {fileID: 3795060889531441424}
   m_Layer: 5
   m_Name: Currency_Gem
   m_TagString: Untagged
@@ -106272,7 +106002,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 548, y: -50}
-  m_SizeDelta: {x: 298, y: 64}
+  m_SizeDelta: {x: 0, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3795060889531441423
 MonoBehaviour:
@@ -106288,20 +106018,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 2
   m_VerticalFit: 0
---- !u!114 &3795060889531441424
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3795060889531441417}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4b41b50a5b62344d9d95e5c84a999c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currencyName: Jewels
-  displayText: {fileID: 0}
 --- !u!1 &3795060889535974816
 GameObject:
   m_ObjectHideFlags: 0
@@ -106722,7 +106438,6 @@ RectTransform:
   - {fileID: 3795060889185334500}
   - {fileID: 3795060889360159452}
   - {fileID: 3795060891103732510}
-  - {fileID: 1890158443}
   m_Father: {fileID: 3795060889859412537}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -107534,7 +107249,7 @@ MonoBehaviour:
   - name: Gold
     amount: 10
     icon: {fileID: 0}
-  Icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
+  Icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
   itemAmount: 10
   textAmount: {fileID: 3795060890197988975}
   claimButton: {fileID: 3795060889037156713}
@@ -110946,7 +110661,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 194, y: -81.74963}
+  m_AnchoredPosition: {x: 194, y: -77}
   m_SizeDelta: {x: 148.00183, y: 132}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3795060890475386957
@@ -114247,7 +113962,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -458, y: -2.287}
+  m_AnchoredPosition: {x: -708, y: -2.287}
   m_SizeDelta: {x: 221.441, y: 86.074}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3795060891103732511
