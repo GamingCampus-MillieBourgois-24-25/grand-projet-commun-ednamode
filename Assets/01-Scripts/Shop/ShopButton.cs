@@ -74,7 +74,6 @@ namespace CharacterCustomization
         public void SetScriptable(ScriptableObject scriptable)
         {
             this.scriptable = scriptable;
-            Debug.Log($"Scriptable assigné : {scriptable?.name}, Type : {scriptable?.GetType()}");
         }
 
     }
