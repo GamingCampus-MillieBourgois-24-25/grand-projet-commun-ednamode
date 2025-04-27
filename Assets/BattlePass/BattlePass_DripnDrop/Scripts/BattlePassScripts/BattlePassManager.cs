@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -62,13 +62,13 @@ namespace EasyBattlePass
 
         {
             // ======= 1) Premier lancement ? =======
-            // On rÈcupËre la valeur sauvegardÈe ; si elle n'existe pas, on aura -1
+            // On r√©cup√®re la valeur sauvegard√©e ; si elle n'existe pas, on aura -1
             int savedLevel = EncryptionManager.LoadInt("currentLevel", -1);
             if (savedLevel == -1)
             {
-                // Jamais initialisÈ : on fait un reset complet
+                // Jamais initialis√© : on fait un reset complet
                 ResetPass();
-                // ResetPass fait dÈj‡ Save(), donc ìcurrentLevelî passera ‡ 0
+                // ResetPass fait d√©j√† Save(), donc ‚ÄúcurrentLevel‚Äù passera √† 0
             }
 
             // ======= 2) Chargement normal =======
@@ -135,7 +135,7 @@ namespace EasyBattlePass
         {
             if (EncryptionManager.LoadInt("SeasonEnded", 0) == 1) return;
 
-            // VÈrification et dÈpense via DataSaver
+            // V√©rification et d√©pense via DataSaver
             if (passCurrency.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
             {
                 if (dataSaver.dts.totalCoins < passCurrency.amount)
@@ -160,13 +160,13 @@ namespace EasyBattlePass
                 return;
             }
 
-            // DÈbloquer la version payante
+            // D√©bloquer la version payante
             EncryptionManager.SaveInt("_paidVersion", 1);
             paidVersionButton.SetActive(false);
             paidUnlocked = true;
             UnlockPaidRewards();
 
-            // Recharger l'Ètat
+            // Recharger l'√©tat
             Load();
         }
 
@@ -174,7 +174,7 @@ namespace EasyBattlePass
         {
             if (EncryptionManager.LoadInt("SeasonEnded", 0) == 1) return;
 
-            // VÈrification et dÈpense via DataSaver
+            // V√©rification et d√©pense via DataSaver
             if (skipTierCurrency.name.Equals("Coins", StringComparison.OrdinalIgnoreCase))
             {
                 if (dataSaver.dts.totalCoins < skipTierCurrency.amount)
@@ -375,7 +375,7 @@ namespace EasyBattlePass
                 EncryptionManager.SaveInt(kv.Key.name + "_paidClaimed", kv.Value ? 1 : 0);
         }
 
-        // Ajout des mÈthodes manquantes pour Reset
+        // Ajout des m√©thodes manquantes pour Reset
         private void LoadFreeClaimedRewards()
         {
             for (int i = 0; i < freeRewardTiers.Length; i++)
@@ -417,21 +417,21 @@ namespace EasyBattlePass
         public void ResetPass()
         {
 
-            // 1) Vider les listes en mÈmoire :
+            // 1) Vider les listes en m√©moire :
             freeClaimedRewards.Clear();
             paidClaimedRewards.Clear();
 
-            // 2) RÈinitialiser les flags sauvegardÈs en PlayerPrefs :
+            // 2) R√©initialiser les flags sauvegard√©s en PlayerPrefs :
             ResetFreeClaimedRewards();   // Vide aussi en interne les _freeClaimed
             ResetPaidClaimedRewards();   // Vide aussi en interne les _paidClaimed
 
-            // 3) Re-lock de chaque slot de rÈcompense dans líUI :
+            // 3) Re-lock de chaque slot de r√©compense dans l‚ÄôUI :
             foreach (var r in freeRewardTiers) r.Locked();
             foreach (var r in paidRewardTiers) r.Locked();
 
-            // 4) (Optionnel) mettre ‡ jour líUI immÈdiatement :
+            // 4) (Optionnel) mettre √† jour l‚ÄôUI imm√©diatement :
             UpdateUI();
-            // RÈinitialisation des donnÈes internes
+            // R√©initialisation des donn√©es internes
             level = 0;
             nextLevel = 1;
             extraLevel = 0;
@@ -446,11 +446,11 @@ namespace EasyBattlePass
                 dataSaver.SaveDataFn();
             }
 
-            // DÈsactivation du pass payant
+            // D√©sactivation du pass payant
             EncryptionManager.SaveInt("_paidVersion", 0);
             seasonEndedPass = false;
 
-            // RÈaffichage du slider d'XP
+            // R√©affichage du slider d'XP
             xpSliderInfo.SetActive(true);
 
             // Reverrouille rewards
@@ -459,13 +459,13 @@ namespace EasyBattlePass
             for (int i = 0; i < paidRewardTiers.Length; i++)
                 paidRewardTiers[i].Locked();
 
-            // RÈinitialise toutes les barres de progression de palier
+            // R√©initialise toutes les barres de progression de palier
             for (int i = 0; i < passTierProgressBar.Length; i++)
                 passTierProgressBar[i].LockedTier();
 
             tierScroller?.ScrollToSection(0);
 
-            // Sauvegarde et mise ‡ jour UI
+            // Sauvegarde et mise √† jour UI
             reset = true;
             Save();
             UpdateUI();
