@@ -88,6 +88,8 @@ public class GamePhaseTransitionController : NetworkBehaviour
 
         // ============= Phase de customisation ============= //
         SetPhase(GamePhaseManager.GamePhase.Customization);
+        CustomisationUIManager.Instance.DisplayCurrentTheme();
+        CustomisationUIManager.Instance.StartCustomizationTimer(_phaseManager.CustomizationDuration);
         yield return new WaitForSeconds(_phaseManager.CustomizationDuration);
 
         // ============= Phase de défilé ============= //
@@ -213,6 +215,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
         }
     }
 
+    public void ForceStopPhaseSequence()
+    {
+        Debug.LogWarning("[PhaseTransitionController] ⛔ Séquence de phases interrompue !");
+        StopAllCoroutines();
+        FadeOutMusic(themeMusicSource, 1f);
+    }
 
     #endregion
 

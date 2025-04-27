@@ -14,7 +14,7 @@ public class ThemeManager : NetworkBehaviour
     private NetworkVariable<ulong> impostorClientId = new(ulong.MaxValue, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private ThemeData lastChosenTheme = null;
-
+    private ThemeData.ThemeCategory? lastCategory = null;
     public ThemeData CurrentTheme => (selectedThemeIndex.Value >= 0 && selectedThemeIndex.Value < availableThemes.Count)
                                         ? availableThemes[selectedThemeIndex.Value]
                                         : null;
@@ -23,6 +23,10 @@ public class ThemeManager : NetworkBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        // 🎲 Forcer une seed aléatoire dynamique à chaque lancement
+        Random.InitState(System.DateTime.Now.GetHashCode() + UnityEngine.Random.Range(0, int.MaxValue));
+
         LoadAllThemes();
     }
 
@@ -44,8 +48,12 @@ public class ThemeManager : NetworkBehaviour
 
     private void SelectThemeWithImpostorLogic()
     {
-        var categories = System.Enum.GetValues(typeof(ThemeData.ThemeCategory)).Cast<ThemeData.ThemeCategory>().ToList();
-        var randomCategory = categories[Random.Range(0, categories.Count)];
+        // Mélange des catégories
+        var categories = System.Enum.GetValues(typeof(ThemeData.ThemeCategory)).Cast<ThemeData.ThemeCategory>().OrderBy(c => UnityEngine.Random.value).ToList();
+
+        // Prendre la première catégorie différente de la précédente
+        var randomCategory = categories.FirstOrDefault(c => c != lastCategory);
+        lastCategory = randomCategory;
 
         int selectedMode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
         bool isImpostorMode = (selectedMode == 1);
@@ -61,8 +69,11 @@ public class ThemeManager : NetworkBehaviour
             impostorClientId.Value = ulong.MaxValue;
         }
 
-        var themesInCategory = availableThemes.Where(t => t.category == randomCategory).ToList();
-        var chosenTheme = GetNonRepeatingRandomTheme(themesInCategory);
+        var themesInCategory = availableThemes.Where(t => t.category == randomCategory).OrderBy(t => UnityEngine.Random.value).ToList();
+
+        ThemeData chosenTheme = themesInCategory.FirstOrDefault(t => t != lastChosenTheme) ?? themesInCategory[0];
+        lastChosenTheme = chosenTheme;
+
         selectedThemeIndex.Value = availableThemes.IndexOf(chosenTheme);
 
         Debug.Log($"[ThemeManager] Catégorie : {randomCategory} | Thème sélectionné : {chosenTheme.themeName}");

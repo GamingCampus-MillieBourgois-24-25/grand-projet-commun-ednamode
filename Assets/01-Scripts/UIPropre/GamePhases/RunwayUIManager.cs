@@ -117,7 +117,26 @@ public class RunwayUIManager : MonoBehaviour
         }
 
         timerSlider.value = 0f;
-         // TriggerScreenshotPopup();
+
+        if (!hasVoted)
+        {
+            Debug.Log("⏱️ Temps écoulé, vote automatique appliqué.");
+
+            int mode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
+
+            if (mode == 0) // Dress To Impress
+            {
+                VotingManager.Instance.SubmitVote_ServerRpc(currentTargetClientId, 1);
+            }
+            else if (mode == 2) // Impostor Mode
+            {
+                VotingManager.Instance.SubmitVote_ServerRpc(currentTargetClientId, 0);
+            }
+
+            hasVoted = true;
+        }
+
+        HideRunwayPanel();
     }
 
     #endregion
@@ -130,6 +149,7 @@ public class RunwayUIManager : MonoBehaviour
         thumbsVoteContainer.SetActive(false);
 
         int mode = MultiplayerNetwork.Instance.SelectedGameMode.Value;
+        Debug.Log($"[RunwayUI] Mode sélectionné : {mode}");
 
         if (mode == 0) // Dress To Impress
         {
@@ -145,7 +165,7 @@ public class RunwayUIManager : MonoBehaviour
                 starButtons[i].onClick.AddListener(() => SubmitStarVote(vote));
             }
         }
-        else if (mode == 2) // Impostor Mode
+        else if (mode == 1) // Impostor Mode
         {
             thumbsVoteContainer.SetActive(true);
             thumbsUpButton.onClick.RemoveAllListeners();

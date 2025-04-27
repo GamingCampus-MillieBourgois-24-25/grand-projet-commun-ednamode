@@ -168,6 +168,59 @@ public class MultiplayerManager : NetworkBehaviour
             RefreshLobbyClientRpc();
         }
 
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            Debug.LogWarning("🔌 Déconnexion locale du joueur. Nettoyage complet...");
+            HandleLocalDisconnection();
+            UIManager.Instance?.ForceCleanupUI();
+        }
+    }
+
+    /// <summary>
+    /// Réinitialise la session multijoueur.
+    /// </summary>
+    public void ResetMultiplayerSession()
+    {
+        Debug.Log("🔄 [MultiplayerManager] Reset complet de la session multijoueur...");
+
+        // 1️⃣ Reset des états Ready
+        ResetAllReadyStates();
+
+        // 2️⃣ Reset du mode de jeu sélectionné
+        if (CanWriteNetworkData())
+        {
+            MultiplayerNetwork.Instance.SelectedGameMode.Value = -1;
+        }
+
+        // 3️⃣ Reset des phases de jeu
+        GamePhaseManager.Instance?.ForceStopGamePhase();
+        GamePhaseTransitionController.Instance?.ForceStopPhaseSequence();
+
+        // 4️⃣ Nettoyage de l'UI
+        UIManager.Instance?.ForceCleanupUI();
+
+        // 5️⃣ Reset côté UI du bouton Ready
+        FindObjectOfType<MultiplayerUI>()?.ResetReadyState();
+
+        // 6️⃣ Optionnel : Relancer la musique de menu
+        FindObjectOfType<MultiplayerUI>()?.UpdateConnectionUI(false);
+
+        Debug.Log("✅ [MultiplayerManager] Reset terminé.");
+    }
+
+    /// <summary>
+    /// Gère la déconnexion locale du joueur.
+    /// </summary>
+    private void HandleLocalDisconnection()
+    {
+        UIManager.Instance?.ForceCleanupUI();
+        Debug.LogWarning("🔌 Déconnecté du serveur. Nettoyage global...");
+
+        GamePhaseManager.Instance?.ForceStopGamePhase();
+        GamePhaseTransitionController.Instance?.ForceStopPhaseSequence();
+
+        ResetMultiplayerSession();
+        UIManager.Instance?.ShowPanel("Main Menu");
     }
 
     /// <summary>

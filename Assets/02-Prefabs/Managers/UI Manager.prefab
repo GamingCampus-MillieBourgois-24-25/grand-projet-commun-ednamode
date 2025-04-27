@@ -363,7 +363,13 @@ MonoBehaviour:
     specialAnimation: 0
   animationDuration: 0.4
   animationEase: 27
-  hiddenScale: {x: 0.85, y: 0.85, z: 1}
+  hiddenScale: {x: 0.1, y: 0.1, z: 1}
+  disconnectCleanupPanels:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   useSpecialAnimation: 0
   uiAudioSource: {fileID: 713933515105271150}
   clickSound: {fileID: 0}
