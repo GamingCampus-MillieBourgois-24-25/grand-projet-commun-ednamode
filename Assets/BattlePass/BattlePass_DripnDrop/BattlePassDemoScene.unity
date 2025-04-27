@@ -103502,7 +103502,6 @@ GameObject:
   - component: {fileID: 3795060889073526906}
   - component: {fileID: 3795060889073526885}
   - component: {fileID: 3795060889073526905}
-  - component: {fileID: 3795060889073526908}
   m_Layer: 5
   m_Name: Currency_Gold
   m_TagString: Untagged
@@ -103530,7 +103529,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4b41b50a5b62344d9d95e5c84a999c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currencyName: Gold
+  currencyName: Coins
   displayText: {fileID: 3795060889272854654}
 --- !u!114 &3795060889073526906
 MonoBehaviour:
@@ -103588,20 +103587,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &3795060889073526908
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3795060889073526887}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4b41b50a5b62344d9d95e5c84a999c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currencyName: Coins
-  displayText: {fileID: 0}
 --- !u!1 &3795060889089651825
 GameObject:
   m_ObjectHideFlags: 0
@@ -105527,7 +105512,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.88550174, b: 0, a: 1}
+  m_Color: {r: 0, g: 0.06272576, b: 0.8867924, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -106188,7 +106173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4b41b50a5b62344d9d95e5c84a999c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currencyName: Gems
+  currencyName: Jewels
   displayText: {fileID: 3795060891045808254}
 --- !u!1 &3795060889531441417
 GameObject:
@@ -106315,7 +106300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4b41b50a5b62344d9d95e5c84a999c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currencyName: Gems
+  currencyName: Jewels
   displayText: {fileID: 0}
 --- !u!1 &3795060889535974816
 GameObject:
@@ -107748,18 +107733,18 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3795060889859412539}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 452c032afc433d44b901fb711d0bbe66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   currencies:
-  - name: Gold
+  - name: Coins
     amount: 500
-    icon: {fileID: 21300000, guid: 945a85ef3cddd114c8ae1ee1a6ca8e9f, type: 3}
-  - name: Gems
+    icon: {fileID: 21300000, guid: 9abe7b3c524794645954282be1896891, type: 3}
+  - name: Jewels
     amount: 500
-    icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
+    icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   - name: X2Token
     amount: 5
     icon: {fileID: 0}
@@ -107843,11 +107828,11 @@ MonoBehaviour:
   - {fileID: 1845223825}
   afterPassReward: {fileID: 3795060891078735984}
   passCurrency:
-    name: Gems
+    name: Jewels
     amount: 200
     icon: {fileID: 21300000, guid: 38c462b6ff6291f4f86472b59ade47da, type: 3}
   skipTierCurrency:
-    name: Gems
+    name: Jewels
     amount: 10
     icon: {fileID: 21300000, guid: d339effff73e1c74b8e9f27267d313ed, type: 3}
   paidUnlocked: 0
@@ -113662,7 +113647,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8448343, b: 1, a: 1}
+  m_Color: {r: 0.5754717, g: 0, b: 0, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -114341,7 +114326,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Reset Pass
+  m_text: 'Start Season
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 125cb55b44b24c4393181402bc6200e6, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 125cb55b44b24c4393181402bc6200e6, type: 2}
@@ -114522,7 +114509,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'GIVE XP
+  m_text: 'Play a match
 
 '
   m_isRightToLeft: 0
