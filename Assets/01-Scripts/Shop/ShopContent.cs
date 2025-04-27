@@ -24,7 +24,7 @@ namespace CharacterCustomization
             GridLayoutGroup gridLayoutGroup = GetComponentInChildren<GridLayoutGroup>();
             if (layoutGroup == null)
             {
-                Debug.LogError("Aucun LayoutGroup trouvé dans les enfants !");
+                Debug.LogError("Aucun LayoutGroup trouv? dans les enfants !");
                 return;
             }
 
@@ -48,7 +48,7 @@ namespace CharacterCustomization
             .GroupBy(item => item.category)
             .ToDictionary(group => group.Key, group => group.ToList());
 
-            // Récupérer la liste des items possédés
+            // R?cup?rer la liste des items poss?d?s
             HashSet<Item> ownedItemsSet = new HashSet<Item>(savedItems); // Utiliser un HashSet pour une recherche rapide
 
             // Associer les items aux tabs correspondants
@@ -58,7 +58,7 @@ namespace CharacterCustomization
                 {
                     foreach (Item item in itemsInCategory)
                     {
-                        // Vérifier si l'item est déjà possédé
+                        // V?rifier si l'item est d?j? poss?d?
                         if (ownedItemsSet.Contains(item))
                         {
                             continue; // Passer cet item

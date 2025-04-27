@@ -60,7 +60,7 @@ namespace CharacterCustomization
                 }
                 else
                 {
-                    Debug.LogWarning($"Aucun CamPointType trouvé pour le SlotType : {slotCategory}");
+                    Debug.LogWarning($"Aucun CamPointType trouv? pour le SlotType : {slotCategory}");
                 }
             });
 
@@ -74,7 +74,6 @@ namespace CharacterCustomization
         public void SetScriptable(ScriptableObject scriptable)
         {
             this.scriptable = scriptable;
-            Debug.Log($"Scriptable assigné : {scriptable?.name}, Type : {scriptable?.GetType()}");
         }
 
     }

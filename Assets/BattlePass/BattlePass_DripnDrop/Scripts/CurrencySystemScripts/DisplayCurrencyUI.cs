@@ -12,7 +12,9 @@ namespace EasyBattlePass
 
         void Update()
         {
-            if (DataSaver.Instance == null) return;
+            // Si le DataSaver n'est pas encore initialisé, ou si le TMP_Text n'est pas branché, on sort
+            if (DataSaver.Instance == null || displayText == null)
+                return;
 
             int value = currencyName == "Coins"
                 ? DataSaver.Instance.dts.totalCoins

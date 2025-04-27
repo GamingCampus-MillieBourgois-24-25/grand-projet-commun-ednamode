@@ -1,25 +1,46 @@
+using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
+using System.Collections.Generic;
+using CharacterCustomization;
 public class OfferButton : MonoBehaviour
 {
-    private TextMeshProUGUI buttonText;
     private DataSaver dataSaver;
     private int coinsToObtain;
     private int jewelsToSpend;
     private ScriptableObject offer;
     private Button button;
+    private List<TextMeshProUGUI> textMeshProUGUIs;
+    [SerializeField] private Sprite coinIcon;
+    [SerializeField] private Sprite jewelIcon;
+    private List<Image> icons;
+
+    private ShoppingScript shopping;
     void Awake()
     {
+        shopping = Object.FindFirstObjectByType<ShoppingScript>();
         dataSaver = DataSaver.Instance;
-        buttonText = GetComponentInChildren<TextMeshProUGUI>();
+        textMeshProUGUIs = new List<TextMeshProUGUI>();
+        foreach (var text in GetComponentsInChildren<TextMeshProUGUI>())
+        {
+            textMeshProUGUIs.Add(text);
+        }
+        icons = new List<Image>();
+        foreach (var icon in GetComponentsInChildren<Image>())
+        {
+            if (icon.gameObject.name == "coinIcon")
+            {
+                icon.sprite = coinIcon;
+            }
+            else if (icon.gameObject.name == "jewelIcon")
+            {
+                icon.sprite = jewelIcon;
+            }
+            icons.Add(icon);
+        }
         button = GetComponent<Button>();
 
-        if (buttonText == null)
-        {
-            Debug.LogError("TextMeshPro component not found in children of this GameObject.");
-        }
 
         // Ajouter un listener au bouton
         if (button != null)
@@ -35,14 +56,8 @@ public class OfferButton : MonoBehaviour
 
     public void SetText(int jewels, int coins)
     {
-        if (buttonText != null)
-        {
-            buttonText.text = jewels+" jewels -> "+coins+" coins";
-        }
-        else
-        {
-            Debug.LogError("TextMeshProUGUI component not found on this GameObject.");
-        }
+        textMeshProUGUIs[0].text = jewels.ToString();
+        textMeshProUGUIs[1].text = coins.ToString();
     }
 
     public void SetScriptable(ScriptableObject offer)
@@ -68,6 +83,8 @@ public class OfferButton : MonoBehaviour
             {
                 dataSaver.addCoins(coinsToObtain);
                 dataSaver.removeJewels(jewelsToSpend);
+                // Mettre à jour l'affichage des pièces et des joyaux
+                shopping.SetTexts();
                 Debug.Log("Conversion successful: " + jewelsToSpend + " jewels -> " + coinsToObtain + " coins");
             }
             else
