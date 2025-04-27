@@ -531,11 +531,14 @@ public class MultiplayerManager : NetworkBehaviour
         }
         finally
         {
+
             CurrentLobby = null;
             JoinCode = null;
             SessionStore.Instance.SetLobby(null);
             NetworkManager.Singleton.Shutdown();
             Debug.Log("Session quittée.");
+            // Lancer localement pour le host
+            LoadingSceneManager.LoadSceneWithTransition("Lobby_Horizontal v2");
         }
         FindFirstObjectByType<MultiplayerUI>()?.UpdateJoinCode("");
     }

@@ -60,9 +60,12 @@ public class ThemeManager : NetworkBehaviour
     private void LoadAllThemes()
     {
         availableThemes = Resources.LoadAll<ThemeData>("Themes").ToList();
+
+        // Mélange aléatoire de l'ordre des thèmes
+        ShuffleList(availableThemes);
+
         themesByCategory.Clear();
 
-        // Cache themes by category for faster lookup
         foreach (var theme in availableThemes)
         {
             if (theme.hideFlags == HideFlags.DontSave) continue;
@@ -71,13 +74,24 @@ public class ThemeManager : NetworkBehaviour
             themesByCategory[theme.category].Add(theme);
         }
 
-        // Log theme and category counts
         int themeCount = availableThemes.Count;
         string categories = string.Join(", ", themesByCategory.Keys);
-        Debug.Log($"[ThemeManager] {themeCount} thèmes chargés. Categories: {categories}");
+        Debug.Log($"[ThemeManager] 🎨 {themeCount} themes loaded. Categories: {categories}");
+
         foreach (var kvp in themesByCategory)
         {
-            Debug.Log($"[ThemeManager] Category {kvp.Key}: {kvp.Value.Count} themes");
+            Debug.Log($"[ThemeManager] 📂 Category {kvp.Key}: {kvp.Value.Count} themes");
+        }
+    }
+
+    private void ShuffleList<T>(List<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            T temp = list[i];
+            int randomIndex = Random.Range(i, list.Count);
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
         }
     }
 

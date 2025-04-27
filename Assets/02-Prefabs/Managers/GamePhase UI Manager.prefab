@@ -75,7 +75,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   CurrentPhase:
     m_InternalValue: 0
-  customizationDuration: 10
+  customizationDuration: 20
   runwayVotingPerPlayerDuration: 7
   podiumDuration: 7
   transitionController: {fileID: 8256609374081343765}
