@@ -82,22 +82,29 @@ public class PlayerCustomizationData : NetworkBehaviour
                 continue;
             }
 
-            bool hasCustomColor = Data.TryGetColor(slot, out var customColor);
-            bool hasCustomTexture = Data.TryGetTexture(slot, out var textureName);
+            bool hasCustomColor = Data.equippedColors.ContainsKey(slot);
+            bool hasCustomTexture = Data.equippedTextures.ContainsKey(slot);
 
-            if (hasCustomTexture)
+            Color32 customColor = new Color32(255, 255, 255, 255); // Valeur par défaut qui ne sera utilisée que si hasCustomColor=true
+            string textureName = null;
+
+            if (hasCustomColor)
             {
-                handler.Equip(slot, item.prefab, hasCustomColor ? customColor : (Color?)null, textureName);
+                handler.Equip(slot, item.prefab, (Color)customColor, null);
+            }
+            else if (hasCustomTexture)
+            {
+                handler.Equip(slot, item.prefab, null, textureName);
             }
             else
             {
-                if (hasCustomColor)
-                    handler.ApplyColorWithoutTexture(slot, customColor);
-                else
-                    handler.Equip(slot, item.prefab, null, null); // 🛠️ Laisse intact si aucune customisation
+                handler.Equip(slot, item.prefab, null, null);
             }
+
         }
     }
+
+
 
 
     public void SetItemAndApplyLocal(SlotType slotType, string itemId, Item item)

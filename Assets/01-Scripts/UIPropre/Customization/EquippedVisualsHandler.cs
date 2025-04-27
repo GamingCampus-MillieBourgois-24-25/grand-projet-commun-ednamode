@@ -19,7 +19,7 @@ public class EquippedVisualsHandler : NetworkBehaviour
     [Tooltip("Copier l'Animator du parent sur les habits instanciés")]
     [SerializeField] private bool copyAnimatorFromParent = true;
 
-    private Transform bodyTarget;
+    public Transform bodyTarget;
     private Animator referenceAnimator;
 
     public string GetTargetMeshName() => targetMeshName;
@@ -87,20 +87,41 @@ public class EquippedVisualsHandler : NetworkBehaviour
         foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
         {
             foreach (var mat in renderer.materials)
-{
-    if (mat != null)
-    {
-        if (color.HasValue)
-        {
-            mat.color = color.Value;
-        }
-        else
-        {
-            // 🛡️ IMPORTANT : NE PAS TOUCHER à la couleur d'origine
-        }
-    }
-}
+            {
+                if (mat == null) continue;
 
+                if (color.HasValue)
+                {
+                    // 🔥 Si une couleur custom est appliquée :
+                    mat.color = color.Value;
+
+                    if (mat.HasProperty("_BaseMap"))
+                    {
+                        // 🔥 On enlève la texture pour un color uniforme
+                        mat.mainTexture = null;
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(textureName))
+                    {
+                        // 🔥 Si une texture custom est spécifiée :
+                        Texture tex = Resources.Load<Texture>($"Textures/{textureName}");
+                        if (tex != null)
+                        {
+                            if (mat.HasProperty("_BaseMap"))
+                            {
+                                mat.mainTexture = tex;
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[EquippedVisualsHandler] ⚠️ Texture {textureName} introuvable pour {slotType}");
+                        }
+                    }
+                    // ⚡ Et surtout : SINON ne rien toucher à mat.mainTexture !
+                }
+            }
         }
 
         var skinned = instance.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -112,24 +133,9 @@ public class EquippedVisualsHandler : NetworkBehaviour
             skinned.rootBone = bodySkinned.rootBone;
         }
 
-        if (!string.IsNullOrEmpty(textureName))
-        {
-            Texture tex = Resources.Load<Texture>($"Textures/{textureName}");
-            if (tex != null)
-            {
-                foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
-                {
-                    foreach (var mat in renderer.materials)
-                    {
-                        if (mat != null)
-                            mat.mainTexture = tex;
-                    }
-                }
-            }
-        }
-
         equippedVisuals[slotType] = instance;
     }
+
 
 
     public void ApplyColorWithoutTexture(SlotType slotType, Color color)
@@ -194,5 +200,11 @@ public class EquippedVisualsHandler : NetworkBehaviour
         equippedVisuals.TryGetValue(slotType, out var obj);
         return obj;
     }
+    public void RegisterEquipped(SlotType slotType, GameObject instance)
+    {
+        Unequip(slotType);
+        equippedVisuals[slotType] = instance;
+    }
+
 }
 #endregion
