@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 9001
   itemName: Long Mustache
-  icon: {fileID: 21300032, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: 7bbb0cc4f83fbd4488b3bd44752df8fe, type: 3}
   prefab: {fileID: 7447399822274565913, guid: bc6466d27e0478a48a2f220fcc6f87a7, type: 3}
   price: 0
   category: 8

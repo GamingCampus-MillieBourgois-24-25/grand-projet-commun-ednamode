@@ -13,7 +13,7 @@ namespace CharacterCustomization
         }
 
         [Header("Points d'attache")]
-        public List<SlotAttachment> slotAttachments; // Liste des points d'attache pour chaque type d'item
+        public List<SlotAttachment> slotAttachments; 
 
         private Dictionary<SlotType, GameObject> equippedItems = new Dictionary<SlotType, GameObject>();
 
@@ -25,7 +25,6 @@ namespace CharacterCustomization
         {
             if (item == null || item.prefab == null)
             {
-                Debug.LogError("L'item ou son prefab est null !");
                 return;
             }
 
@@ -33,7 +32,6 @@ namespace CharacterCustomization
             SlotAttachment attachment = slotAttachments.Find(a => a.slotType == item.category);
             if (attachment == null || attachment.attachmentPoint == null)
             {
-                Debug.LogError($"Aucun point d'attache trouv? pour le type {item.category} !");
                 return;
             }
 
@@ -60,7 +58,6 @@ namespace CharacterCustomization
                 animationSync.Initialize(this.gameObject);
             }
 
-            Debug.Log($"Item {item.itemName} ?quip? sur {attachment.attachmentPoint.name}.");
         }
     }
 }

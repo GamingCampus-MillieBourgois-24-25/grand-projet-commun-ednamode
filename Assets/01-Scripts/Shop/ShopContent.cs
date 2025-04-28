@@ -19,12 +19,10 @@ namespace CharacterCustomization
         {
             dataSaver = DataSaver.Instance;
             itemButtons = new List<GameObject>();
-            // Trouver l'enfant avec un LayoutGroup
             LayoutGroup layoutGroup = GetComponentInChildren<LayoutGroup>();
             GridLayoutGroup gridLayoutGroup = GetComponentInChildren<GridLayoutGroup>();
             if (layoutGroup == null)
             {
-                Debug.LogError("Aucun LayoutGroup trouv? dans les enfants !");
                 return;
             }
 
@@ -48,8 +46,7 @@ namespace CharacterCustomization
             .GroupBy(item => item.category)
             .ToDictionary(group => group.Key, group => group.ToList());
 
-            // R?cup?rer la liste des items poss?d?s
-            HashSet<Item> ownedItemsSet = new HashSet<Item>(savedItems); // Utiliser un HashSet pour une recherche rapide
+            HashSet<Item> ownedItemsSet = new HashSet<Item>(savedItems); 
 
             // Associer les items aux tabs correspondants
             foreach (Tab tab in tabs)
@@ -58,13 +55,12 @@ namespace CharacterCustomization
                 {
                     foreach (Item item in itemsInCategory)
                     {
-                        // V?rifier si l'item est d?j? poss?d?
                         if (ownedItemsSet.Contains(item))
                         {
-                            continue; // Passer cet item
+                            continue; 
                         }
 
-                        tab.items.Add(item); // Ajouter l'item au tab
+                        tab.items.Add(item); 
 
                         GameObject itemButton = Instantiate(itemButtonPrefab, gridLayoutGroup.transform);
                         itemButton.GetComponent<ShopButton>().SetScriptable(item);

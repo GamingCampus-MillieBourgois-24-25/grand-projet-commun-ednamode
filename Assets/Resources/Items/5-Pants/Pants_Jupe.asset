@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 5002
   itemName: Jupe
-  icon: {fileID: 21300000, guid: edf47f252cf3849508fb8878885acc8e, type: 3}
+  icon: {fileID: 21300000, guid: 9d64308f0e89d7842afba83c78e2d08d, type: 3}
   prefab: {fileID: 3375895494529420441, guid: d0dee07c085269e41b130252d045b4a2, type: 3}
   price: 0
   category: 10

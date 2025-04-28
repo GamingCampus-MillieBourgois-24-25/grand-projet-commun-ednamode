@@ -32,22 +32,8 @@ public class EquippedVisualsHandler : NetworkBehaviour
     {
         bodyTarget = transform.Find(targetMeshName);
 
-        if (bodyTarget == null)
-        {
-            Debug.LogError($"[EquippedVisualsHandler] ❌ Aucun enfant nommé '{targetMeshName}' trouvé dans {gameObject.name}. L'équipement ne sera pas visible.");
-        }
-
         referenceAnimator = GetComponentInParent<Animator>();
 
-        if (referenceAnimator == null)
-        {
-            Debug.LogError("[EquippedVisualsHandler] Aucun Animator trouvé dans le parent !");
-            return;
-        }
-        else
-        {
-            Debug.Log($"[EquippedVisualsHandler] Animator trouvé : {referenceAnimator.name}");
-        }
         bodyTarget = referenceAnimator.transform;
     }
 
@@ -66,7 +52,6 @@ public class EquippedVisualsHandler : NetworkBehaviour
 
         if (prefab == null)
         {
-            Debug.LogWarning($"[EquippedVisualsHandler] ❌ Prefab null pour {slotType}");
             return;
         }
 
@@ -148,10 +133,7 @@ public class EquippedVisualsHandler : NetworkBehaviour
                 }
             }
         }
-        else
-        {
-            Debug.LogWarning($"[EquippedVisualsHandler] Aucun objet équipé pour le slot {slotType}.");
-        }
+        
     }
 
     public void Unequip(SlotType slotType)

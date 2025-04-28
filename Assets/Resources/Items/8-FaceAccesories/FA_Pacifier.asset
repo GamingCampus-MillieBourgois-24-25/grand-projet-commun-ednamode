@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 8002
   itemName: Pacifier
-  icon: {fileID: 21300000, guid: 85d02a3364ef38047bdd226e4db74ad0, type: 3}
+  icon: {fileID: 21300000, guid: 9d64308f0e89d7842afba83c78e2d08d, type: 3}
   prefab: {fileID: 7768168386555931634, guid: ed065aba63e6d944b90f24b0b6fd9027, type: 3}
   price: 0
   category: 0

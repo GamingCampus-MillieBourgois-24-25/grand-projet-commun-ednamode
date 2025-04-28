@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 1005
   itemName: Chemise
-  icon: {fileID: 21300000, guid: a9c239d416850a44fba3ef83b3a0ff16, type: 3}
+  icon: {fileID: 21300000, guid: 9d64308f0e89d7842afba83c78e2d08d, type: 3}
   prefab: {fileID: 1922166492539680910, guid: 01305907ba8ee9747b31c3eeecc61ca5, type: 3}
   price: 0
   category: 9

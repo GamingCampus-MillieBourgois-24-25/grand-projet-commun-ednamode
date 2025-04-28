@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 9000
   itemName: Old Mustache
-  icon: {fileID: 21300032, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  icon: {fileID: 21300000, guid: 80a4611e6ac7b404d83f21ab68b86c54, type: 3}
   prefab: {fileID: 4472029755296537295, guid: 7e0f8c5b1b29e4b4895e1fe0b0659109, type: 3}
   price: 0
   category: 8

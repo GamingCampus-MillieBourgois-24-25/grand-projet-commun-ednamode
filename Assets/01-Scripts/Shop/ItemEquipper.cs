@@ -28,7 +28,6 @@ public class ItemEquipper : MonoBehaviour
         EquipPoint equipPoint = equipPoints.Find(point => point.slotType == slotType);
         if (equipPoint == null)
         {
-            Debug.LogWarning($"Aucun point d'attache trouv? pour le type {slotType}");
             return;
         }
 
@@ -57,7 +56,6 @@ public class ItemEquipper : MonoBehaviour
     {
         if (item == null || item.prefab == null)
         {
-            Debug.LogWarning("L'item ou son prefab est null.");
             return;
         }
 

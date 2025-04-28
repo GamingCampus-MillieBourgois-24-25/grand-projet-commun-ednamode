@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
+
 
 namespace CharacterCustomization
 {
@@ -58,10 +57,7 @@ namespace CharacterCustomization
                 {
                     chooseCamPoint.SwitchToCamPoint(camPointType);
                 }
-                else
-                {
-                    Debug.LogWarning($"Aucun CamPointType trouv? pour le SlotType : {slotCategory}");
-                }
+               
             });
 
         }

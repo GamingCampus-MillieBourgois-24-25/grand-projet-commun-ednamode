@@ -18,10 +18,7 @@ namespace CharacterCustomization
                 category = tab.category.ToString();
                 buttonImage.sprite = defaultImg;
                 icon.sprite = Resources.Load<Sprite>($"Tabs_icons/{tab.category}Icon");
-                if (icon.sprite == null)
-                {
-                    Debug.LogWarning($"Aucun sprite trouv? pour le type de cat?gorie : {tab.category}");
-                }
+               
                 button.onClick.AddListener(() => itemSorter.SortItemsByCategory(category));
             }
         }

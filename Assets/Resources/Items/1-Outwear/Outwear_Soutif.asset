@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 1012
   itemName: Pull
-  icon: {fileID: 21300000, guid: 9c8425849c85c4339a70cc1537ec1f1a, type: 3}
+  icon: {fileID: 21300000, guid: 9d64308f0e89d7842afba83c78e2d08d, type: 3}
   prefab: {fileID: 2394123222382074684, guid: 99d2c49ed6b13254aa27f77df79d196d, type: 3}
   price: 0
   category: 9

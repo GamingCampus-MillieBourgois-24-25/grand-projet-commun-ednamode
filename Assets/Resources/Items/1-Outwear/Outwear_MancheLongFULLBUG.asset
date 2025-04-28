@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 1010
   itemName: Orange Hoodie
-  icon: {fileID: 21300000, guid: 9c8425849c85c4339a70cc1537ec1f1a, type: 3}
+  icon: {fileID: 21300000, guid: 9d64308f0e89d7842afba83c78e2d08d, type: 3}
   prefab: {fileID: 2373429957589881375, guid: 26c885dc3fea9e84c82fd76cf8660f64, type: 3}
   price: 0
   category: 9

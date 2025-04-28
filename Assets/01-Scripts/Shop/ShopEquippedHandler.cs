@@ -10,19 +10,12 @@ namespace CharacterCustomization
 
         private Dictionary<SlotType, GameObject> equippedVisuals = new Dictionary<SlotType, GameObject>();
 
-        private void Awake()
-        {
-            if (bodyTarget == null)
-            {
-                Debug.LogError($"[ShopEquippedHandler] ? Aucun bodyTarget assigné sur {gameObject.name}.");
-            }
-        }
+       
 
         public void EquipItem(Item item)
         {
             if (item == null || item.prefab == null || bodyTarget == null)
             {
-                Debug.LogWarning("[ShopEquippedHandler] Equipement impossible : item, prefab ou bodyTarget manquant.");
                 return;
             }
 
@@ -37,7 +30,6 @@ namespace CharacterCustomization
 
             equippedVisuals[item.category] = instance;
 
-            Debug.Log($"[ShopEquippedHandler] ? {item.itemName} équipé sur le slot {item.category}.");
         }
 
         public void Unequip(SlotType slotType)
@@ -47,7 +39,6 @@ namespace CharacterCustomization
                 Destroy(oldObj);
                 equippedVisuals.Remove(slotType);
 
-                Debug.Log($"[ShopEquippedHandler] ?? Dééquipé slot {slotType}.");
             }
         }
 

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 1006
   itemName: CropTop
-  icon: {fileID: 21300000, guid: c7c880a1a987f204692799831bfd12de, type: 3}
+  icon: {fileID: 21300000, guid: 9d64308f0e89d7842afba83c78e2d08d, type: 3}
   prefab: {fileID: 3674411702839285873, guid: 7536f9ead2c42aa438b5ff7e9917020b, type: 3}
   price: 0
   category: 9
