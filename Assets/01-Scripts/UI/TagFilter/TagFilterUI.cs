@@ -22,46 +22,16 @@ namespace CharacterCustomization
 
         private void Start()
         {
-            if (tagPanel != null)
-            {
-                tagPanel.SetActive(false);
-                Debug.Log("[TagFilterUI] tagPanel assigné et désactivé au démarrage.");
-            }
-            else
-            {
-                Debug.LogError("[TagFilterUI] tagPanel n'est PAS assigné dans l'inspecteur !");
-            }
-
-            if (filterButton != null)
-            {
-                filterButton.onClick.AddListener(OpenTagPanel);
-                Debug.Log("[TagFilterUI] filterButton assigné et événement lié.");
-            }
-            else
-            {
-                Debug.LogError("[TagFilterUI] filterButton n'est PAS assigné dans l'inspecteur !");
-            }
-
-            if (customisationUIManager != null)
-            {
-                Debug.Log("[TagFilterUI] customisationUIManager assigné : " + customisationUIManager.gameObject.name);
-            }
-            else
-            {
-                Debug.LogError("[TagFilterUI] customisationUIManager n'est PAS assigné dans l'inspecteur !");
-            }
 
             StartCoroutine(InitializeTagList());
         }
 
         private IEnumerator InitializeTagList()
         {
-            Debug.Log("[TagFilterUI] Attente de l'initialisation de CustomisationUIManager...");
             while (customisationUIManager == null || customisationUIManager.GetCategorizedItems() == null || customisationUIManager.GetCategorizedItems().Count == 0)
             {
                 yield return null;
             }
-            Debug.Log("[TagFilterUI] categorizedItems prêt, appel de PopulateTagList.");
             PopulateTagList();
         }
 
@@ -69,7 +39,6 @@ namespace CharacterCustomization
         {
             if (tagContent == null || tagTogglePrefab == null)
             {
-                Debug.LogError("[TagFilterUI] tagContent ou tagTogglePrefab n'est PAS assigné dans l'inspecteur !");
                 return;
             }
 
@@ -85,11 +54,9 @@ namespace CharacterCustomization
                 var categorizedItems = customisationUIManager.GetCategorizedItems();
                 if (categorizedItems != null)
                 {
-                    Debug.Log($"[TagFilterUI] Nombre de catégories trouvées : {categorizedItems.Count}");
                     int itemCount = 0;
                     foreach (var category in categorizedItems)
                     {
-                        Debug.Log($"[TagFilterUI] Catégorie : SlotType={category.Key.Item1}, GroupType={category.Key.Item2}, Nombre d'items : {category.Value.Count}");
                         foreach (var item in category.Value)
                         {
                             itemCount++;
@@ -102,44 +69,23 @@ namespace CharacterCustomization
                                         if (!string.IsNullOrEmpty(tag))
                                         {
                                             uniqueTags.Add(tag);
-                                            Debug.Log($"[TagFilterUI] Tag ajouté : {tag} pour l'item {item.itemName}");
                                         }
-                                        else
-                                        {
-                                            Debug.LogWarning($"[TagFilterUI] Tag vide trouvé pour l'item {item.itemName}");
-                                        }
+                                        
                                     }
                                 }
-                                else
-                                {
-                                    //Debug.LogWarning($"[TagFilterUI] Aucun tag défini pour l'item {item.itemName} ou tags est null");
-                                }
+                                
                             }
-                            else
-                            {
-                                //Debug.LogWarning("[TagFilterUI] Item null dans categorizedItems !");
-                            }
+                           
                         }
                     }
-                    Debug.Log($"[TagFilterUI] Total d'items parcourus : {itemCount}");
                 }
-                else
-                {
-                    //Debug.LogError("[TagFilterUI] categorizedItems est null dans PopulateTagList !");
-                }
+                
             }
-            else
-            {
-                Debug.LogError("[TagFilterUI] customisationUIManager est null dans PopulateTagList !");
-            }
+            
 
             allTags = new List<string>(uniqueTags);
-            Debug.Log($"[TagFilterUI] Tags trouvés : {string.Join(", ", allTags)}");
 
-            if (allTags.Count == 0)
-            {
-                Debug.LogWarning("[TagFilterUI] Aucun tag trouvé ! Vérifiez les champs 'tags' des Items dans Assets/Resources/Items/.");
-            }
+     
 
             foreach (var tag in allTags)
             {
@@ -159,10 +105,7 @@ namespace CharacterCustomization
                         OnTagToggleChanged(tag, isOn);
                     });
                 }
-                else
-                {
-                    Debug.LogWarning($"[TagFilterUI] Aucun Toggle trouvé sur le prefab pour le tag {tag} !");
-                }
+               
             }
 
             ClearFilters();
@@ -174,12 +117,8 @@ namespace CharacterCustomization
             {
                 bool isActive = !tagPanel.activeSelf;
                 tagPanel.SetActive(isActive);
-                Debug.Log($"[TagFilterUI] TagPanel {(isActive ? "activé" : "désactivé")}.");
             }
-            else
-            {
-                Debug.LogError("[TagFilterUI] tagPanel est null dans OpenTagPanel !");
-            }
+           
         }
 
         private void OnTagToggleChanged(string tag, bool isOn)
@@ -196,16 +135,12 @@ namespace CharacterCustomization
                 selectedTags.Remove(tag);
             }
 
-            Debug.Log($"[TagFilterUI] Tag {tag} {(isOn ? "sélectionné" : "désélectionné")}. Tags sélectionnés : {string.Join(", ", selectedTags)}");
 
             if (customisationUIManager != null)
             {
                 customisationUIManager.ApplyTagFilter(selectedTags);
             }
-            else
-            {
-                Debug.LogWarning("[TagFilterUI] customisationUIManager est null lors de OnTagToggleChanged !");
-            }
+            
         }
 
         public void ClearFilters()
@@ -219,22 +154,15 @@ namespace CharacterCustomization
                     toggle.isOn = false;
                 }
             }
-            else
-            {
-                Debug.LogWarning("[TagFilterUI] tagContent est null lors de ClearFilters !");
-            }
+            
             _isUpdatingToggles = false;
 
-            Debug.Log("[TagFilterUI] Filtres réinitialisés.");
 
             if (customisationUIManager != null)
             {
                 customisationUIManager.ApplyTagFilter(selectedTags);
             }
-            else
-            {
-                Debug.LogWarning("[TagFilterUI] customisationUIManager est null lors de ClearFilters !");
-            }
+            
         }
     }
 }

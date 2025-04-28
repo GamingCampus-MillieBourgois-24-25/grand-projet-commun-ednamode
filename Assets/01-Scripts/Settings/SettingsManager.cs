@@ -183,7 +183,7 @@ public class SettingsManager : MonoBehaviour
         }
         else
         {
-            SetQuality(QualityLevel.Medium);
+            SetQuality(QualityLevel.Low);
         }
     }
 
@@ -270,7 +270,6 @@ public class SettingsManager : MonoBehaviour
         }
         PlayerPrefs.SetFloat("MasterVolume", volume);
         PlayerPrefs.Save();
-        Debug.Log($"Master Volume défini à : {volume} (db: {dbVolume})");
     }
 
     private void SetSFXVolume(float volume)
@@ -284,7 +283,6 @@ public class SettingsManager : MonoBehaviour
         }
         PlayerPrefs.SetFloat("SFXVolume", volume);
         PlayerPrefs.Save();
-        Debug.Log($"SFX Volume défini à : {volume} (db: {dbVolume})");
     }
 
     private void SetMusicVolume(float volume)
@@ -298,7 +296,6 @@ public class SettingsManager : MonoBehaviour
         }
         PlayerPrefs.SetFloat("MusicVolume", volume);
         PlayerPrefs.Save();
-        Debug.Log($"Music Volume défini à : {volume} (db: {dbVolume})");
     }
 
     private void ToggleMasterMute()
@@ -320,7 +317,6 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt(MASTER_MUTE_KEY, isMasterMuted ? 1 : 0);
         PlayerPrefs.Save();
         UpdateMuteButtonStates();
-        Debug.Log($"Master Volume : {(isMasterMuted ? "Muté" : "Réactivé")}");
     }
 
     private void ToggleSFXMute()
@@ -342,7 +338,6 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt(SFX_MUTE_KEY, isSFXMuted ? 1 : 0);
         PlayerPrefs.Save();
         UpdateMuteButtonStates();
-        Debug.Log($"SFX Volume : {(isSFXMuted ? "Muté" : "Réactivé")}");
     }
 
     private void ToggleMusicMute()
@@ -364,7 +359,6 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt(MUSIC_MUTE_KEY, isMusicMuted ? 1 : 0);
         PlayerPrefs.Save();
         UpdateMuteButtonStates();
-        Debug.Log($"Music Volume : {(isMusicMuted ? "Muté" : "Réactivé")}");
     }
 
     private void UpdateMuteButtonStates()
@@ -378,10 +372,7 @@ public class SettingsManager : MonoBehaviour
                 buttonImage.sprite = isMasterMuted ? muteIcon : unmuteIcon;
                 buttonImage.enabled = buttonImage.sprite != null; // Désactiver si pas de sprite
             }
-            else
-            {
-                Debug.LogWarning("Aucun composant Image trouvé sur masterMuteButton.");
-            }
+            
         }
        
 
@@ -394,10 +385,7 @@ public class SettingsManager : MonoBehaviour
                 buttonImage.sprite = isSFXMuted ? muteIcon : unmuteIcon;
                 buttonImage.enabled = buttonImage.sprite != null;
             }
-            else
-            {
-                Debug.LogWarning("Aucun composant Image trouvé sur sfxMuteButton.");
-            }
+            
         }
        
 
@@ -410,10 +398,7 @@ public class SettingsManager : MonoBehaviour
                 buttonImage.sprite = isMusicMuted ? muteIcon : unmuteIcon;
                 buttonImage.enabled = buttonImage.sprite != null;
             }
-            else
-            {
-                Debug.LogWarning("Aucun composant Image trouvé sur musicMuteButton.");
-            }
+            
         }
         
     }
