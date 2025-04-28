@@ -120,6 +120,12 @@ public class GamePhaseTransitionController : NetworkBehaviour
         PodiumUIManager.Instance?.HideRanking();
         HidePodiumPanel();
 
+        // ============= Phase de récompenses ============= //
+        SetPhase(GamePhaseManager.GamePhase.Reward);
+        RewardManager.Instance.StartRewardPhase();
+        yield return new WaitUntil(() => RewardManager.Instance.IsRewardPhaseComplete);
+
+
         // ============= Retour au lobby ============= //
         SetPhase(GamePhaseManager.GamePhase.ReturnToLobby);
         //ActivateReturnToLobbyPhase();

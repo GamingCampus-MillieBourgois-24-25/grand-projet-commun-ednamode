@@ -96,5 +96,27 @@ public class VotingManager : NetworkBehaviour
         allVotes.Clear();
     }
 
+    /// <summary>
+    /// Retourne le classement (rank) du joueur local (1 = 1er, 2 = 2e, etc.).
+    /// Si non trouvé, retourne 99.
+    /// </summary>
+    public int GetLocalPlayerRank()
+    {
+        ulong localId = NetworkManager.Singleton.LocalClientId;
+
+        List<(ulong clientId, float score)> rankedPlayers = GetRankedResults();
+
+        for (int i = 0; i < rankedPlayers.Count; i++)
+        {
+            if (rankedPlayers[i].clientId == localId)
+            {
+                return i + 1; // Classement commence à 1
+            }
+        }
+
+        Debug.LogWarning("[VotingManager] Le joueur local n'a pas été trouvé dans le classement.");
+        return 99;
+    }
+
     #endregion
 }
