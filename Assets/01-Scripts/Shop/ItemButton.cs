@@ -9,12 +9,16 @@ namespace CharacterCustomization
         private ItemEquipper itemEquipper;
         private CharacterItemManager characterItemManager;
 
+        private ShopEquippedHandler shopEquippedHandler;
+
         protected override void Start()
         {
             base.Start();
             shoppingScript = Object.FindFirstObjectByType<ShoppingScript>();
             itemEquipper = Object.FindFirstObjectByType<ItemEquipper>();
             characterItemManager = Object.FindFirstObjectByType<CharacterItemManager>();
+            shopEquippedHandler = Object.FindFirstObjectByType<ShopEquippedHandler>(); // ?? AJOUT
+
             if (scriptable is Item item)
             {
                 category = item.category.ToString();
@@ -23,17 +27,14 @@ namespace CharacterCustomization
                 button.onClick.AddListener(() => shoppingScript.SetSelectedItemButton(this));
                 button.onClick.AddListener(() => itemEquipper.OnItemButtonClicked(item));
                 button.onClick.AddListener(() => characterItemManager.EquipItem(item));
-                if (characterItemManager == null)
-                {
-                    Debug.LogError("CharacterItemManager introuvable dans la sc?ne !");
-                }
-
+                button.onClick.AddListener(() => shopEquippedHandler.EquipItem(item)); // ?? AJOUT
             }
             else
             {
                 Debug.LogError("Le scriptable n'est pas un Item !");
             }
         }
+
         public Item GetItem()
         {
             if (scriptable is Item item)

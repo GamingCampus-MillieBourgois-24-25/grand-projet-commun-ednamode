@@ -3154,8 +3154,19 @@ MonoBehaviour:
     attachmentPoint: {fileID: 0}
   - slotType: 11
     attachmentPoint: {fileID: 0}
+--- !u!114 &1482493527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1482493522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e7aabfc0d913d342a267361408ffce8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   bodyTarget: {fileID: 1482493525}
-  copyAnimatorFromParent: 1
 --- !u!1 &1496596798
 GameObject:
   m_ObjectHideFlags: 0
@@ -3777,7 +3788,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f480ec7728fcb34bbf124d3d1d7022f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterItemManager: {fileID: 1482493526}
   tabs:
   - {fileID: 11400000, guid: 45a27429928a0864d8eedf5fec1fcab4, type: 2}
   - {fileID: 11400000, guid: 2e262b6e74f3ebd42a4dc18aa2be53e0, type: 2}
@@ -3984,6 +3994,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 335f64e53b1ba9648aec09bc1a394a09, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1482493526}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 335f64e53b1ba9648aec09bc1a394a09, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1482493527}
   m_SourcePrefab: {fileID: 100100000, guid: 335f64e53b1ba9648aec09bc1a394a09, type: 3}
 --- !u!1 &2040107178
 GameObject:
