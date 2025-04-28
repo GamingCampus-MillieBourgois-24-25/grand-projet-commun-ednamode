@@ -41,6 +41,12 @@ public class GameModePanelMapping
     [Tooltip("Panel à masquer en quittant la phase précédente vers le podium.")]
     public GameObject podiumPanelToHide;
 
+    [Header("🏆 Phase : Reward")]
+    [Tooltip("Panel à afficher pour la phase de podium.")]
+    public GameObject rewardPanel;
+    [Tooltip("Panel à masquer en quittant la phase précédente vers le podium.")]
+    public GameObject rewardPanelToHide;
+
     [Header("🏁 Phase : Retour au lobby")]
     [Tooltip("Panel à afficher pour la phase de retour au lobby.")]
     public GameObject returnToLobbyPanel;
@@ -61,7 +67,7 @@ public class GamePhaseManager : NetworkBehaviour
     /// <summary> 
     /// Phase actuelle du jeu.
     /// </summary>
-    public enum GamePhase { Waiting, ThemeDisplay, Customization, RunwayVoting, Podium, ReturnToLobby }
+    public enum GamePhase { Waiting, ThemeDisplay, Customization, RunwayVoting, Podium, Reward, ReturnToLobby }
 
     [Tooltip("Phase du jeu en cours.")]
     public NetworkVariable<GamePhase> CurrentPhase = new(writePerm: NetworkVariableWritePermission.Server);
@@ -152,6 +158,8 @@ public class GamePhaseManager : NetworkBehaviour
         mapping.runwayPanelToHide,
         mapping.podiumPanel,
         mapping.podiumPanelToHide,
+        mapping.rewardPanel,
+        mapping.rewardPanelToHide,
         mapping.returnToLobbyPanel,
         mapping.returnToLobbyPanelToHide
     };
