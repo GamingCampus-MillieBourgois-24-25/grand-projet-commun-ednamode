@@ -25013,7 +25013,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: b292302f851a2bc439405eaf21807e20, type: 3}
     - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
       propertyPath: countdownDuration
-      value: 1
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 454105380675611629, guid: 6770b7c082238cf4da07c0cef8035056, type: 3}
       propertyPath: panels.Array.size
