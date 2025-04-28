@@ -203,6 +203,10 @@ public class GamePhaseTransitionController : NetworkBehaviour
                 toHide = mapping.podiumPanelToHide;
                 toShow = mapping.podiumPanel;
                 break;
+            case GamePhaseManager.GamePhase.Reward:
+                toHide = mapping.podiumPanelToHide;
+                toShow = mapping.rewardPanel;
+                break;
             case GamePhaseManager.GamePhase.ReturnToLobby:
                 toHide = mapping.returnToLobbyPanelToHide;
                 toShow = mapping.returnToLobbyPanel;
